@@ -8,7 +8,32 @@ import {
   Loader2,
   Info,
   Lock,
+  Clock,
 } from 'lucide-react';
+
+/** Devuelve un texto en lenguaje claro con la frecuencia efectiva de la regla. */
+function resumenFrecuencia(
+  cooldownDias: number,
+  maxValidacionesPeriodo: number | null,
+  periodoDias: number | null,
+): string {
+  if (maxValidacionesPeriodo != null && periodoDias != null) {
+    const veces =
+      maxValidacionesPeriodo === 1 ? '1 vez' : `${maxValidacionesPeriodo} veces`;
+    let ventana: string;
+    if (periodoDias >= 365) ventana = 'año';
+    else if (periodoDias >= 28) ventana = 'mes';
+    else if (periodoDias >= 7) ventana = 'semana';
+    else ventana = `${periodoDias} días`;
+    return `${veces} por ${ventana} (por recurso)`;
+  }
+  if (cooldownDias >= 365) return '1 vez al año por recurso';
+  if (cooldownDias >= 28)
+    return `1 vez al mes por recurso (cada ${cooldownDias} días)`;
+  if (cooldownDias >= 7) return `1 vez a la semana por recurso`;
+  if (cooldownDias > 1) return `1 vez cada ${cooldownDias} días por recurso`;
+  return 'Sin límite de frecuencia (cada visita suma puntos)';
+}
 
 export type ReglaGamificacion = {
   id: number;
@@ -76,12 +101,7 @@ export function GamificacionAdminEditor({
   categoriaFiltro,
   readOnly = false,
 }: {
-  /**
-   * Si se pasa, solo se ven/crean reglas en esa(s) categoría(s).
-   * Acepta un único valor o un array (para incluir varias en una misma vista).
-   */
   categoriaFiltro?: string | string[];
-  /** Para alcaldes: solo lectura. */
   readOnly?: boolean;
 }) {
   const filtroSet = useMemo(() => {
@@ -296,16 +316,18 @@ export function GamificacionAdminEditor({
       {!readOnly && (
         <div className="mb-4 flex items-start gap-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3 text-sm text-fuchsia-900">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
-          <div>
-            <p className="font-medium">Cómo afecta cambiar el valor genérico</p>
+          <div className="space-y-1.5">
+            <p className="font-semibold">Cómo funciona</p>
             <p className="text-fuchsia-900/85">
-              Cambiar los puntos / cooldown / topes de una regla aquí{' '}
-              <strong>solo afectará a los nuevos recursos</strong> que se den de
-              alta a partir de ahora. Los recursos existentes que aún heredaban
-              el valor genérico se quedan fijados con el valor anterior, y los
-              que tenían un valor personalizado tampoco cambian. Para forzar un
-              cambio en un recurso concreto, edítalo desde el botón “Puntos” en
-              la lista del pueblo o en{' '}
+              Cada tarjeta es <strong>completamente independiente</strong>.
+              El botón Guardar de cada tarjeta guarda solo esa regla, nunca las
+              demás.
+            </p>
+            <p className="text-fuchsia-900/85">
+              Cambiar valores <strong>no modifica los recursos ya existentes</strong>:
+              quedan fijados con el valor anterior. Solo los recursos dados de alta
+              a partir de ahora heredarán el nuevo valor. Para ajustar un recurso
+              concreto, usa{' '}
               <a className="underline" href="/gestion/asociacion/datos/puntos-recursos">
                 Puntos por recurso
               </a>
@@ -392,7 +414,7 @@ export function GamificacionAdminEditor({
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-muted-foreground">
-                            Puntos
+                            Puntos que gana el socio
                           </label>
                           <input
                             type="number"
@@ -440,19 +462,34 @@ export function GamificacionAdminEditor({
                         </div>
                       )}
 
+                      {/* ─── Frecuencia ──────────────────────────────────── */}
                       <div className="mt-3 rounded-xl border border-border bg-muted/30 p-3">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                          Límites antifraude
-                        </p>
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            Con qué frecuencia puede ganar puntos el socio
+                          </p>
+                          {/* Resumen en lenguaje claro */}
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-700">
+                            <Clock className="h-3 w-3" />
+                            {resumenFrecuencia(r.cooldownDias, r.maxValidacionesPeriodo, r.periodoDias)}
+                          </span>
+                        </div>
                         <p className="mb-3 text-xs text-muted-foreground">
-                          Evita que el mismo socio acumule puntos del mismo recurso a diario.
-                          Se puede afinar por recurso individual desde{' '}
-                          <span className="italic">Datos · Puntos por recurso</span>.
+                          Controla cuántas veces puede el mismo socio validar un recurso
+                          de este tipo y ganar puntos. Se puede afinar por recurso individual
+                          desde{' '}
+                          <a
+                            href="/gestion/asociacion/datos/puntos-recursos"
+                            className="italic underline"
+                          >
+                            Puntos por recurso
+                          </a>
+                          .
                         </p>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                           <div>
-                            <label className="block text-xs font-medium text-muted-foreground">
-                              Cooldown (días)
+                            <label className="block text-xs font-semibold text-foreground">
+                              Espera entre visitas (días)
                             </label>
                             <input
                               type="number"
@@ -469,18 +506,19 @@ export function GamificacionAdminEditor({
                               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
                             />
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              Mín. días entre visitas puntuadas (1 = 1/día, 30 = 1/mes)
+                              Días mínimos entre dos visitas puntuadas del mismo socio
+                              al mismo recurso. Ej: 1 = diario · 30 = mensual · 365 = anual
                             </p>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-muted-foreground">
-                              Máx. en periodo
+                            <label className="block text-xs font-semibold text-foreground">
+                              Visitas máx. en la ventana
                             </label>
                             <input
                               type="number"
                               min={0}
                               value={r.maxValidacionesPeriodo ?? ''}
-                              placeholder="∞"
+                              placeholder="Sin límite"
                               disabled={readOnly}
                               onChange={(e) =>
                                 setReglaField(
@@ -494,12 +532,13 @@ export function GamificacionAdminEditor({
                               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
                             />
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              Tope móvil (vacío = sin tope)
+                              Número máximo de veces que puede ganar puntos dentro
+                              del periodo definido. Vacío = sin tope adicional.
                             </p>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-muted-foreground">
-                              Periodo (días)
+                            <label className="block text-xs font-semibold text-foreground">
+                              Duración de la ventana (días)
                             </label>
                             <input
                               type="number"
@@ -519,7 +558,9 @@ export function GamificacionAdminEditor({
                               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
                             />
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              Ventana del tope (típico: 30 días)
+                              Junto al campo anterior: si máx=1 y ventana=30, solo
+                              puede ganar puntos 1 vez cada 30 días (aunque visite
+                              más veces). Típico: 30 días.
                             </p>
                           </div>
                         </div>
@@ -561,7 +602,7 @@ export function GamificacionAdminEditor({
                               ) : (
                                 <Save className="h-3.5 w-3.5" />
                               )}
-                              Guardar
+                              Guardar esta regla
                             </button>
                           </div>
                         </div>
