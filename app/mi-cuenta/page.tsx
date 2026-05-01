@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -79,16 +80,9 @@ export default async function MiCuentaPage() {
 
   const sectionedLinks = [
     {
-      title: t('sectionMyClub'),
-      description: t('sectionMyClubDesc'),
-      items: [links[0], links[7]],
-      includeNotifCenter: true,
-      tone: 'amber',
-    },
-    {
       title: t('sectionMyJourney'),
       description: t('sectionMyJourneyDesc'),
-      items: [links[1], links[2]],
+      items: [links[0], links[1], links[2]],
       includeNotifCenter: false,
       tone: 'emerald',
     },
@@ -96,7 +90,7 @@ export default async function MiCuentaPage() {
       title: t('sectionSettings'),
       description: t('sectionSettingsDesc'),
       items: [links[3], links[4]],
-      includeNotifCenter: false,
+      includeNotifCenter: true,
       tone: 'violet',
     },
     {
@@ -154,6 +148,38 @@ export default async function MiCuentaPage() {
               </div>
 
               <div className="w-full max-w-5xl space-y-6">
+                <Link
+                  href={links[7].href}
+                  className="group relative block overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg sm:p-7"
+                >
+                  <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl" />
+                  <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+                    <div className="shrink-0 rounded-2xl border border-amber-200 bg-white/80 p-3 shadow-sm">
+                      <Image
+                        src="/club-escudo-monocromo.png"
+                        alt={links[7].title}
+                        width={92}
+                        height={92}
+                        className="h-[92px] w-[92px] object-contain"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                        {t('sectionMyClub')}
+                      </span>
+                      <h2 className="mt-2 text-2xl font-bold text-foreground">
+                        {links[7].title}
+                      </h2>
+                      <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                        {links[7].description}
+                      </p>
+                    </div>
+                    <span className="text-xl font-semibold text-amber-700 transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </div>
+                </Link>
+
                 {sectionedLinks.map((section) => (
                   <section
                     key={section.title}
