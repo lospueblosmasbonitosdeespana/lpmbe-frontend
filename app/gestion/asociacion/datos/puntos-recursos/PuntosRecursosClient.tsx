@@ -7,12 +7,12 @@ import {
   ChevronDown,
   ChevronRight,
   HelpCircle,
+  MapPin,
   Mountain,
+  QrCode,
   Search,
   Sparkles,
   Store,
-  Wifi,
-  WifiOff,
 } from 'lucide-react';
 
 type ScopeFilter =
@@ -68,18 +68,11 @@ function isNatural(r: Recurso) {
 
 // ─── Badge de validación ────────────────────────────────────────────────────
 function ValidacionBadge({ r }: { r: Recurso }) {
-  if (r.scope === 'NEGOCIO') {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
-        <Store className="h-3 w-3" />
-        Negocio
-      </span>
-    );
-  }
   if (r.validacionTipo === 'AMBOS') {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-2 py-0.5 text-[11px] font-semibold text-teal-800">
-        <Wifi className="h-3 w-3" />
+        <QrCode className="h-3 w-3" />
+        <MapPin className="h-3 w-3" />
         QR + GPS
       </span>
     );
@@ -94,7 +87,7 @@ function ValidacionBadge({ r }: { r: Recurso }) {
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-800">
-      <WifiOff className="h-3 w-3" />
+      <QrCode className="h-3 w-3" />
       QR
     </span>
   );
