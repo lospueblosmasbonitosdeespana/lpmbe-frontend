@@ -460,7 +460,7 @@
     },
     "misRutas": {
       "title": "I miei percorsi salvati",
-      "subtitle": "Qui è possibile visualizzare, modificare e richiamare i percorsi salvati. Fare clic su \"Apri\" per caricare il percorso ed eseguirlo in seguito.",
+      "subtitle": "Qui puoi visualizzare, modificare e riaprire i percorsi salvati. Clicca su \"Apri\" per caricare un percorso e riprenderlo più tardi.",
       "loading": "Caricamento dei percorsi...",
       "createNewRoute": "Creare un nuovo percorso",
       "noRoutes": "Non ci sono ancora percorsi salvati. Creare un percorso e fare clic su \"Salva per dopo\" per visualizzarlo qui.",
@@ -469,13 +469,13 @@
       "destination": "Destinazione",
       "stop": "fermarsi",
       "stops": "fermate",
-      "open": "Aperto",
+      "open": "Apri",
       "editName": "Modifica nome",
       "save": "Risparmiare",
       "cancel": "Annullamento",
       "delete": "Cancellare",
-      "deleting": "Eliminare...",
-      "confirmDelete": "Cancellare il percorso \"{name}\"?",
+      "deleting": "Eliminazione…",
+      "confirmDelete": "Eliminare il percorso \"{name}\"?",
       "errorLoading": "Errore nel caricamento dei percorsi",
       "errorUpdating": "Errore nell'aggiornamento",
       "errorDeleting": "Errore durante l'eliminazione"
@@ -984,7 +984,27 @@
     "sectionSettings": "Impostazioni",
     "sectionSettingsDesc": "Profilo e preferenze",
     "sectionShop": "Shopping",
-    "sectionShopDesc": "Indirizzi dei negozi e ordini"
+    "sectionShopDesc": "Indirizzi dei negozi e ordini",
+    "ordersPage": {
+      "backToMyAccount": "Il mio account",
+      "title": "I miei ordini",
+      "subtitle": "Cronologia dei tuoi acquisti nel negozio",
+      "loading": "Caricamento ordini…",
+      "empty": "Non hai ancora ordini.",
+      "goShop": "Vai al negozio",
+      "productFallback": "Prodotto",
+      "noPhoto": "Nessuna foto",
+      "units": "{count} pz",
+      "status": {
+        "PENDING": "Pagamento in sospeso",
+        "PAID": "Pagato",
+        "PROCESSING": "In preparazione",
+        "SHIPPED": "Spedito",
+        "DELIVERED": "Consegnato",
+        "CANCELLED": "Annullato",
+        "FAILED": "Pagamento non riuscito"
+      }
+    }
   },
   "myProfile": {
     "title": "Il mio profilo",

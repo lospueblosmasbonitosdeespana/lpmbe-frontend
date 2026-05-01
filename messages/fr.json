@@ -460,22 +460,22 @@
     },
     "misRutas": {
       "title": "Mes itinéraires enregistrés",
-      "subtitle": "Vous pouvez ici visualiser, modifier et rappeler les itinéraires que vous avez enregistrés. Cliquez sur \"Ouvrir\" pour charger l'itinéraire et le refaire plus tard.",
+      "subtitle": "Vous pouvez consulter, modifier et retrouver ici les itinéraires enregistrés. Cliquez sur « Ouvrir » pour charger un itinéraire et le reprendre plus tard.",
       "loading": "Chargement de vos itinéraires...",
       "createNewRoute": "Créer un nouvel itinéraire",
       "noRoutes": "Vous n'avez pas encore d'itinéraires enregistrés. Créez un itinéraire et cliquez sur \"Enregistrer pour plus tard\" pour l'afficher ici.",
       "goCreateRoute": "Aller à la création d'un itinéraire",
       "origin": "Origine",
       "destination": "Destination",
-      "stop": "arrêter",
-      "stops": "arrêts",
+      "stop": "étape",
+      "stops": "étapes",
       "open": "Ouvrir",
       "editName": "Modifier le nom",
-      "save": "Économiser",
+      "save": "Enregistrer",
       "cancel": "Annuler",
       "delete": "Supprimer",
-      "deleting": "Éliminer...",
-      "confirmDelete": "Supprimer le chemin \"{name}\" ?",
+      "deleting": "Suppression…",
+      "confirmDelete": "Supprimer l’itinéraire « {name} » ?",
       "errorLoading": "Erreur de chargement des itinéraires",
       "errorUpdating": "Erreur de mise à jour",
       "errorDeleting": "Erreur lors de la suppression"
@@ -984,7 +984,27 @@
     "sectionSettings": "Ajustements",
     "sectionSettingsDesc": "Profil et préférences",
     "sectionShop": "Achats",
-    "sectionShopDesc": "Adresses des magasins et commandes"
+    "sectionShopDesc": "Adresses des magasins et commandes",
+    "ordersPage": {
+      "backToMyAccount": "Mon compte",
+      "title": "Mes commandes",
+      "subtitle": "Historique de vos achats en boutique",
+      "loading": "Chargement des commandes…",
+      "empty": "Vous n’avez encore aucune commande.",
+      "goShop": "Aller à la boutique",
+      "productFallback": "Produit",
+      "noPhoto": "Sans photo",
+      "units": "{count} u.",
+      "status": {
+        "PENDING": "Paiement en attente",
+        "PAID": "Payé",
+        "PROCESSING": "En préparation",
+        "SHIPPED": "Expédié",
+        "DELIVERED": "Livré",
+        "CANCELLED": "Annulé",
+        "FAILED": "Échec du paiement"
+      }
+    }
   },
   "myProfile": {
     "title": "Mon profil",

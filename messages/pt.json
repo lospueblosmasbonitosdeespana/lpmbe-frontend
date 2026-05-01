@@ -460,7 +460,7 @@
     },
     "misRutas": {
       "title": "Os meus itinerários guardados",
-      "subtitle": "Aqui pode ver, editar e recuperar as rotas que guardou. Clique em \"Abrir\" para carregar o itinerário e fazê-lo mais tarde.",
+      "subtitle": "Aqui pode ver, editar e voltar a abrir as rotas guardadas. Clique em \"Abrir\" para carregar uma rota e retomá-la mais tarde.",
       "loading": "Carregar os seus itinerários...",
       "createNewRoute": "Criar nova rota",
       "noRoutes": "Ainda não tem nenhum itinerário guardado. Crie um itinerário e clique em \"Guardar para mais tarde\" para o visualizar aqui.",
@@ -474,8 +474,8 @@
       "save": "Guardar",
       "cancel": "Cancelar",
       "delete": "Eliminar",
-      "deleting": "Eliminar...",
-      "confirmDelete": "Eliminar o caminho \"{name}\"?",
+      "deleting": "A eliminar…",
+      "confirmDelete": "Eliminar a rota \"{name}\"?",
       "errorLoading": "Erro ao carregar rotas",
       "errorUpdating": "Erro na atualização",
       "errorDeleting": "Erro ao apagar"
@@ -984,7 +984,27 @@
     "sectionSettings": "Ajustamentos",
     "sectionSettingsDesc": "Perfil e preferências",
     "sectionShop": "Compras",
-    "sectionShopDesc": "Endereços de lojas e encomendas"
+    "sectionShopDesc": "Endereços de lojas e encomendas",
+    "ordersPage": {
+      "backToMyAccount": "A minha conta",
+      "title": "As minhas encomendas",
+      "subtitle": "Histórico das suas compras na loja",
+      "loading": "A carregar encomendas…",
+      "empty": "Ainda não tem encomendas.",
+      "goShop": "Ir para a loja",
+      "productFallback": "Produto",
+      "noPhoto": "Sem foto",
+      "units": "{count} un.",
+      "status": {
+        "PENDING": "Pagamento pendente",
+        "PAID": "Pago",
+        "PROCESSING": "Em preparação",
+        "SHIPPED": "Enviado",
+        "DELIVERED": "Entregue",
+        "CANCELLED": "Cancelado",
+        "FAILED": "Falha no pagamento"
+      }
+    }
   },
   "myProfile": {
     "title": "O meu perfil",

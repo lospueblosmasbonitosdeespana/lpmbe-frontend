@@ -460,7 +460,7 @@
     },
     "misRutas": {
       "title": "Meine gespeicherten Routen",
-      "subtitle": "Hier können Sie die von Ihnen gespeicherten Routen anzeigen, bearbeiten und abrufen. Klicken Sie auf \"Öffnen\", um die Route zu laden und sie später zu bearbeiten.",
+      "subtitle": "Hier können Sie Ihre gespeicherten Routen ansehen, bearbeiten und wieder öffnen. Klicken Sie auf „Öffnen“, um eine Route zu laden und später fortzusetzen.",
       "loading": "Laden Sie Ihre Routen...",
       "createNewRoute": "Neue Route erstellen",
       "noRoutes": "Sie haben noch keine Routen gespeichert. Erstellen Sie eine Route und klicken Sie auf \"Für später speichern\", um sie hier anzuzeigen.",
@@ -474,8 +474,8 @@
       "save": "Speichern Sie",
       "cancel": "Abbrechen",
       "delete": "Löschen",
-      "deleting": "Eliminieren...",
-      "confirmDelete": "Den Pfad \"{name}\" löschen?",
+      "deleting": "Wird gelöscht…",
+      "confirmDelete": "Route „{name}“ löschen?",
       "errorLoading": "Fehler beim Laden von Routen",
       "errorUpdating": "Fehler beim Aktualisieren",
       "errorDeleting": "Fehler beim Löschen"
@@ -984,7 +984,27 @@
     "sectionSettings": "Einstellungen",
     "sectionSettingsDesc": "Profil und Präferenzen",
     "sectionShop": "Einkaufen",
-    "sectionShopDesc": "Ladenadressen und Bestellung"
+    "sectionShopDesc": "Ladenadressen und Bestellung",
+    "ordersPage": {
+      "backToMyAccount": "Mein Konto",
+      "title": "Meine Bestellungen",
+      "subtitle": "Verlauf Ihrer Shop-Einkäufe",
+      "loading": "Bestellungen werden geladen…",
+      "empty": "Sie haben noch keine Bestellungen.",
+      "goShop": "Zum Shop",
+      "productFallback": "Produkt",
+      "noPhoto": "Kein Foto",
+      "units": "{count} Stk.",
+      "status": {
+        "PENDING": "Zahlung ausstehend",
+        "PAID": "Bezahlt",
+        "PROCESSING": "In Vorbereitung",
+        "SHIPPED": "Versendet",
+        "DELIVERED": "Zugestellt",
+        "CANCELLED": "Storniert",
+        "FAILED": "Zahlung fehlgeschlagen"
+      }
+    }
   },
   "myProfile": {
     "title": "Mein Profil",

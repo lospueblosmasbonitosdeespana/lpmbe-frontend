@@ -460,7 +460,7 @@
     },
     "misRutas": {
       "title": "My saved routes",
-      "subtitle": "Here you can view, edit and recall the routes you have saved. Click \"Open\" to load the route and do it later.",
+      "subtitle": "Here you can view, edit, and reopen your saved routes. Click \"Open\" to load a route and continue it later.",
       "loading": "Loading your routes...",
       "createNewRoute": "Create new route",
       "noRoutes": "You have no saved routes yet. Create a route and click \"Save for later\" to view it here.",
@@ -474,8 +474,8 @@
       "save": "Save",
       "cancel": "Cancel",
       "delete": "Delete",
-      "deleting": "Eliminating...",
-      "confirmDelete": "Delete the path \"{name}\"?",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete the route \"{name}\"?",
       "errorLoading": "Error loading routes",
       "errorUpdating": "Error while updating",
       "errorDeleting": "Error when deleting"
@@ -977,6 +977,26 @@
     "breadcrumbOrders": "My orders",
     "myOrders": "My orders",
     "myOrdersDesc": "History of your purchases",
+    "ordersPage": {
+      "backToMyAccount": "My account",
+      "title": "My orders",
+      "subtitle": "History of your store purchases",
+      "loading": "Loading orders…",
+      "empty": "You don’t have any orders yet.",
+      "goShop": "Go to shop",
+      "productFallback": "Product",
+      "noPhoto": "No photo",
+      "units": "{count} pcs",
+      "status": {
+        "PENDING": "Pending payment",
+        "PAID": "Paid",
+        "PROCESSING": "Preparing",
+        "SHIPPED": "Shipped",
+        "DELIVERED": "Delivered",
+        "CANCELLED": "Cancelled",
+        "FAILED": "Payment failed"
+      }
+    },
     "sectionMyClub": "My Club",
     "sectionMyClubDesc": "Your membership, points and Club notifications",
     "sectionMyJourney": "My Trip",

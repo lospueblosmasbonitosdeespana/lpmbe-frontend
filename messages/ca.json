@@ -460,7 +460,7 @@
     },
     "misRutas": {
       "title": "Les meves rutes desades",
-      "subtitle": "Aquí pots veure, editar i recuperar les rutes que has desat. Fes clic a \"Obre\" per carregar la ruta i fer-ho més tard.",
+      "subtitle": "Aquí pots veure, editar i recuperar les rutes desades. Fes clic a \"Obrir\" per carregar una ruta i reprendre-la més tard.",
       "loading": "Cargant les teves rutes...",
       "createNewRoute": "Crea una nova ruta",
       "noRoutes": "Encara no tens cap ruta guardada. Crea una ruta i prem «Guardar per més tard» per veure-la aquí.",
@@ -474,8 +474,8 @@
       "save": "Desa",
       "cancel": "Cancel·la",
       "delete": "Suprimeix",
-      "deleting": "Suprimint...",
-      "confirmDelete": "Eliminar la ruta \"{name}\"?",
+      "deleting": "Eliminant…",
+      "confirmDelete": "Vols eliminar la ruta \"{name}\"?",
       "errorLoading": "Error en carregar les rutes",
       "errorUpdating": "Error d'actualització",
       "errorDeleting": "Error en esborrar"
@@ -984,7 +984,27 @@
     "sectionSettings": "Configuració",
     "sectionSettingsDesc": "Perfil i preferències",
     "sectionShop": "Compra",
-    "sectionShopDesc": "Adreces i comandes de la botiga"
+    "sectionShopDesc": "Adreces i comandes de la botiga",
+    "ordersPage": {
+      "backToMyAccount": "El meu compte",
+      "title": "Les meves comandes",
+      "subtitle": "Historial de les teves compres a la botiga",
+      "loading": "Carregant comandes…",
+      "empty": "Encara no tens cap comanda.",
+      "goShop": "Anar a la botiga",
+      "productFallback": "Producte",
+      "noPhoto": "Sense foto",
+      "units": "{count} u.",
+      "status": {
+        "PENDING": "Pagament pendent",
+        "PAID": "Pagat",
+        "PROCESSING": "En preparació",
+        "SHIPPED": "Enviat",
+        "DELIVERED": "Entregat",
+        "CANCELLED": "Cancel·lat",
+        "FAILED": "Error en el pagament"
+      }
+    }
   },
   "myProfile": {
     "title": "El meu perfil",

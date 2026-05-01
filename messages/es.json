@@ -500,7 +500,7 @@
     },
     "misRutas": {
       "title": "Mis rutas guardadas",
-      "subtitle": "Aquí puedes ver, editar y recuperar las rutas que has guardado. Haz clic en \"Abrir\" para cargar la ruta y hacerla más tarde.",
+      "subtitle": "Aquí puedes ver, editar y recuperar las rutas que has guardado. Haz clic en \"Abrir\" para cargar una ruta y retomarla cuando quieras.",
       "loading": "Cargando tus rutas…",
       "createNewRoute": "Crear nueva ruta",
       "noRoutes": "Aún no tienes rutas guardadas. Crea una ruta y pulsa \"Guardar para más tarde\" para verla aquí.",
@@ -996,6 +996,26 @@
     "myAddressesDesc": "Direcciones de envío para tus compras",
     "myOrders": "Mis pedidos",
     "myOrdersDesc": "Historial de tus compras",
+    "ordersPage": {
+      "backToMyAccount": "Mi cuenta",
+      "title": "Mis pedidos",
+      "subtitle": "Historial de tus compras en la tienda",
+      "loading": "Cargando pedidos…",
+      "empty": "Aún no tienes ningún pedido.",
+      "goShop": "Ir a la tienda",
+      "productFallback": "Producto",
+      "noPhoto": "Sin foto",
+      "units": "{count} ud.",
+      "status": {
+        "PENDING": "Pendiente de pago",
+        "PAID": "Pagado",
+        "PROCESSING": "En preparación",
+        "SHIPPED": "Enviado",
+        "DELIVERED": "Entregado",
+        "CANCELLED": "Cancelado",
+        "FAILED": "Error en pago"
+      }
+    },
     "club": "Club de Amigos",
     "clubDesc": "QR y recursos turísticos visitados",
     "sectionMyClub": "Mi Club",
