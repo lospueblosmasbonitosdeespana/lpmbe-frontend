@@ -118,13 +118,58 @@ type PlanificaData = {
   centro: EventoItem[];
 };
 
-const REGIONES: { key: keyof PlanificaData; label: string }[] = [
-  { key: 'asociacion', label: 'Asociación' },
+type Region = { key: keyof PlanificaData; label: string };
+
+const REGION_ASOCIACION: Region = { key: 'asociacion', label: 'Asociación' };
+
+/** Las 4 regiones que rotan. Asociación NO entra en la rotación: queda fija arriba. */
+const REGIONES_ROTATIVAS_BASE: Region[] = [
   { key: 'norte', label: 'Norte' },
   { key: 'sur', label: 'Sur' },
   { key: 'este', label: 'Este' },
   { key: 'centro', label: 'Centro' },
 ];
+
+/** Todas las claves (para contar eventos totales sin depender del orden). */
+const REGIONES_KEYS_ALL: (keyof PlanificaData)[] = [
+  'asociacion', 'norte', 'sur', 'este', 'centro',
+];
+
+const MS_PER_DAY = 86_400_000;
+const MS_PER_WEEK = 7 * MS_PER_DAY;
+/**
+ * Lunes 5 enero 1970 (00:00 UTC). Es el lunes más temprano posterior al
+ * epoch de JS (jueves 1 enero 1970). Sirve de referencia para contar
+ * semanas completas en UTC sin depender de la zona horaria del cliente.
+ */
+const EPOCH_MONDAY_UTC = 4 * MS_PER_DAY;
+
+/**
+ * Rotación de regiones cada lunes 00:00 UTC (≈ 01:00 hora peninsular en
+ * invierno y 02:00 en verano). Ciclo de 4 semanas:
+ *   semana N   → Norte, Sur, Este, Centro
+ *   semana N+1 → Sur, Este, Centro, Norte
+ *   semana N+2 → Este, Centro, Norte, Sur
+ *   semana N+3 → Centro, Norte, Sur, Este
+ *
+ * Se calcula en UTC con `Date.now()` para que servidor y cliente devuelvan
+ * el mismo orden y no haya warnings de hidratación de Next.js.
+ *
+ * "Asociación" queda siempre arriba, no participa en la rotación.
+ */
+function getRegionRotationOffset(nowMs: number = Date.now()): number {
+  const weeks = Math.floor((nowMs - EPOCH_MONDAY_UTC) / MS_PER_WEEK);
+  return ((weeks % 4) + 4) % 4;
+}
+
+function getRegionesOrden(nowMs: number = Date.now()): Region[] {
+  const offset = getRegionRotationOffset(nowMs);
+  const rotadas = [
+    ...REGIONES_ROTATIVAS_BASE.slice(offset),
+    ...REGIONES_ROTATIVAS_BASE.slice(0, offset),
+  ];
+  return [REGION_ASOCIACION, ...rotadas];
+}
 
 function EventoCard({
   e,
@@ -336,7 +381,10 @@ export default function PlanificaFinDeSemanaPage() {
     return () => { cancelled = true; };
   }, [locale]);
 
-  const totalEventos = data && REGIONES.reduce((acc, r) => acc + data[r.key].length, 0);
+  const totalEventos = data && REGIONES_KEYS_ALL.reduce((acc, key) => acc + data[key].length, 0);
+
+  // Orden rotado de regiones (memoizado por render). Asociación arriba siempre.
+  const REGIONES = useMemo(() => getRegionesOrden(), []);
 
   const allEventos: EventoItem[] = data
     ? [...data.asociacion, ...data.norte, ...data.sur, ...data.este, ...data.centro]
