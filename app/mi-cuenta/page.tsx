@@ -105,31 +105,31 @@ export default async function MiCuentaPage() {
   ] as const;
 
   const cardClass =
-    'group relative overflow-hidden flex min-h-[178px] flex-col items-center justify-center rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg';
+    'group relative overflow-hidden flex min-h-[178px] flex-col items-center justify-center rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg dark:from-card dark:via-card dark:to-card';
 
   const sectionToneClass: Record<
     SectionTone,
     { wrapper: string; chip: string; line: string }
   > = {
     amber: {
-      wrapper: 'border-amber-200/70 bg-gradient-to-br from-amber-50/70 to-card',
-      chip: 'bg-amber-100 text-amber-800',
-      line: 'bg-amber-300/70',
+      wrapper: 'border-amber-200/70 bg-gradient-to-br from-amber-50/70 to-card dark:border-amber-900/60 dark:from-amber-950/40 dark:to-card',
+      chip: 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-200',
+      line: 'bg-amber-300/70 dark:bg-amber-900/70',
     },
     emerald: {
-      wrapper: 'border-emerald-200/70 bg-gradient-to-br from-emerald-50/70 to-card',
-      chip: 'bg-emerald-100 text-emerald-800',
-      line: 'bg-emerald-300/70',
+      wrapper: 'border-emerald-200/70 bg-gradient-to-br from-emerald-50/70 to-card dark:border-emerald-900/60 dark:from-emerald-950/40 dark:to-card',
+      chip: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-200',
+      line: 'bg-emerald-300/70 dark:bg-emerald-900/70',
     },
     violet: {
-      wrapper: 'border-violet-200/70 bg-gradient-to-br from-violet-50/70 to-card',
-      chip: 'bg-violet-100 text-violet-800',
-      line: 'bg-violet-300/70',
+      wrapper: 'border-violet-200/70 bg-gradient-to-br from-violet-50/70 to-card dark:border-violet-900/60 dark:from-violet-950/40 dark:to-card',
+      chip: 'bg-violet-100 text-violet-800 dark:bg-violet-950/70 dark:text-violet-200',
+      line: 'bg-violet-300/70 dark:bg-violet-900/70',
     },
     sky: {
-      wrapper: 'border-sky-200/70 bg-gradient-to-br from-sky-50/70 to-card',
-      chip: 'bg-sky-100 text-sky-800',
-      line: 'bg-sky-300/70',
+      wrapper: 'border-sky-200/70 bg-gradient-to-br from-sky-50/70 to-card dark:border-sky-900/60 dark:from-sky-950/40 dark:to-card',
+      chip: 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-200',
+      line: 'bg-sky-300/70 dark:bg-sky-900/70',
     },
   };
 
@@ -152,11 +152,11 @@ export default async function MiCuentaPage() {
               <div className="w-full max-w-5xl space-y-6">
                 <Link
                   href={links[7].href}
-                  className="group relative block overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg sm:p-7"
+                  className="group relative block overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-7"
                 >
-                  <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl" />
+                  <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl dark:bg-amber-900/30" />
                   <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-                    <div className="h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-1 shadow-sm">
+                    <div className="h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-1 shadow-sm dark:border-amber-900/60">
                       <Image
                         src="/club-escudo-monocromo.png"
                         alt={links[7].title}
@@ -166,7 +166,7 @@ export default async function MiCuentaPage() {
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800">
+                      <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
                         {t('sectionMyClub')}
                       </span>
                       <h2 className="mt-2 text-2xl font-bold text-foreground">
@@ -176,7 +176,7 @@ export default async function MiCuentaPage() {
                         {links[7].description}
                       </p>
                     </div>
-                    <span className="text-xl font-semibold text-amber-700 transition-transform group-hover:translate-x-1">
+                    <span className="text-xl font-semibold text-amber-700 transition-transform group-hover:translate-x-1 dark:text-amber-300">
                       →
                     </span>
                   </div>

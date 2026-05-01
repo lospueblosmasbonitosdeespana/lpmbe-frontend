@@ -486,8 +486,8 @@ export default function ClubPage() {
             </Link>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-6 shadow-sm sm:p-8">
-            <div className="mx-auto mb-8 max-w-3xl rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-100/60 to-orange-100/50 p-6 text-center">
+          <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-6 shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-8">
+            <div className="mx-auto mb-8 max-w-3xl rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-100/60 to-orange-100/50 p-6 text-center dark:border-amber-900/60 dark:from-amber-950/30 dark:to-card">
               <div className="mx-auto mb-4 h-64 w-64 overflow-hidden rounded-xl bg-transparent sm:h-72 sm:w-72">
                 <img
                   src="/club-escudo-monocromo.png"
@@ -495,7 +495,7 @@ export default function ClubPage() {
                   className="h-full w-full scale-[2.15] object-contain"
                 />
               </div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/80 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/80 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-200">
                 <Sparkles size={14} />
                 {t('prelaunchBadge')}
               </div>
@@ -586,7 +586,7 @@ export default function ClubPage() {
               </div>
             </div>
 
-            <div className="mt-7 rounded-2xl border border-amber-400/80 bg-white/90 p-5">
+            <div className="mt-7 rounded-2xl border border-amber-400/80 bg-white/90 p-5 dark:border-amber-800/70 dark:bg-card/90">
               <div className="mb-3 flex items-center gap-2">
                 <MapPin size={16} className="text-amber-700" />
                 <p className="text-sm font-semibold text-foreground">
@@ -597,7 +597,7 @@ export default function ClubPage() {
                 {t('prelaunchNotifyDesc')}
               </p>
               {leadDone ? (
-                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                   {leadDone === 'already'
                     ? t('prelaunchNotifyAlready')
                     : t('prelaunchNotifyOk')}
@@ -713,7 +713,7 @@ export default function ClubPage() {
 
           {/* Unirse al Club (solo si NO es miembro) */}
           {!clubMe?.isMember && (
-            <div className={`${cardClass} border-primary/20 bg-primary/5`}>
+            <div className={`${cardClass} border-primary/20 bg-primary/5 dark:bg-primary/10`}>
               <Title size="lg" className="mb-2">{t('joinClub')}</Title>
               <Caption className="block mb-4">
                 {clubMe?.inscripcionesAbiertas
@@ -776,8 +776,8 @@ export default function ClubPage() {
                   </div>
                 )
               ) : (
-                <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-sm text-muted-foreground">
-                  <p className="mb-1 flex items-center gap-2 font-medium text-gray-700">
+                <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-sm text-muted-foreground dark:bg-muted/20">
+                  <p className="mb-1 flex items-center gap-2 font-medium text-foreground">
                     <Hourglass size={16} aria-hidden />
                     {t('comingSoonTitle')}
                   </p>
@@ -1008,7 +1008,7 @@ function PrelaunchCard({
   desc: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-white/90 p-4 shadow-sm">
+    <div className="rounded-2xl border border-border bg-white/90 p-4 shadow-sm dark:bg-card/90">
       <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
         {icon}
       </div>
@@ -1020,7 +1020,7 @@ function PrelaunchCard({
 
 function StepCard({ num, title, desc }: { num: string; title: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-border bg-white/90 p-4 shadow-sm">
+    <div className="flex items-start gap-3 rounded-2xl border border-border bg-white/90 p-4 shadow-sm dark:bg-card/90">
       <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
         {num}
       </div>
@@ -1048,39 +1048,39 @@ const ACCESO_TONES: Record<
   { ring: string; bg: string; iconBg: string; iconText: string; badge: string }
 > = {
   amber: {
-    ring: 'hover:border-amber-300',
-    bg: 'from-amber-50/70 to-white',
-    iconBg: 'bg-amber-100',
-    iconText: 'text-amber-700',
-    badge: 'bg-amber-100 text-amber-800',
+    ring: 'hover:border-amber-300 dark:hover:border-amber-700',
+    bg: 'from-amber-50/70 to-white dark:from-amber-950/30 dark:to-card',
+    iconBg: 'bg-amber-100 dark:bg-amber-950/70',
+    iconText: 'text-amber-700 dark:text-amber-200',
+    badge: 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-200',
   },
   rose: {
-    ring: 'hover:border-rose-300',
-    bg: 'from-rose-50/70 to-white',
-    iconBg: 'bg-rose-100',
-    iconText: 'text-rose-700',
-    badge: 'bg-rose-100 text-rose-800',
+    ring: 'hover:border-rose-300 dark:hover:border-rose-700',
+    bg: 'from-rose-50/70 to-white dark:from-rose-950/30 dark:to-card',
+    iconBg: 'bg-rose-100 dark:bg-rose-950/70',
+    iconText: 'text-rose-700 dark:text-rose-200',
+    badge: 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-200',
   },
   violet: {
-    ring: 'hover:border-violet-300',
-    bg: 'from-violet-50/70 to-white',
-    iconBg: 'bg-violet-100',
-    iconText: 'text-violet-700',
-    badge: 'bg-violet-100 text-violet-800',
+    ring: 'hover:border-violet-300 dark:hover:border-violet-700',
+    bg: 'from-violet-50/70 to-white dark:from-violet-950/30 dark:to-card',
+    iconBg: 'bg-violet-100 dark:bg-violet-950/70',
+    iconText: 'text-violet-700 dark:text-violet-200',
+    badge: 'bg-violet-100 text-violet-800 dark:bg-violet-950/70 dark:text-violet-200',
   },
   emerald: {
-    ring: 'hover:border-emerald-300',
-    bg: 'from-emerald-50/70 to-white',
-    iconBg: 'bg-emerald-100',
-    iconText: 'text-emerald-700',
-    badge: 'bg-emerald-100 text-emerald-800',
+    ring: 'hover:border-emerald-300 dark:hover:border-emerald-700',
+    bg: 'from-emerald-50/70 to-white dark:from-emerald-950/30 dark:to-card',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-950/70',
+    iconText: 'text-emerald-700 dark:text-emerald-200',
+    badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-200',
   },
   sky: {
-    ring: 'hover:border-sky-300',
-    bg: 'from-sky-50/70 to-white',
-    iconBg: 'bg-sky-100',
-    iconText: 'text-sky-700',
-    badge: 'bg-sky-100 text-sky-800',
+    ring: 'hover:border-sky-300 dark:hover:border-sky-700',
+    bg: 'from-sky-50/70 to-white dark:from-sky-950/30 dark:to-card',
+    iconBg: 'bg-sky-100 dark:bg-sky-950/70',
+    iconText: 'text-sky-700 dark:text-sky-200',
+    badge: 'bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-200',
   },
 };
 
@@ -1114,7 +1114,7 @@ function AccesoCard({
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-semibold text-gray-900 sm:text-[15px]">
+          <span className="truncate text-sm font-semibold text-foreground sm:text-[15px]">
             {title}
           </span>
           {badge && (
@@ -1175,44 +1175,44 @@ function LanzamientoCard({
   }
 
   return (
-    <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100 p-6 shadow-sm">
+    <div className="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-100 p-6 shadow-sm dark:border-amber-800 dark:from-amber-950/40 dark:via-amber-950/20 dark:to-card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white dark:bg-amber-700">
             <PartyPopper size={14} aria-hidden /> {t('lanzamientoBadge')}
           </div>
-          <h3 className="text-2xl font-bold text-amber-900">
+          <h3 className="text-2xl font-bold text-amber-900 dark:text-amber-200">
             {lanzamiento.mesesGratis === 1
               ? t('lanzamientoMonthOne', { n: lanzamiento.mesesGratis })
               : t('lanzamientoMonthMany', { n: lanzamiento.mesesGratis })}
           </h3>
           {lanzamiento.texto && (
-            <p className="mt-1 text-sm text-amber-800">{lanzamiento.texto}</p>
+            <p className="mt-1 text-sm text-amber-800 dark:text-amber-300">{lanzamiento.texto}</p>
           )}
         </div>
         {restante !== null && restante > 0 && (
           <div className="shrink-0 text-right">
-            <div className="text-[10px] font-medium uppercase tracking-wider text-amber-700">
+            <div className="text-[10px] font-medium uppercase tracking-wider text-amber-700 dark:text-amber-300">
               {t('lanzamientoEndsIn')}
             </div>
-            <div className="text-xl font-bold tabular-nums text-amber-900">
+            <div className="text-xl font-bold tabular-nums text-amber-900 dark:text-amber-200">
               {fmtCountdown(restante)}
             </div>
           </div>
         )}
       </div>
 
-      <ul className="mt-4 space-y-2 text-sm text-amber-900">
+      <ul className="mt-4 space-y-2 text-sm text-amber-900 dark:text-amber-200">
         <li className="flex items-start gap-2">
-          <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
+          <Check size={16} className="mt-0.5 text-amber-700 dark:text-amber-300" aria-hidden />
           <span>{t('lanzamientoBenefit1')}</span>
         </li>
         <li className="flex items-start gap-2">
-          <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
+          <Check size={16} className="mt-0.5 text-amber-700 dark:text-amber-300" aria-hidden />
           <span>{t('lanzamientoBenefit2')}</span>
         </li>
         <li className="flex items-start gap-2">
-          <Check size={16} className="mt-0.5 text-amber-700" aria-hidden />
+          <Check size={16} className="mt-0.5 text-amber-700 dark:text-amber-300" aria-hidden />
           <span>{t('lanzamientoBenefit3')}</span>
         </li>
       </ul>
@@ -1226,7 +1226,7 @@ function LanzamientoCard({
         {activando ? t('lanzamientoActivating') : t('lanzamientoActivate')}
       </button>
 
-      <p className="mt-3 text-center text-[11px] text-amber-700">
+      <p className="mt-3 text-center text-[11px] text-amber-700 dark:text-amber-300">
         {t('lanzamientoFooter')}
         {lanzamiento.cupoRestante != null && lanzamiento.cupoRestante < 1000 && (
           <>{t('lanzamientoSeatsLeft', { n: lanzamiento.cupoRestante })}</>
@@ -1263,18 +1263,18 @@ function OfertaBanner({ oferta }: { oferta: Oferta }) {
   }
 
   return (
-    <div className="rounded-lg border-2 border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 p-4">
+    <div className="rounded-lg border-2 border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 p-4 dark:border-green-800 dark:from-green-950/40 dark:to-emerald-950/30">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="inline-flex items-center rounded-full bg-green-600 px-2.5 py-0.5 text-xs font-bold text-white">
               -{oferta.descuento}%
             </span>
-            <span className="text-sm font-semibold text-green-800">
+            <span className="text-sm font-semibold text-green-800 dark:text-green-300">
               {oferta.texto ?? t('ofertaEspecial')}
             </span>
           </div>
-          <p className="text-xs text-green-700">
+          <p className="text-xs text-green-700 dark:text-green-300">
             {oferta.tipo === 'ANUAL' && t('descuentoPlanAnual')}
             {oferta.tipo === 'MENSUAL' && t('descuentoPlanMensual')}
             {oferta.tipo === 'AMBOS' && t('descuentoTodosPlanes')}
@@ -1282,8 +1282,8 @@ function OfertaBanner({ oferta }: { oferta: Oferta }) {
         </div>
         {restante !== null && restante > 0 && (
           <div className="text-right shrink-0">
-            <div className="text-[10px] uppercase tracking-wider text-green-600 font-medium">{t('terminaEn')}</div>
-            <div className="text-lg font-bold text-green-800 tabular-nums">{fmtCountdown(restante)}</div>
+            <div className="text-[10px] uppercase tracking-wider text-green-600 font-medium dark:text-green-300">{t('terminaEn')}</div>
+            <div className="text-lg font-bold text-green-800 tabular-nums dark:text-green-200">{fmtCountdown(restante)}</div>
           </div>
         )}
       </div>
@@ -1323,27 +1323,27 @@ function PrecioCard({
     (cents / 100).toLocaleString('es-ES', { minimumFractionDigits: 2 });
 
   return (
-    <div className={`rounded-lg border p-4 ${destacado ? 'border-primary/30 bg-white' : 'border-border bg-white'}`}>
-      <div className="text-sm font-semibold text-gray-700 mb-1">{titulo}</div>
+    <div className={`rounded-lg border p-4 ${destacado ? 'border-primary/30 bg-card' : 'border-border bg-card'}`}>
+      <div className="mb-1 text-sm font-semibold text-foreground">{titulo}</div>
       <div className="flex items-baseline gap-2">
         {tieneDescuento ? (
           <>
-            <span className="text-lg text-gray-400 line-through">{fmtPrice(precioCents)} €</span>
+            <span className="text-lg text-muted-foreground/70 line-through">{fmtPrice(precioCents)} €</span>
             <span className="text-2xl font-bold text-green-700">{fmtPrice(precioFinal)} €</span>
           </>
         ) : (
-          <span className={`text-2xl font-bold ${destacado ? 'text-primary' : 'text-gray-700'}`}>
+          <span className={`text-2xl font-bold ${destacado ? 'text-primary' : 'text-foreground'}`}>
             {fmtPrice(precioFinal)} €
           </span>
         )}
-        <span className="text-sm font-normal text-gray-500">{periodo}</span>
+        <span className="text-sm font-normal text-muted-foreground">{periodo}</span>
       </div>
       {tieneDescuento && (
         <span className="mt-1 inline-block rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
           {ahorrasLabel.replace('0', fmtPrice(precioCents - precioFinal))}
         </span>
       )}
-      <p className="mt-1 text-xs text-gray-400">{subtitulo}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{subtitulo}</p>
     </div>
   );
 }

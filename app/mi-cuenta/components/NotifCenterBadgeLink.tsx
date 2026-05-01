@@ -60,7 +60,7 @@ export default function NotifCenterBadgeLink({
     <Link
       href={href}
       onClick={handleClick}
-      className="group relative flex min-h-[178px] flex-col items-center justify-center rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
+      className="group relative flex min-h-[178px] flex-col items-center justify-center rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg dark:from-card dark:via-card dark:to-card"
     >
       {/* Badge */}
       {unread > 0 && (
