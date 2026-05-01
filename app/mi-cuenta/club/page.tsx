@@ -15,6 +15,10 @@ import {
   ChevronRight,
   Mountain,
   Gift,
+  Sparkles,
+  QrCode,
+  Mail,
+  Tag,
 } from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -24,6 +28,7 @@ import { CuentanosCard } from '@/app/_components/club/CuentanosCard';
 import { WalletHeader } from '@/app/_components/club/WalletHeader';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type ClubMe = {
   isMember: boolean;
@@ -155,6 +160,12 @@ export default function ClubPage() {
   // Alta / activar membresía (preparado para cuando CLUB_ALTA_ABIERTO=true)
   const [activandoMembresia, setActivandoMembresia] = useState(false);
   const [activarError, setActivarError] = useState<string | null>(null);
+
+  // Prelanzamiento: captación de interesados
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadSending, setLeadSending] = useState(false);
+  const [leadError, setLeadError] = useState<string | null>(null);
+  const [leadDone, setLeadDone] = useState<null | 'new' | 'already'>(null);
 
   // QR de identidad (5 min)
   const [qrIdentidad, setQrIdentidad] = useState<QrIdentidad | null>(null);
@@ -402,6 +413,32 @@ export default function ClubPage() {
     }
   }
 
+  async function handleAvisame() {
+    const email = leadEmail.trim().toLowerCase();
+    setLeadError(null);
+    if (!EMAIL_RE.test(email)) {
+      setLeadError(t('prelaunchEmailInvalid'));
+      return;
+    }
+    setLeadSending(true);
+    try {
+      const res = await fetch('/api/club/lead-prelanzamiento', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'web', idiomaPreferido: null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message ?? t('prelaunchLeadError'));
+      }
+      setLeadDone(data?.alreadyExists ? 'already' : 'new');
+    } catch (e: any) {
+      setLeadError(e?.message ?? t('prelaunchLeadError'));
+    } finally {
+      setLeadSending(false);
+    }
+  }
+
   if (loading) {
     return (
       <Section spacing="lg" background="default">
@@ -446,35 +483,91 @@ export default function ClubPage() {
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 shadow-sm">
-            <Title size="lg" className="mb-2">{t('comingSoonTitle')}</Title>
-            <p className="mb-6 text-sm text-muted-foreground">{t('joinClubSoon')}</p>
+          <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-8 shadow-sm">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+              <div className="flex-1">
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700">
+                  <Sparkles size={14} />
+                  {t('prelaunchBadge')}
+                </div>
+                <Title size="lg" className="mb-2 text-foreground">
+                  {t('prelaunchTitle')}
+                </Title>
+                <p className="mb-5 max-w-2xl text-sm text-muted-foreground">
+                  {t('prelaunchDesc')}
+                </p>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-sm font-semibold text-foreground">{t('accessRecursosTitle')}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{t('accessRecursosSub')}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-sm font-semibold text-foreground">{t('accessRecursosRuralesTitle')}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{t('accessRecursosRuralesSub')}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-sm font-semibold text-foreground">{t('accessNegociosTitle')}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{t('accessNegociosSub')}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-sm font-semibold text-foreground">{t('accessRecompensasTitle')}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{t('accessRecompensasSub')}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <p className="text-sm font-semibold text-foreground">{t('accessSorteosTitle')}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{t('accessSorteosSub')}</p>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <PrelaunchCard
+                    icon={<QrCode size={18} className="text-amber-700" />}
+                    title={t('prelaunchBenefit1Title')}
+                    desc={t('prelaunchBenefit1Desc')}
+                  />
+                  <PrelaunchCard
+                    icon={<Mountain size={18} className="text-emerald-700" />}
+                    title={t('prelaunchBenefit2Title')}
+                    desc={t('prelaunchBenefit2Desc')}
+                  />
+                  <PrelaunchCard
+                    icon={<Tag size={18} className="text-sky-700" />}
+                    title={t('prelaunchBenefit3Title')}
+                    desc={t('prelaunchBenefit3Desc')}
+                  />
+                  <PrelaunchCard
+                    icon={<Gift size={18} className="text-fuchsia-700" />}
+                    title={t('prelaunchBenefit4Title')}
+                    desc={t('prelaunchBenefit4Desc')}
+                  />
+                  <PrelaunchCard
+                    icon={<Trophy size={18} className="text-violet-700" />}
+                    title={t('prelaunchBenefit5Title')}
+                    desc={t('prelaunchBenefit5Desc')}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
-              {t('comingSoon')}
+            <div className="mt-7 rounded-2xl border border-amber-300/70 bg-white/85 p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Mail size={16} className="text-amber-700" />
+                <p className="text-sm font-semibold text-foreground">
+                  {t('prelaunchNotifyTitle')}
+                </p>
+              </div>
+              {leadDone ? (
+                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {leadDone === 'already'
+                    ? t('prelaunchNotifyAlready')
+                    : t('prelaunchNotifyOk')}
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="email"
+                    value={leadEmail}
+                    onChange={(e) => {
+                      setLeadEmail(e.target.value);
+                      if (leadError) setLeadError(null);
+                    }}
+                    placeholder={t('prelaunchEmailPlaceholder')}
+                    className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAvisame}
+                    disabled={leadSending}
+                    className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                  >
+                    {leadSending ? t('processing') : t('prelaunchNotifyBtn')}
+                  </button>
+                </div>
+              )}
+              {leadError ? (
+                <p className="mt-2 text-sm text-destructive">{leadError}</p>
+              ) : null}
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t('prelaunchNotifyLegal')}
+              </p>
             </div>
           </div>
         </Container>
@@ -832,6 +925,26 @@ export default function ClubPage() {
 }
 
 // ─── Componentes ──────────────────────────────────────────────────────────
+
+function PrelaunchCard({
+  icon,
+  title,
+  desc,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-white/90 p-4 shadow-sm">
+      <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60">
+        {icon}
+      </div>
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
 
 type AccesoTone = 'amber' | 'rose' | 'violet' | 'emerald' | 'sky';
 
