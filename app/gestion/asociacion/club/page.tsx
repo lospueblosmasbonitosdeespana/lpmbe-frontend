@@ -174,6 +174,19 @@ const QUICK_LINKS: QuickLink[] = [
       </svg>
     ),
   },
+  {
+    href: '/gestion/asociacion/club/interesados',
+    title: 'Interesados en Club',
+    description: 'Lista de emails en espera para aviso de apertura',
+    tone: 'violet',
+    icon: (
+      <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M3 5h18v14H3z" />
+        <path d="M3 7l9 6 9-6" />
+        <path d="M8 12h8M8 16h5" />
+      </svg>
+    ),
+  },
 ];
 
 export default async function GestionAsociacionClubPage() {
