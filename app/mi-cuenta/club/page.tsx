@@ -488,11 +488,11 @@ export default function ClubPage() {
 
           <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-6 shadow-sm sm:p-8">
             <div className="mx-auto mb-8 max-w-3xl rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-100/60 to-orange-100/50 p-6 text-center">
-              <div className="mx-auto mb-4 h-44 w-44 overflow-hidden rounded-xl bg-transparent sm:h-52 sm:w-52">
+              <div className="mx-auto mb-4 h-64 w-64 overflow-hidden rounded-xl bg-transparent sm:h-72 sm:w-72">
                 <img
                   src="/club-escudo-monocromo.png"
                   alt={t('prelaunchLogoAlt')}
-                  className="h-full w-full scale-[1.35] object-contain"
+                  className="h-full w-full scale-[2.15] object-contain"
                 />
               </div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/80 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700">
