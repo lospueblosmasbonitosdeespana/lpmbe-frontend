@@ -83,29 +83,59 @@ export default async function MiCuentaPage() {
       description: t('sectionMyClubDesc'),
       items: [links[0], links[7]],
       includeNotifCenter: true,
+      tone: 'amber',
     },
     {
       title: t('sectionMyJourney'),
       description: t('sectionMyJourneyDesc'),
       items: [links[1], links[2]],
       includeNotifCenter: false,
+      tone: 'emerald',
     },
     {
       title: t('sectionSettings'),
       description: t('sectionSettingsDesc'),
       items: [links[3], links[4]],
       includeNotifCenter: false,
+      tone: 'violet',
     },
     {
       title: t('sectionShop'),
       description: t('sectionShopDesc'),
       items: [links[5], links[6]],
       includeNotifCenter: false,
+      tone: 'sky',
     },
   ] as const;
 
   const cardClass =
-    'group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md';
+    'group relative overflow-hidden flex flex-col rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg';
+
+  const sectionToneClass: Record<
+    (typeof sectionedLinks)[number]['tone'],
+    { wrapper: string; chip: string; line: string }
+  > = {
+    amber: {
+      wrapper: 'border-amber-200/70 bg-gradient-to-br from-amber-50/70 to-card',
+      chip: 'bg-amber-100 text-amber-800',
+      line: 'bg-amber-300/70',
+    },
+    emerald: {
+      wrapper: 'border-emerald-200/70 bg-gradient-to-br from-emerald-50/70 to-card',
+      chip: 'bg-emerald-100 text-emerald-800',
+      line: 'bg-emerald-300/70',
+    },
+    violet: {
+      wrapper: 'border-violet-200/70 bg-gradient-to-br from-violet-50/70 to-card',
+      chip: 'bg-violet-100 text-violet-800',
+      line: 'bg-violet-300/70',
+    },
+    sky: {
+      wrapper: 'border-sky-200/70 bg-gradient-to-br from-sky-50/70 to-card',
+      chip: 'bg-sky-100 text-sky-800',
+      line: 'bg-sky-300/70',
+    },
+  };
 
   return (
     <main>
@@ -119,20 +149,26 @@ export default async function MiCuentaPage() {
                 {t('subtitle')}
               </Lead>
 
-              <div className="mb-10 w-full max-w-4xl">
+              <div className="mb-10 w-full max-w-4xl rounded-2xl border border-border/70 bg-card/80 p-3 shadow-sm backdrop-blur-sm">
                 <ThemeSelector />
               </div>
 
               <div className="w-full max-w-5xl space-y-6">
                 {sectionedLinks.map((section) => (
-                  <section key={section.title} className="rounded-2xl border border-border bg-card/60 p-4 sm:p-5">
+                  <section
+                    key={section.title}
+                    className={`rounded-3xl border p-4 sm:p-5 ${sectionToneClass[section.tone].wrapper}`}
+                  >
                     <div className="mb-4 text-left">
-                      <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${sectionToneClass[section.tone].chip}`}
+                      >
                         {section.title}
-                      </h2>
+                      </span>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {section.description}
                       </p>
+                      <div className={`mt-3 h-px w-full ${sectionToneClass[section.tone].line}`} />
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -140,7 +176,9 @@ export default async function MiCuentaPage() {
                         const Icon = item.icon;
                         return (
                           <Link key={item.href} href={item.href} className={cardClass}>
-                            <Icon className="mb-3 h-8 w-8 text-primary" />
+                            <span className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                              <Icon className="h-6 w-6" />
+                            </span>
                             <Caption className="mb-1 font-medium">{item.title}</Caption>
                             <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
                               {item.description}
