@@ -18,6 +18,8 @@ import { LogoutButton } from './components/LogoutButton';
 import ThemeSelector from '@/app/cuenta/ThemeSelector';
 import NotifCenterBadgeLink from './components/NotifCenterBadgeLink';
 
+type SectionTone = 'amber' | 'emerald' | 'violet' | 'sky';
+
 export default async function MiCuentaPage() {
   const t = await getTranslations('myAccount');
 
@@ -106,7 +108,7 @@ export default async function MiCuentaPage() {
     'group relative overflow-hidden flex flex-col rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg';
 
   const sectionToneClass: Record<
-    (typeof sectionedLinks)[number]['tone'],
+    SectionTone,
     { wrapper: string; chip: string; line: string }
   > = {
     amber: {
