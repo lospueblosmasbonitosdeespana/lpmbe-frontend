@@ -65,8 +65,8 @@ export default async function MiCuentaPage() {
     },
     {
       href: '/mi-cuenta/pedidos',
-      title: 'Mis pedidos',
-      description: 'Historial de tus compras',
+      title: t('myOrders'),
+      description: t('myOrdersDesc'),
       icon: ShoppingBag,
     },
     {
@@ -76,6 +76,37 @@ export default async function MiCuentaPage() {
       icon: Users,
     },
   ];
+
+  const sectionedLinks = [
+    {
+      title: t('sectionMyClub'),
+      description: t('sectionMyClubDesc'),
+      items: [links[0], links[7]],
+      includeNotifCenter: true,
+    },
+    {
+      title: t('sectionMyJourney'),
+      description: t('sectionMyJourneyDesc'),
+      items: [links[1], links[2]],
+      includeNotifCenter: false,
+    },
+    {
+      title: t('sectionSettings'),
+      description: t('sectionSettingsDesc'),
+      items: [links[3], links[4]],
+      includeNotifCenter: false,
+    },
+    {
+      title: t('sectionShop'),
+      description: t('sectionShopDesc'),
+      items: [links[5], links[6]],
+      includeNotifCenter: false,
+    },
+  ] as const;
+
+  const cardClass =
+    'group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md';
+
   return (
     <main>
       <Section spacing="none" background="default">
@@ -92,47 +123,41 @@ export default async function MiCuentaPage() {
                 <ThemeSelector />
               </div>
 
-              <div className="grid w-full max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Puntos, Rutas, Pueblos */}
-                {links.slice(0, 3).map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
-                    >
-                      <Icon className="mb-3 h-8 w-8 text-primary" />
-                      <Caption className="mb-1 font-medium">{item.title}</Caption>
-                      <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
-                        {item.description}
+              <div className="w-full max-w-5xl space-y-6">
+                {sectionedLinks.map((section) => (
+                  <section key={section.title} className="rounded-2xl border border-border bg-card/60 p-4 sm:p-5">
+                    <div className="mb-4 text-left">
+                      <h2 className="text-sm font-bold uppercase tracking-wide text-foreground">
+                        {section.title}
+                      </h2>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {section.description}
                       </p>
-                    </Link>
-                  );
-                })}
-                {/* Centro de notificaciones con badge de no leídas */}
-                <NotifCenterBadgeLink
-                  href={notifCenter.href}
-                  title={notifCenter.title}
-                  description={notifCenter.description}
-                />
-                {/* Resto de links */}
-                {links.slice(3).map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="group flex flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
-                    >
-                      <Icon className="mb-3 h-8 w-8 text-primary" />
-                      <Caption className="mb-1 font-medium">{item.title}</Caption>
-                      <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
-                        {item.description}
-                      </p>
-                    </Link>
-                  );
-                })}
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {section.items.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Link key={item.href} href={item.href} className={cardClass}>
+                            <Icon className="mb-3 h-8 w-8 text-primary" />
+                            <Caption className="mb-1 font-medium">{item.title}</Caption>
+                            <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
+                              {item.description}
+                            </p>
+                          </Link>
+                        );
+                      })}
+                      {section.includeNotifCenter && (
+                        <NotifCenterBadgeLink
+                          href={notifCenter.href}
+                          title={notifCenter.title}
+                          description={notifCenter.description}
+                        />
+                      )}
+                    </div>
+                  </section>
+                ))}
               </div>
 
               <LogoutButton />

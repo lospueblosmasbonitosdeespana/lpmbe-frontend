@@ -429,6 +429,59 @@ export default function ClubPage() {
     );
   }
 
+  const clubCerradoParaPublico =
+    !clubMe?.isMember && !clubMe?.inscripcionesAbiertas;
+
+  if (clubCerradoParaPublico) {
+    return (
+      <Section spacing="lg" background="default">
+        <Container>
+          <div className="mb-8 flex items-center justify-between">
+            <Headline as="h1">{t('title')}</Headline>
+            <Link
+              href="/mi-cuenta"
+              className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+            >
+              {tAccount('back')}
+            </Link>
+          </div>
+
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8 shadow-sm">
+            <Title size="lg" className="mb-2">{t('comingSoonTitle')}</Title>
+            <p className="mb-6 text-sm text-muted-foreground">{t('joinClubSoon')}</p>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-foreground">{t('accessRecursosTitle')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('accessRecursosSub')}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-foreground">{t('accessRecursosRuralesTitle')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('accessRecursosRuralesSub')}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-foreground">{t('accessNegociosTitle')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('accessNegociosSub')}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-foreground">{t('accessRecompensasTitle')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('accessRecompensasSub')}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-sm font-semibold text-foreground">{t('accessSorteosTitle')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('accessSorteosSub')}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+              {t('comingSoon')}
+            </div>
+          </div>
+        </Container>
+      </Section>
+    );
+  }
+
   // Última validación para preview
   const ultimaValidacion = validaciones.length > 0 ? validaciones[0] : null;
   

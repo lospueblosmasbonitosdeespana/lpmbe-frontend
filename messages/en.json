@@ -974,7 +974,17 @@
     "breadcrumbResources": "Resources",
     "breadcrumbValidations": "Validations",
     "breadcrumbVisited": "Visited",
-    "breadcrumbOrders": "My orders"
+    "breadcrumbOrders": "My orders",
+    "myOrders": "My orders",
+    "myOrdersDesc": "History of your purchases",
+    "sectionMyClub": "My Club",
+    "sectionMyClubDesc": "Your membership, points and Club notifications",
+    "sectionMyJourney": "My Trip",
+    "sectionMyJourneyDesc": "Routes and villages discovered",
+    "sectionSettings": "Settings",
+    "sectionSettingsDesc": "Profile and preferences",
+    "sectionShop": "Shopping",
+    "sectionShopDesc": "Store addresses and ordering"
   },
   "myProfile": {
     "title": "My Profile",

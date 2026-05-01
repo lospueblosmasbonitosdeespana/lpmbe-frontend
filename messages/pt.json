@@ -974,7 +974,17 @@
     "breadcrumbResources": "Recursos",
     "breadcrumbValidations": "Validações",
     "breadcrumbVisited": "Visitado",
-    "breadcrumbOrders": "As minhas encomendas"
+    "breadcrumbOrders": "As minhas encomendas",
+    "myOrders": "As minhas encomendas",
+    "myOrdersDesc": "Histórico das suas compras",
+    "sectionMyClub": "O meu clube",
+    "sectionMyClubDesc": "A sua inscrição no Clube, pontos e notificações",
+    "sectionMyJourney": "A minha viagem",
+    "sectionMyJourneyDesc": "Rotas e aldeias descobertas",
+    "sectionSettings": "Ajustamentos",
+    "sectionSettingsDesc": "Perfil e preferências",
+    "sectionShop": "Compras",
+    "sectionShopDesc": "Endereços de lojas e encomendas"
   },
   "myProfile": {
     "title": "O meu perfil",

@@ -974,7 +974,17 @@
     "breadcrumbResources": "Recursos",
     "breadcrumbValidations": "Validacions",
     "breadcrumbVisited": "Visitat",
-    "breadcrumbOrders": "Les meves comandes"
+    "breadcrumbOrders": "Les meves comandes",
+    "myOrders": "Les meves ordres",
+    "myOrdersDesc": "El teu historial de compres",
+    "sectionMyClub": "El meu club",
+    "sectionMyClubDesc": "La teva subscripció al Club, els punts i les notificacions",
+    "sectionMyJourney": "El meu viatge",
+    "sectionMyJourneyDesc": "Rutes de senderisme i joies amagades",
+    "sectionSettings": "Configuració",
+    "sectionSettingsDesc": "Perfil i preferències",
+    "sectionShop": "Compra",
+    "sectionShopDesc": "Adreces i comandes de la botiga"
   },
   "myProfile": {
     "title": "El meu perfil",
