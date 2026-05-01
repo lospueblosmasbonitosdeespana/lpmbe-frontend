@@ -454,7 +454,7 @@
       "noResultsNearby": "No s'han trobat cap poble ni recurs a prop d'aquesta ruta. Prova d'augmentar la distància màxima.",
       "estimatedTime": "Temps estimat: {time}",
       "shareText": "🗺️ La meva ruta des de {origin} fins a {dest}{time}{dist} Pobles i recursos pel camí: {stops} Vegeu-ho a Google Maps: {url}",
-      "defaultRouteName": "Ruta des de {origin} fins a {dest}",
+      "defaultRouteName": "La meva ruta {origin} — {dest}",
       "saveRoutePrompt": "Nom per a aquesta ruta:",
       "saveError": "Error en desar el camí. Torni a provar."
     },
@@ -478,7 +478,8 @@
       "confirmDelete": "Vols eliminar la ruta \"{name}\"?",
       "errorLoading": "Error en carregar les rutes",
       "errorUpdating": "Error d'actualització",
-      "errorDeleting": "Error en esborrar"
+      "errorDeleting": "Error en esborrar",
+      "defaultRouteName": "La meva ruta {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Pla",

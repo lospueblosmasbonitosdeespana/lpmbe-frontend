@@ -14,6 +14,15 @@ interface RutaGuardada {
   createdAt: string;
 }
 
+const AUTO_ROUTE_PREFIX_RE =
+  /^(mi ruta|ruta de|my route|route from|itinéraire de|route von|rota de|percorso da|ruta des de)\b/i;
+
+function firstPlaceLabel(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const first = value.split(",")[0]?.trim();
+  return first || null;
+}
+
 export default function MisRutasPage() {
   const t = useTranslations("planifica.misRutas");
   const [rutas, setRutas] = useState<RutaGuardada[]>([]);
@@ -98,6 +107,21 @@ export default function MisRutasPage() {
   const paradasCount = (paradas: unknown) =>
     Array.isArray(paradas) ? paradas.length : 0;
 
+  const getDisplayRouteName = (ruta: RutaGuardada): string => {
+    const currentName = (ruta.nombre || "").trim();
+    if (!currentName) return t("defaultRouteName").replace("{origin}", t("origin")).replace("{dest}", t("destination"));
+
+    // Mantener nombres personalizados del usuario tal cual.
+    if (!AUTO_ROUTE_PREFIX_RE.test(currentName)) return currentName;
+
+    // Legacy/autogenerado: renderizar con plantilla del idioma activo.
+    const origin = firstPlaceLabel(ruta.originLabel) ?? t("origin");
+    const dest = firstPlaceLabel(ruta.destLabel) ?? t("destination");
+    return t("defaultRouteName")
+      .replace("{origin}", origin)
+      .replace("{dest}", dest);
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen bg-background pb-20">
@@ -159,7 +183,9 @@ export default function MisRutasPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {rutas.map((r) => (
+            {rutas.map((r) => {
+              const displayName = getDisplayRouteName(r);
+              return (
               <div
                 key={r.id}
                 className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:bg-neutral-800 dark:border-neutral-700"
@@ -198,7 +224,7 @@ export default function MisRutasPage() {
                       </button>
                     </form>
                   ) : (
-                    <h3 className="font-semibold text-foreground">{r.nombre}</h3>
+                    <h3 className="font-semibold text-foreground">{displayName}</h3>
                   )}
                   <p className="mt-0.5 truncate text-sm text-muted-foreground">
                     {r.originLabel ?? t("origin")} → {r.destLabel ?? t("destination")}
@@ -228,7 +254,7 @@ export default function MisRutasPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm(t("confirmDelete", { name: r.nombre }))) {
+                      if (window.confirm(t("confirmDelete", { name: displayName }))) {
                         deleteRuta(r.id);
                       }
                     }}
@@ -239,7 +265,7 @@ export default function MisRutasPage() {
                   </button>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
       </section>

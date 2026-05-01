@@ -454,7 +454,7 @@
       "noResultsNearby": "Não foram encontradas aldeias ou recursos perto desta rota. Tenta aumentar a distância máxima.",
       "estimatedTime": "Tempo estimado: {time}",
       "shareText": "🗺️ A minha rota de {origin} para {dest}{time}{dist}\n\nAldeias e recursos ao longo do caminho:\n{stops}\n\nVer no Google Maps: {url}",
-      "defaultRouteName": "Rota de {origin} para {dest}",
+      "defaultRouteName": "A minha rota {origin} — {dest}",
       "saveRoutePrompt": "Nome para esta rota:",
       "saveError": "Erro ao guardar a rota. Por favor, tente novamente."
     },
@@ -478,7 +478,8 @@
       "confirmDelete": "Eliminar a rota \"{name}\"?",
       "errorLoading": "Erro ao carregar rotas",
       "errorUpdating": "Erro na atualização",
-      "errorDeleting": "Erro ao apagar"
+      "errorDeleting": "Erro ao apagar",
+      "defaultRouteName": "A minha rota {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Planeia",

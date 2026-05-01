@@ -454,7 +454,7 @@
       "noResultsNearby": "Es wurden keine Dörfer oder Ressourcen in der Nähe dieser Route gefunden. Versuchen Sie, die maximale Entfernung zu erhöhen.",
       "estimatedTime": "Geschätzte Zeit: {time}",
       "shareText": "🗺️ Meine Route von {origin} nach {dest}{time}{dist}\n\nDörfer und Ressourcen entlang des Weges:\n{stops}\n\nAnsicht auf Google Maps: {url}",
-      "defaultRouteName": "Route von {origin} nach {dest}",
+      "defaultRouteName": "Meine Route {origin} — {dest}",
       "saveRoutePrompt": "Name für diese Route:",
       "saveError": "Fehler beim Speichern der Route. Bitte versuchen Sie es erneut."
     },
@@ -478,7 +478,8 @@
       "confirmDelete": "Route „{name}“ löschen?",
       "errorLoading": "Fehler beim Laden von Routen",
       "errorUpdating": "Fehler beim Aktualisieren",
-      "errorDeleting": "Fehler beim Löschen"
+      "errorDeleting": "Fehler beim Löschen",
+      "defaultRouteName": "Meine Route {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Planen",

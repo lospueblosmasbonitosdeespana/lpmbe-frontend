@@ -454,7 +454,7 @@
       "noResultsNearby": "Aucun village ou ressource n'a été trouvé à proximité de cet itinéraire. Essayez d'augmenter la distance maximale.",
       "estimatedTime": "Durée estimée : {time}",
       "shareText": "🗺️ Mon itinéraire de {origin} à {dest}{time}{dist}\n\nVillages et ressources sur le chemin :\n{stops}\n\nVoir sur Google Maps : {url}",
-      "defaultRouteName": "Itinéraire de {origin} à {dest}",
+      "defaultRouteName": "Mon itinéraire {origin} — {dest}",
       "saveRoutePrompt": "Nom de cet itinéraire :",
       "saveError": "Erreur d'enregistrement de l'itinéraire. Veuillez réessayer."
     },
@@ -478,7 +478,8 @@
       "confirmDelete": "Supprimer l’itinéraire « {name} » ?",
       "errorLoading": "Erreur de chargement des itinéraires",
       "errorUpdating": "Erreur de mise à jour",
-      "errorDeleting": "Erreur lors de la suppression"
+      "errorDeleting": "Erreur lors de la suppression",
+      "defaultRouteName": "Mon itinéraire {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Planifier",

@@ -454,7 +454,7 @@
       "noResultsNearby": "Non sono stati trovati villaggi o risorse vicino a questo percorso. Provare ad aumentare la distanza massima.",
       "estimatedTime": "Tempo stimato: {time}",
       "shareText": "🗺️ La mia rotta da {origin} a {dest}{time}{dist}\n\nVillaggi e risorse lungo il percorso:\n{stops}\n\nVisualizza su Google Maps: {url}",
-      "defaultRouteName": "Percorso da {origin} a {dest}",
+      "defaultRouteName": "Il mio percorso {origin} — {dest}",
       "saveRoutePrompt": "Nome di questo percorso:",
       "saveError": "Errore nel salvataggio del percorso. Riprovare."
     },
@@ -478,7 +478,8 @@
       "confirmDelete": "Eliminare il percorso \"{name}\"?",
       "errorLoading": "Errore nel caricamento dei percorsi",
       "errorUpdating": "Errore nell'aggiornamento",
-      "errorDeleting": "Errore durante l'eliminazione"
+      "errorDeleting": "Errore durante l'eliminazione",
+      "defaultRouteName": "Il mio percorso {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Pianifica",

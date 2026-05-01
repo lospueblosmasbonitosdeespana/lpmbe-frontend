@@ -494,7 +494,7 @@
       "noResultsNearby": "No se encontraron pueblos ni recursos cerca de esta ruta. Prueba a aumentar la distancia máxima.",
       "estimatedTime": "Tiempo estimado: {time}",
       "shareText": "🗺️ Mi ruta de {origin} a {dest}{time}{dist}\n\nPueblos y recursos por el camino:\n{stops}\n\nVer en Google Maps: {url}",
-      "defaultRouteName": "Ruta de {origin} a {dest}",
+      "defaultRouteName": "Mi ruta {origin} — {dest}",
       "saveRoutePrompt": "Nombre para esta ruta:",
       "saveError": "Error al guardar la ruta. Inténtalo de nuevo."
     },
@@ -518,7 +518,8 @@
       "confirmDelete": "¿Eliminar la ruta \"{name}\"?",
       "errorLoading": "Error al cargar las rutas",
       "errorUpdating": "Error al actualizar",
-      "errorDeleting": "Error al eliminar"
+      "errorDeleting": "Error al eliminar",
+      "defaultRouteName": "Mi ruta {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Planifica",

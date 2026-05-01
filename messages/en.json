@@ -454,7 +454,7 @@
       "noResultsNearby": "No villages or resources were found near this route. Try increasing the maximum distance.",
       "estimatedTime": "Estimated time: {time}",
       "shareText": "🗺️ My route from {origin} to {dest}{time}{dist}\n\nVillages and resources along the way:\n{stops}\n\nView on Google Maps: {url}",
-      "defaultRouteName": "Route from {origin} to {dest}",
+      "defaultRouteName": "My route {origin} — {dest}",
       "saveRoutePrompt": "Name for this route:",
       "saveError": "Error saving the route. Please try again."
     },
@@ -478,7 +478,8 @@
       "confirmDelete": "Delete the route \"{name}\"?",
       "errorLoading": "Error loading routes",
       "errorUpdating": "Error while updating",
-      "errorDeleting": "Error when deleting"
+      "errorDeleting": "Error when deleting",
+      "defaultRouteName": "My route {origin} — {dest}"
     },
     "hub": {
       "breadcrumb": "Plan",
