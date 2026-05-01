@@ -506,8 +506,9 @@ export function GamificacionAdminEditor({
                               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
                             />
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              Días mínimos entre dos visitas puntuadas del mismo socio
-                              al mismo recurso. Ej: 1 = diario · 30 = mensual · 365 = anual
+                              Días mínimos entre dos visitas que puntúan del mismo socio
+                              al mismo recurso. Ej: 30 = 1 vez/mes · 365 = 1 vez/año.
+                              Suficiente para RRTT típicos.
                             </p>
                           </div>
                           <div>
@@ -518,7 +519,7 @@ export function GamificacionAdminEditor({
                               type="number"
                               min={0}
                               value={r.maxValidacionesPeriodo ?? ''}
-                              placeholder="Sin límite"
+                              placeholder="Vacío = no aplica"
                               disabled={readOnly}
                               onChange={(e) =>
                                 setReglaField(
@@ -532,8 +533,10 @@ export function GamificacionAdminEditor({
                               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
                             />
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              Número máximo de veces que puede ganar puntos dentro
-                              del periodo definido. Vacío = sin tope adicional.
+                              Solo útil cuando la espera es corta (1 día) pero quieres
+                              un tope mensual. Ej: negocios con cooldown=1 y máx=3
+                              → el socio puede entrar varios días, pero solo puntúa 3
+                              veces/mes. Para RRTT con cooldown=30+ déjalo vacío.
                             </p>
                           </div>
                           <div>
@@ -544,7 +547,7 @@ export function GamificacionAdminEditor({
                               type="number"
                               min={0}
                               value={r.periodoDias ?? ''}
-                              placeholder="—"
+                              placeholder="Vacío = no aplica"
                               disabled={readOnly}
                               onChange={(e) =>
                                 setReglaField(
@@ -558,9 +561,9 @@ export function GamificacionAdminEditor({
                               className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-mono disabled:bg-muted/40 disabled:text-muted-foreground"
                             />
                             <p className="mt-1 text-[11px] text-muted-foreground">
-                              Junto al campo anterior: si máx=1 y ventana=30, solo
-                              puede ganar puntos 1 vez cada 30 días (aunque visite
-                              más veces). Típico: 30 días.
+                              Solo junto al campo anterior. Si máx=3 y ventana=30 →
+                              máximo 3 veces en cualquier periodo de 30 días. Si la
+                              espera ya cubre la frecuencia, déjalo vacío.
                             </p>
                           </div>
                         </div>
