@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
-import { Display, Lead, Caption } from '@/app/components/ui/typography';
+import { Display, Lead } from '@/app/components/ui/typography';
 import {
   Trophy,
   MapPin,
@@ -207,8 +207,10 @@ export default async function MiCuentaPage() {
                             <span className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                               <Icon className="h-6 w-6" />
                             </span>
-                            <Caption className="mb-1 font-medium">{item.title}</Caption>
-                            <p className="text-center text-sm text-muted-foreground group-hover:text-foreground">
+                            <p className="mb-1 text-center text-[15px] font-bold text-foreground">
+                              {item.title}
+                            </p>
+                            <p className="text-center text-[14px] text-muted-foreground group-hover:text-foreground">
                               {item.description}
                             </p>
                           </Link>
