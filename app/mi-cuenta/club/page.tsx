@@ -19,6 +19,9 @@ import {
   QrCode,
   Mail,
   Tag,
+  Lock,
+  MapPin,
+  Star,
 } from 'lucide-react';
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
@@ -483,57 +486,116 @@ export default function ClubPage() {
             </Link>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-8 shadow-sm">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-              <div className="flex-1">
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700">
-                  <Sparkles size={14} />
-                  {t('prelaunchBadge')}
-                </div>
-                <Title size="lg" className="mb-2 text-foreground">
-                  {t('prelaunchTitle')}
-                </Title>
-                <p className="mb-5 max-w-2xl text-sm text-muted-foreground">
-                  {t('prelaunchDesc')}
-                </p>
+          <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-6 shadow-sm sm:p-8">
+            <div className="mx-auto mb-8 max-w-3xl rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-100/60 to-orange-100/50 p-6 text-center">
+              <div className="mx-auto mb-3 h-28 w-28 overflow-hidden rounded-md bg-black shadow-sm sm:h-32 sm:w-32">
+                <img
+                  src="/club-escudo-monocromo.png"
+                  alt={t('prelaunchLogoAlt')}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/80 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700">
+                <Sparkles size={14} />
+                {t('prelaunchBadge')}
+              </div>
+              <Title size="lg" className="mb-2 text-foreground">
+                {t('prelaunchHeroTitle')}
+              </Title>
+              <p className="mx-auto mb-2 max-w-xl text-base font-semibold text-foreground/90">
+                {t('prelaunchHeroSubtitle')}
+              </p>
+              <p className="mx-auto max-w-xl text-sm text-muted-foreground">
+                {t('prelaunchHeroDesc')}
+              </p>
+            </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  <PrelaunchCard
-                    icon={<QrCode size={18} className="text-amber-700" />}
-                    title={t('prelaunchBenefit1Title')}
-                    desc={t('prelaunchBenefit1Desc')}
-                  />
-                  <PrelaunchCard
-                    icon={<Mountain size={18} className="text-emerald-700" />}
-                    title={t('prelaunchBenefit2Title')}
-                    desc={t('prelaunchBenefit2Desc')}
-                  />
-                  <PrelaunchCard
-                    icon={<Tag size={18} className="text-sky-700" />}
-                    title={t('prelaunchBenefit3Title')}
-                    desc={t('prelaunchBenefit3Desc')}
-                  />
-                  <PrelaunchCard
-                    icon={<Gift size={18} className="text-fuchsia-700" />}
-                    title={t('prelaunchBenefit4Title')}
-                    desc={t('prelaunchBenefit4Desc')}
-                  />
-                  <PrelaunchCard
-                    icon={<Trophy size={18} className="text-violet-700" />}
-                    title={t('prelaunchBenefit5Title')}
-                    desc={t('prelaunchBenefit5Desc')}
-                  />
-                </div>
+            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              {t('prelaunchBenefitsEyebrow')}
+            </p>
+            <Title size="lg" className="mb-4 text-foreground">
+              {t('prelaunchBenefitsTitle')}
+            </Title>
+
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <PrelaunchCard
+                icon={<Star size={18} className="text-emerald-700" />}
+                title={t('prelaunchBenefit1Title')}
+                desc={t('prelaunchBenefit1Desc')}
+              />
+              <PrelaunchCard
+                icon={<Tag size={18} className="text-sky-700" />}
+                title={t('prelaunchBenefit2Title')}
+                desc={t('prelaunchBenefit2Desc')}
+              />
+              <PrelaunchCard
+                icon={<Gift size={18} className="text-amber-700" />}
+                title={t('prelaunchBenefit3Title')}
+                desc={t('prelaunchBenefit3Desc')}
+              />
+              <PrelaunchCard
+                icon={<PartyPopper size={18} className="text-fuchsia-700" />}
+                title={t('prelaunchBenefit4Title')}
+                desc={t('prelaunchBenefit4Desc')}
+              />
+              <PrelaunchCard
+                icon={<Gift size={18} className="text-yellow-700" />}
+                title={t('prelaunchBenefit5Title')}
+                desc={t('prelaunchBenefit5Desc')}
+              />
+              <PrelaunchCard
+                icon={<Lock size={18} className="text-slate-700" />}
+                title={t('prelaunchBenefit6Title')}
+                desc={t('prelaunchBenefit6Desc')}
+              />
+              <PrelaunchCard
+                icon={<Mail size={18} className="text-violet-700" />}
+                title={t('prelaunchBenefit7Title')}
+                desc={t('prelaunchBenefit7Desc')}
+              />
+              <PrelaunchCard
+                icon={<QrCode size={18} className="text-amber-700" />}
+                title={t('prelaunchBenefit8Title')}
+                desc={t('prelaunchBenefit8Desc')}
+              />
+            </div>
+
+            <div className="mt-7">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                {t('prelaunchStepsEyebrow')}
+              </p>
+              <Title size="lg" className="mb-4 text-foreground">
+                {t('prelaunchStepsTitle')}
+              </Title>
+              <div className="space-y-3">
+                <StepCard
+                  num="1"
+                  title={t('prelaunchStep1Title')}
+                  desc={t('prelaunchStep1Desc')}
+                />
+                <StepCard
+                  num="2"
+                  title={t('prelaunchStep2Title')}
+                  desc={t('prelaunchStep2Desc')}
+                />
+                <StepCard
+                  num="3"
+                  title={t('prelaunchStep3Title')}
+                  desc={t('prelaunchStep3Desc')}
+                />
               </div>
             </div>
 
-            <div className="mt-7 rounded-2xl border border-amber-300/70 bg-white/85 p-5">
+            <div className="mt-7 rounded-2xl border border-amber-400/80 bg-white/90 p-5">
               <div className="mb-3 flex items-center gap-2">
-                <Mail size={16} className="text-amber-700" />
+                <MapPin size={16} className="text-amber-700" />
                 <p className="text-sm font-semibold text-foreground">
                   {t('prelaunchNotifyTitle')}
                 </p>
               </div>
+              <p className="mb-3 text-sm text-muted-foreground">
+                {t('prelaunchNotifyDesc')}
+              </p>
               {leadDone ? (
                 <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
                   {leadDone === 'already'
@@ -568,6 +630,16 @@ export default function ClubPage() {
               <p className="mt-2 text-xs text-muted-foreground">
                 {t('prelaunchNotifyLegal')}
               </p>
+            </div>
+
+            <div className="mt-8">
+              <Title size="lg" className="mb-3 text-foreground">
+                {t('prelaunchFaqTitle')}
+              </Title>
+              <FaqItem q={t('prelaunchFaq1Q')} a={t('prelaunchFaq1A')} />
+              <FaqItem q={t('prelaunchFaq2Q')} a={t('prelaunchFaq2A')} />
+              <FaqItem q={t('prelaunchFaq3Q')} a={t('prelaunchFaq3A')} />
+              <FaqItem q={t('prelaunchFaq4Q')} a={t('prelaunchFaq4A')} />
             </div>
           </div>
         </Container>
@@ -942,6 +1014,29 @@ function PrelaunchCard({
       </div>
       <p className="text-sm font-semibold text-foreground">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
+
+function StepCard({ num, title, desc }: { num: string; title: string; desc: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-border bg-white/90 p-4 shadow-sm">
+      <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+        {num}
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function FaqItem({ q, a }: { q: string; a: string }) {
+  return (
+    <div className="border-b border-border py-3">
+      <p className="text-lg font-semibold text-foreground">{q}</p>
+      <p className="mt-1 text-base text-muted-foreground">{a}</p>
     </div>
   );
 }
