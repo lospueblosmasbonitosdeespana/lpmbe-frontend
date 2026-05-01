@@ -156,13 +156,13 @@ export default async function MiCuentaPage() {
                 >
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl" />
                   <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-                    <div className="shrink-0 rounded-2xl border border-amber-200 bg-transparent p-2 shadow-sm">
+                    <div className="h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-1 shadow-sm">
                       <Image
                         src="/club-escudo-monocromo.png"
                         alt={links[7].title}
-                        width={120}
-                        height={120}
-                        className="h-[120px] w-[120px] object-contain"
+                        width={124}
+                        height={124}
+                        className="h-full w-full scale-110 object-contain"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
