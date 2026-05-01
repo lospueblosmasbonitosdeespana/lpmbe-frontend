@@ -36,6 +36,14 @@ export default function ClubInteresadosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [idiomaEnvio, setIdiomaEnvio] = useState('all');
+  const [subject, setSubject] = useState('Ya puedes unirte al Club de Amigos');
+  const [mensaje, setMensaje] = useState(
+    '¡Hola!\n\nYa hemos abierto el Club de Amigos de Los Pueblos Más Bonitos de España.\n\nPuedes entrar ahora y activar tu membresía para acceder a premios, cupones, sorteos y ventajas exclusivas.\n\n👉 https://lospueblosmasbonitosdeespana.org/mi-cuenta/club',
+  );
+  const [sending, setSending] = useState(false);
+  const [sendInfo, setSendInfo] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +83,70 @@ export default function ClubInteresadosPage() {
     );
   }, [data?.items, search]);
 
+  const idiomasDisponibles = useMemo(() => {
+    const items = data?.items ?? [];
+    const set = new Set<string>();
+    for (const x of items) {
+      const lang = (x.idiomaPreferido ?? '').trim().toLowerCase();
+      if (lang) set.add(lang);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  }, [data?.items]);
+
+  const totalObjetivo = useMemo(() => {
+    const items = data?.items ?? [];
+    if (idiomaEnvio === 'all') return items.length;
+    return items.filter(
+      (x) => (x.idiomaPreferido ?? '').trim().toLowerCase() === idiomaEnvio,
+    ).length;
+  }, [data?.items, idiomaEnvio]);
+
+  async function enviarAviso() {
+    setSendError(null);
+    setSendInfo(null);
+    if (!subject.trim()) {
+      setSendError('El asunto es obligatorio');
+      return;
+    }
+    if (!mensaje.trim()) {
+      setSendError('El mensaje es obligatorio');
+      return;
+    }
+    if (totalObjetivo <= 0) {
+      setSendError('No hay interesados para el idioma seleccionado');
+      return;
+    }
+    setSending(true);
+    try {
+      const html = mensaje
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => `<p>${line}</p>`)
+        .join('');
+      const res = await fetch('/api/club/admin/lead-prelanzamiento/notificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idiomaPreferido: idiomaEnvio === 'all' ? null : idiomaEnvio,
+          subject: subject.trim(),
+          html,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.message ?? `Error ${res.status}`);
+      }
+      setSendInfo(
+        `Aviso enviado. Total objetivo: ${json?.total ?? totalObjetivo}. Enviados: ${json?.sent ?? 0}.`,
+      );
+    } catch (e: any) {
+      setSendError(e?.message ?? 'Error enviando aviso');
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
       <Link
@@ -105,6 +177,75 @@ export default function ClubInteresadosPage() {
           placeholder="Buscar por email, idioma o source..."
           className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
         />
+      </div>
+
+      <div className="mb-6 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <h2 className="text-base font-semibold text-foreground">Avisar cuando se abra el Club</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Envío masivo por idioma a los interesados de la lista de espera.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="text-sm">
+            <span className="mb-1 block text-muted-foreground">Idioma</span>
+            <select
+              value={idiomaEnvio}
+              onChange={(e) => setIdiomaEnvio(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-primary/40"
+            >
+              <option value="all">Todos ({data?.total ?? 0})</option>
+              {idiomasDisponibles.map((lang) => (
+                <option key={lang} value={lang}>
+                  {lang.toUpperCase()} (
+                  {(data?.items ?? []).filter(
+                    (x) => (x.idiomaPreferido ?? '').trim().toLowerCase() === lang,
+                  ).length}
+                  )
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="text-sm">
+            <span className="mb-1 block text-muted-foreground">Asunto</span>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </label>
+        </div>
+
+        <label className="mt-3 block text-sm">
+          <span className="mb-1 block text-muted-foreground">Mensaje</span>
+          <textarea
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            rows={8}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-primary/40"
+          />
+        </label>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            Destinatarios objetivo: <strong>{totalObjetivo}</strong>
+          </p>
+          <button
+            type="button"
+            onClick={enviarAviso}
+            disabled={sending || totalObjetivo <= 0}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {sending ? 'Enviando...' : 'Enviar aviso'}
+          </button>
+        </div>
+        {sendInfo ? (
+          <p className="mt-2 text-sm text-emerald-700">{sendInfo}</p>
+        ) : null}
+        {sendError ? (
+          <p className="mt-2 text-sm text-red-700">{sendError}</p>
+        ) : null}
       </div>
 
       {loading ? (
