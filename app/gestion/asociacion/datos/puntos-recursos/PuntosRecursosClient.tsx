@@ -75,6 +75,25 @@ function isNatural(r: Recurso) {
   return r.kind === 'RECURSO' && (r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS');
 }
 
+// Predicados centralizados — usados por filtro Y conteo (deben ser idénticos
+// para que las pestañas y el listado coincidan).
+const MATCHERS: Record<ScopeFilter, (r: Recurso) => boolean> = {
+  todos: () => true,
+  PUEBLO_QR: (r) =>
+    r.kind === 'RECURSO' && r.scope === 'PUEBLO' && !isNatural(r),
+  PUEBLO_NAT: (r) =>
+    r.kind === 'RECURSO' && r.scope === 'PUEBLO' && isNatural(r),
+  ASOC_QR: (r) =>
+    r.kind === 'RECURSO' && r.scope === 'ASOCIACION' && !isNatural(r),
+  ASOC_NAT: (r) =>
+    r.kind === 'RECURSO' && r.scope === 'ASOCIACION' && isNatural(r),
+  NEGOCIO: (r) => r.kind === 'RECURSO' && r.scope === 'NEGOCIO',
+  POI: (r) => r.kind === 'POI',
+  MULTIEXP: (r) => r.kind === 'MULTIEXP',
+  MULTIEXP_PARADA: (r) => r.kind === 'MULTIEXP_PARADA',
+  EVENTO: (r) => r.kind === 'EVENTO',
+};
+
 // ─── Badge de validación ────────────────────────────────────────────────────
 const PLAN_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   FREE:        { bg: 'bg-emerald-100', text: 'text-emerald-800', label: 'Negocio Free' },
@@ -235,77 +254,30 @@ export default function PuntosRecursosClient() {
 
   const filtered = useMemo(() => {
     if (!data) return [];
-    let items = data.items;
-
-    switch (scopeFilter) {
-      case 'PUEBLO_QR':
-        items = items.filter((r) => r.scope === 'PUEBLO' && !isNatural(r));
-        break;
-      case 'PUEBLO_NAT':
-        items = items.filter((r) => r.scope === 'PUEBLO' && isNatural(r));
-        break;
-      case 'ASOC_QR':
-        items = items.filter(
-          (r) => r.scope === 'ASOCIACION' && !isNatural(r),
-        );
-        break;
-      case 'ASOC_NAT':
-        items = items.filter(
-          (r) => r.scope === 'ASOCIACION' && isNatural(r),
-        );
-        break;
-      case 'NEGOCIO':
-        items = items.filter((r) => r.scope === 'NEGOCIO');
-        break;
-      case 'POI':
-        items = items.filter((r) => r.kind === 'POI');
-        break;
-      case 'MULTIEXP':
-        items = items.filter((r) => r.kind === 'MULTIEXP');
-        break;
-      case 'MULTIEXP_PARADA':
-        items = items.filter((r) => r.kind === 'MULTIEXP_PARADA');
-        break;
-      case 'EVENTO':
-        items = items.filter((r) => r.kind === 'EVENTO');
-        break;
-      default:
-        break;
-    }
+    const matcher = MATCHERS[scopeFilter] ?? MATCHERS.todos;
+    let items = data.items.filter(matcher);
 
     const q = search.toLowerCase().trim();
     if (q) {
       items = items.filter(
         (r) =>
-          r.nombre.toLowerCase().includes(q) ||
-          r.pueblo?.nombre.toLowerCase().includes(q) ||
-          r.tipo.toLowerCase().includes(q),
+          (r.nombre ?? '').toLowerCase().includes(q) ||
+          (r.pueblo?.nombre ?? '').toLowerCase().includes(q) ||
+          (r.tipo ?? '').toLowerCase().includes(q),
       );
     }
     return items;
   }, [data, search, scopeFilter]);
 
-  // Conteos para los tabs
+  // Conteos para los tabs (mismos predicados que el filtro)
   const counts = useMemo(() => {
     if (!data) return {} as Record<ScopeFilter, number>;
     const all = data.items;
-    return {
-      todos: all.length,
-      PUEBLO_QR: all.filter((r) => r.scope === 'PUEBLO' && !isNatural(r))
-        .length,
-      PUEBLO_NAT: all.filter((r) => r.scope === 'PUEBLO' && isNatural(r))
-        .length,
-      ASOC_QR: all.filter((r) => r.scope === 'ASOCIACION' && !isNatural(r))
-        .length,
-      ASOC_NAT: all.filter(
-        (r) => r.scope === 'ASOCIACION' && isNatural(r),
-      ).length,
-      NEGOCIO: all.filter((r) => r.scope === 'NEGOCIO').length,
-      POI: all.filter((r) => r.kind === 'POI').length,
-      MULTIEXP: all.filter((r) => r.kind === 'MULTIEXP').length,
-      MULTIEXP_PARADA: all.filter((r) => r.kind === 'MULTIEXP_PARADA').length,
-      EVENTO: all.filter((r) => r.kind === 'EVENTO').length,
-    } as Record<ScopeFilter, number>;
+    const result = {} as Record<ScopeFilter, number>;
+    (Object.keys(MATCHERS) as ScopeFilter[]).forEach((key) => {
+      result[key] = all.filter(MATCHERS[key]).length;
+    });
+    return result;
   }, [data]);
 
   const agrupados = useMemo(() => {
@@ -486,7 +458,7 @@ export default function PuntosRecursosClient() {
 
       const rows: React.ReactNode[] = [
         <tr
-          key={r.id}
+          key={itemKey(r)}
           className={`border-b border-border transition-colors ${
             isEditing
               ? 'bg-blue-50/60 dark:bg-blue-950/30'
@@ -602,11 +574,29 @@ export default function PuntosRecursosClient() {
           {/* Acción */}
           <td className="px-3 py-2.5 text-center">
             <button
-              onClick={() => (isEditing ? cancelEdit() : startEdit(r))}
-              className={`rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
+              type="button"
+              onClick={(e) => {
+                if (isEditing) {
+                  cancelEdit();
+                  return;
+                }
+                startEdit(r);
+                const btn = e.currentTarget;
+                requestAnimationFrame(() => {
+                  btn
+                    ?.closest('tr')
+                    ?.nextElementSibling?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'center',
+                    });
+                });
+              }}
+              className={`inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${
                 isEditing
-                  ? 'border-blue-400 bg-blue-50 text-blue-700'
-                  : 'border-border bg-card text-muted-foreground hover:border-blue-400 hover:text-blue-600'
+                  ? 'border-blue-500 bg-blue-100 text-blue-800'
+                  : tieneOverride
+                  ? 'border-amber-400 bg-amber-50 text-amber-800 hover:bg-amber-100'
+                  : 'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100'
               }`}
             >
               {isEditing ? 'Cerrar' : tieneOverride ? 'Editar' : 'Personalizar'}
@@ -756,36 +746,33 @@ export default function PuntosRecursosClient() {
     }
 
     if (agrupados) {
-      return agrupados.map((grupo) => {
+      return agrupados.flatMap((grupo) => {
         const collapsed = collapsedPueblos.has(grupo.nombre);
-        return (
-          <>
-            {/* Cabecera de pueblo */}
-            <tr key={`grupo-${grupo.nombre}`} className="bg-muted/60">
-              <td
-                colSpan={5}
-                className="cursor-pointer px-3 py-2 select-none"
-                onClick={() => togglePueblo(grupo.nombre)}
-              >
-                <div className="flex items-center gap-2">
-                  {collapsed ? (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <span className="text-sm font-semibold text-foreground">
-                    {grupo.nombre}
-                  </span>
-                  <span className="rounded-full bg-border px-2 py-0.5 text-[11px] text-muted-foreground">
-                    {grupo.items.length}{' '}
-                    {grupo.items.length === 1 ? 'recurso' : 'recursos'}
-                  </span>
-                </div>
-              </td>
-            </tr>
-            {!collapsed && buildRows(grupo.items)}
-          </>
+        const headRow = (
+          <tr key={`grupo-${grupo.nombre}`} className="bg-muted/60">
+            <td
+              colSpan={5}
+              className="cursor-pointer px-3 py-2 select-none"
+              onClick={() => togglePueblo(grupo.nombre)}
+            >
+              <div className="flex items-center gap-2">
+                {collapsed ? (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="text-sm font-semibold text-foreground">
+                  {grupo.nombre}
+                </span>
+                <span className="rounded-full bg-border px-2 py-0.5 text-[11px] text-muted-foreground">
+                  {grupo.items.length}{' '}
+                  {grupo.items.length === 1 ? 'recurso' : 'recursos'}
+                </span>
+              </div>
+            </td>
+          </tr>
         );
+        return collapsed ? [headRow] : [headRow, ...buildRows(grupo.items)];
       });
     }
 
