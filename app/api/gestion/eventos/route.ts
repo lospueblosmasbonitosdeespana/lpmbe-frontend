@@ -75,6 +75,22 @@ export async function POST(req: Request) {
   const imagen = typeof body?.imagen === 'string' ? body.imagen.trim() || null : null;
   const fechaInicio = body?.fecha_inicio || body?.fechaInicio || null;
   const fechaFin = body?.fecha_fin || body?.fechaFin || null;
+  const incluidoEnClub =
+    typeof body?.incluidoEnClub === 'boolean' ? body.incluidoEnClub : undefined;
+  const puntosCustom =
+    body?.puntosCustom != null && Number.isFinite(Number(body.puntosCustom))
+      ? Math.max(0, Math.floor(Number(body.puntosCustom)))
+      : undefined;
+  const lat = body?.lat != null && Number.isFinite(Number(body.lat)) ? Number(body.lat) : undefined;
+  const lng = body?.lng != null && Number.isFinite(Number(body.lng)) ? Number(body.lng) : undefined;
+  const geoRadioMetros =
+    body?.geoRadioMetros != null && Number.isFinite(Number(body.geoRadioMetros))
+      ? Math.max(20, Math.min(2000, Math.floor(Number(body.geoRadioMetros))))
+      : undefined;
+  const ocultoEnPlanificaFinDeSemana =
+    typeof body?.ocultoEnPlanificaFinDeSemana === 'boolean'
+      ? body.ocultoEnPlanificaFinDeSemana
+      : undefined;
 
   if (!puebloSlug) return NextResponse.json({ message: 'puebloSlug requerido' }, { status: 400 });
   if (!titulo) return NextResponse.json({ message: 'titulo requerido' }, { status: 400 });
@@ -106,6 +122,14 @@ export async function POST(req: Request) {
       fecha_fin: fechaFinISO || undefined,
     };
     if (imagen) payload.imagen = imagen;
+    if (incluidoEnClub !== undefined) payload.incluidoEnClub = incluidoEnClub;
+    if (puntosCustom !== undefined) payload.puntosCustom = puntosCustom;
+    if (lat !== undefined) payload.lat = lat;
+    if (lng !== undefined) payload.lng = lng;
+    if (geoRadioMetros !== undefined) payload.geoRadioMetros = geoRadioMetros;
+    if (ocultoEnPlanificaFinDeSemana !== undefined) {
+      payload.ocultoEnPlanificaFinDeSemana = ocultoEnPlanificaFinDeSemana;
+    }
     
     const upstream = await fetch(`${API_BASE}/pueblos/${puebloId}/eventos`, {
       method: 'POST',

@@ -19,6 +19,10 @@ export default function NuevoEventoPage() {
   const [fechaFin, setFechaFin] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
+  const [incluidoEnClub, setIncluidoEnClub] = useState(false);
+  const [lat, setLat] = useState<string>('');
+  const [lng, setLng] = useState<string>('');
+  const [puntosCustom, setPuntosCustom] = useState<string>('');
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
@@ -59,6 +63,10 @@ export default function NuevoEventoPage() {
         }
       }
 
+      const latNum = lat.trim() ? Number(lat) : null;
+      const lngNum = lng.trim() ? Number(lng) : null;
+      const puntosNum = puntosCustom.trim() ? Math.max(0, Math.floor(Number(puntosCustom))) : null;
+
       const res = await fetch('/api/gestion/eventos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,6 +79,12 @@ export default function NuevoEventoPage() {
           fecha_fin: fechaFin || null,
           ...(imagen && { imagen }),
           ...(rol === 'ADMIN' && { ocultoEnPlanificaFinDeSemana: ocultoEnPlanifica }),
+          incluidoEnClub,
+          ...(incluidoEnClub && latNum != null && Number.isFinite(latNum) && { lat: latNum }),
+          ...(incluidoEnClub && lngNum != null && Number.isFinite(lngNum) && { lng: lngNum }),
+          ...(incluidoEnClub && rol === 'ADMIN' && puntosNum != null && Number.isFinite(puntosNum) && {
+            puntosCustom: puntosNum,
+          }),
         }),
       });
 
@@ -184,6 +198,89 @@ export default function NuevoEventoPage() {
               onChange={(e) => setFechaFin(e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="rounded-xl border border-fuchsia-200 bg-fuchsia-50/60 p-4 dark:border-fuchsia-900/50 dark:bg-fuchsia-950/20">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={incluidoEnClub}
+              onChange={(e) => setIncluidoEnClub(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-fuchsia-400"
+            />
+            <div className="flex-1">
+              <div className="font-semibold text-fuchsia-900 dark:text-fuchsia-200">
+                Incluir en el Club de Amigos
+              </div>
+              <p className="mt-1 text-xs text-fuchsia-900/80 dark:text-fuchsia-300/80">
+                Si activas esta casilla, el evento se promocionará dentro del Club de Amigos
+                y los socios podrán validar su asistencia escaneando un código QR
+                con la app de LPMBE. Recibirán puntos por su asistencia.
+              </p>
+              <p className="mt-1 text-xs text-fuchsia-900/70 dark:text-fuchsia-300/70">
+                <strong>Importante:</strong> al guardar el evento se generará un código QR
+                único que tendrás que mostrar el día del evento (impreso o en pantalla)
+                para que los socios lo escaneen con su app.
+              </p>
+            </div>
+          </label>
+
+          {incluidoEnClub && (
+            <div className="mt-4 space-y-3 border-t border-fuchsia-200 pt-3 dark:border-fuchsia-900/50">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
+                    Latitud (opcional)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={lat}
+                    onChange={(e) => setLat(e.target.value)}
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
+                    placeholder="42.42"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
+                    Longitud (opcional)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={lng}
+                    onChange={(e) => setLng(e.target.value)}
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
+                    placeholder="-2.84"
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-fuchsia-900/70 dark:text-fuchsia-300/70">
+                Coordenadas opcionales del lugar del evento. Si las rellenas, los socios
+                podrán validar también por geolocalización (estando físicamente cerca)
+                como alternativa al QR. Útil si esperas mucha afluencia.
+              </p>
+              {rol === 'ADMIN' && (
+                <div>
+                  <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
+                    Puntos personalizados (opcional · solo admin)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={puntosCustom}
+                    onChange={(e) => setPuntosCustom(e.target.value)}
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
+                    placeholder="Vacío = usar genérico (10)"
+                  />
+                  <p className="mt-1 text-[11px] text-fuchsia-900/70 dark:text-fuchsia-300/70">
+                    Si dejas vacío, se aplica la regla genérica EVENTO_PUEBLO_QR
+                    (10 puntos). Edita la regla genérica desde Gamificación de la asociación.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}

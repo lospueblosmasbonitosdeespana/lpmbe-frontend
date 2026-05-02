@@ -9,6 +9,9 @@ type EventoItem = {
   fecha_inicio: string;
   fecha_fin?: string | null;
   ocultoEnPlanificaFinDeSemana?: boolean;
+  incluidoEnClub?: boolean;
+  qr?: string | null;
+  puntosCustom?: number | null;
 };
 
 export default function EventosListAdminClient({ slug }: { slug: string }) {
@@ -57,24 +60,45 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
       </p>
       <ul className="divide-y rounded-md border">
         {eventos.map((ev) => (
-          <li key={ev.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
-            <div>
-              <span className="font-medium">{ev.titulo}</span>
-              <span className="ml-2 text-sm text-muted-foreground">
-                {new Date(ev.fecha_inicio).toLocaleDateString('es-ES')}
-                {ev.fecha_fin ? ` – ${new Date(ev.fecha_fin).toLocaleDateString('es-ES')}` : ''}
-              </span>
+          <li key={ev.id} className="space-y-2 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="font-medium">{ev.titulo}</span>
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {new Date(ev.fecha_inicio).toLocaleDateString('es-ES')}
+                  {ev.fecha_fin ? ` – ${new Date(ev.fecha_fin).toLocaleDateString('es-ES')}` : ''}
+                </span>
+                {ev.incluidoEnClub && (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-fuchsia-100 px-2 py-0.5 text-[11px] font-medium text-fuchsia-800">
+                    Club de Amigos
+                  </span>
+                )}
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!ev.ocultoEnPlanificaFinDeSemana}
+                  onChange={() => toggleOcultoPlanifica(ev)}
+                  disabled={togglingId === ev.id}
+                  className="h-4 w-4 rounded border-border"
+                />
+                Ocultar en Planifica
+              </label>
             </div>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={!!ev.ocultoEnPlanificaFinDeSemana}
-                onChange={() => toggleOcultoPlanifica(ev)}
-                disabled={togglingId === ev.id}
-                className="h-4 w-4 rounded border-border"
-              />
-              Ocultar en Planifica
-            </label>
+            {ev.incluidoEnClub && ev.qr && (
+              <div className="rounded-md border border-fuchsia-200 bg-fuchsia-50 p-2 text-xs dark:border-fuchsia-900/50 dark:bg-fuchsia-950/30">
+                <p className="font-medium text-fuchsia-900 dark:text-fuchsia-200">
+                  Código QR para validar asistencia:
+                </p>
+                <code className="mt-1 inline-block rounded bg-white px-2 py-1 font-mono text-sm tracking-widest text-fuchsia-900 dark:bg-fuchsia-900/40 dark:text-fuchsia-100">
+                  {ev.qr}
+                </code>
+                <p className="mt-1 text-fuchsia-900/70 dark:text-fuchsia-300/70">
+                  Imprime o muestra este código el día del evento. Los socios lo escanearán
+                  con la app de LPMBE para validar su asistencia y ganar puntos.
+                </p>
+              </div>
+            )}
           </li>
         ))}
       </ul>
