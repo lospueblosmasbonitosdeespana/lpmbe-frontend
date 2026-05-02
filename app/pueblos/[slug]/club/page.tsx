@@ -157,7 +157,8 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
   const mainImage = fotos?.[0]?.url ?? r.fotoUrl;
   const routeSlug = r.scope === "NEGOCIO" ? TIPO_TO_ROUTE[r.tipo] : undefined;
   const recursoSlug = r.slug?.trim() ?? "";
-  let detailHref = `/pueblos/${puebloSlug}/club`;
+  let detailHref =
+    r.scope === "NEGOCIO" ? `/pueblos/${puebloSlug}/club` : `/recursos/${r.id}`;
   if (recursoSlug) {
     if (r.scope === "NEGOCIO") {
       detailHref = routeSlug

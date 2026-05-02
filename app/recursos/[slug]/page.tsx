@@ -4,18 +4,21 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getApiUrl } from "@/lib/api";
 import {
-  seoTitle,
+  seoAbsoluteTitle,
   seoDescription,
   getCanonicalUrl,
   getLocaleAlternates,
   getOGLocale,
+  getBaseUrl,
+  SITE_NAME,
   type SupportedLocale,
 } from "@/lib/seo";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
-import { Title, Lead, Headline } from "@/app/components/ui/typography";
+import { Lead, Headline } from "@/app/components/ui/typography";
 import ParadasMap from "@/app/_components/ParadasMap";
+import JsonLd from "@/app/components/seo/JsonLd";
 import {
   ChevronLeft,
   Clock,
@@ -188,16 +191,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
-  const tSeo = await getTranslations("seo");
   const recurso = await getRecursoBySlug(slug, locale);
   if (!recurso) return { title: "Recurso no encontrado" };
 
+  const tipoLabel = getResourceLabel(recurso.tipo);
   const puebloName = recurso.pueblo?.nombre ?? recurso.provincia ?? recurso.comunidad ?? "España";
-  const title = seoTitle(tSeo("recursoDetalleTitle", { nombre: recurso.nombre }));
+  const title = seoAbsoluteTitle(`${recurso.nombre} en ${puebloName} | ${tipoLabel} | ${SITE_NAME}`);
   const descText = recurso.descripcion ? stripHtml(recurso.descripcion) : "";
   const description = descText
     ? seoDescription(cut(descText, 160))
-    : seoDescription(tSeo("recursoDetalleDesc", { nombre: recurso.nombre, pueblo: puebloName }));
+    : seoDescription(
+        `Descubre ${recurso.nombre}, ${tipoLabel.toLowerCase()} en ${puebloName}. Horarios, ubicación, contacto y ventajas del Club de Amigos.`,
+      );
   const path = `/recursos/${recurso.slug ?? slug}`;
   const heroImage = recurso.fotoUrl?.trim() || null;
 
@@ -256,6 +261,57 @@ export default async function RecursoDetailPage({
   const hasDescuento = recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0;
   const hasPrecio = recurso.precioCents != null && recurso.precioCents > 0;
   const hasCapacidad = recurso.maxAdultos > 1 || recurso.maxMenores > 0;
+  const tipoLabel = getResourceLabel(recurso.tipo);
+  const canonicalPath = `/recursos/${recurso.slug ?? slug}`;
+  const canonicalUrl = getCanonicalUrl(canonicalPath, locale);
+  const baseUrl = getBaseUrl();
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: `${baseUrl}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Recursos turísticos",
+        item: `${baseUrl}/recursos`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: recurso.nombre,
+        item: canonicalUrl,
+      },
+    ],
+  };
+  const recursoJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristAttraction",
+    name: recurso.nombre,
+    description: recurso.descripcion ? cut(stripHtml(recurso.descripcion), 280) : undefined,
+    url: canonicalUrl,
+    image: heroImage || undefined,
+    touristType: tipoLabel,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: recurso.pueblo?.nombre ?? undefined,
+      addressRegion: recurso.provincia ?? undefined,
+      addressCountry: "ES",
+    },
+    geo:
+      recurso.lat != null && recurso.lng != null
+        ? {
+            "@type": "GeoCoordinates",
+            latitude: recurso.lat,
+            longitude: recurso.lng,
+          }
+        : undefined,
+  };
 
   const breadcrumbs = [
     { label: "Inicio", href: "/" },
@@ -265,6 +321,8 @@ export default async function RecursoDetailPage({
 
   return (
     <main className="bg-background">
+      <JsonLd data={breadcrumbJsonLd} />
+      <JsonLd data={recursoJsonLd} />
 
       {/* Breadcrumbs */}
       <div className="border-b border-border bg-card">
