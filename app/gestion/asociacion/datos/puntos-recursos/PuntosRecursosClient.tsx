@@ -32,7 +32,13 @@ type ScopeFilter =
 
 type Recurso = {
   id: number;
-  kind: 'RECURSO' | 'POI' | 'MULTIEXP' | 'MULTIEXP_PARADA' | 'EVENTO';
+  kind:
+    | 'RECURSO'
+    | 'POI'
+    | 'MULTIEXP'
+    | 'MULTIEXP_PARADA'
+    | 'MULTIEXP_PARADA_LEGACY'
+    | 'EVENTO';
   supportsLimits?: boolean;
   nombre: string;
   slug: string | null;
@@ -90,7 +96,8 @@ const MATCHERS: Record<ScopeFilter, (r: Recurso) => boolean> = {
   NEGOCIO: (r) => r.kind === 'RECURSO' && r.scope === 'NEGOCIO',
   POI: (r) => r.kind === 'POI',
   MULTIEXP: (r) => r.kind === 'MULTIEXP',
-  MULTIEXP_PARADA: (r) => r.kind === 'MULTIEXP_PARADA',
+  MULTIEXP_PARADA: (r) =>
+    r.kind === 'MULTIEXP_PARADA' || r.kind === 'MULTIEXP_PARADA_LEGACY',
   EVENTO: (r) => r.kind === 'EVENTO',
 };
 
@@ -111,11 +118,11 @@ function ValidacionBadge({ r }: { r: Recurso }) {
       </span>
     );
   }
-  if (r.kind === 'MULTIEXP_PARADA') {
+  if (r.kind === 'MULTIEXP_PARADA' || r.kind === 'MULTIEXP_PARADA_LEGACY') {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-semibold text-indigo-800">
         <MapPin className="h-3 w-3" />
-        Parada custom
+        {r.kind === 'MULTIEXP_PARADA' ? 'Parada custom' : 'Parada multi'}
       </span>
     );
   }
@@ -474,7 +481,8 @@ export default function PuntosRecursosClient() {
               <div className="mt-0.5 shrink-0">
                 {r.kind === 'MULTIEXP' ? (
                   <Route className="h-4 w-4 text-violet-600" />
-                ) : r.kind === 'MULTIEXP_PARADA' ? (
+                ) : r.kind === 'MULTIEXP_PARADA' ||
+                  r.kind === 'MULTIEXP_PARADA_LEGACY' ? (
                   <MapPin className="h-4 w-4 text-indigo-600" />
                 ) : r.kind === 'EVENTO' ? (
                   <CalendarDays className="h-4 w-4 text-orange-600" />
