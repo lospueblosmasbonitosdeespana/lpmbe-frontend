@@ -20,8 +20,6 @@ export default function NuevoEventoPage() {
   const [file, setFile] = useState<File | null>(null);
   const [ocultoEnPlanifica, setOcultoEnPlanifica] = useState(false);
   const [incluidoEnClub, setIncluidoEnClub] = useState(false);
-  const [lat, setLat] = useState<string>('');
-  const [lng, setLng] = useState<string>('');
   const [puntosCustom, setPuntosCustom] = useState<string>('');
 
   useEffect(() => {
@@ -63,8 +61,6 @@ export default function NuevoEventoPage() {
         }
       }
 
-      const latNum = lat.trim() ? Number(lat) : null;
-      const lngNum = lng.trim() ? Number(lng) : null;
       const puntosNum = puntosCustom.trim() ? Math.max(0, Math.floor(Number(puntosCustom))) : null;
 
       const res = await fetch('/api/gestion/eventos', {
@@ -80,8 +76,6 @@ export default function NuevoEventoPage() {
           ...(imagen && { imagen }),
           ...(rol === 'ADMIN' && { ocultoEnPlanificaFinDeSemana: ocultoEnPlanifica }),
           incluidoEnClub,
-          ...(incluidoEnClub && latNum != null && Number.isFinite(latNum) && { lat: latNum }),
-          ...(incluidoEnClub && lngNum != null && Number.isFinite(lngNum) && { lng: lngNum }),
           ...(incluidoEnClub && rol === 'ADMIN' && puntosNum != null && Number.isFinite(puntosNum) && {
             puntosCustom: puntosNum,
           }),
@@ -214,71 +208,36 @@ export default function NuevoEventoPage() {
               </div>
               <p className="mt-1 text-xs text-fuchsia-900/80 dark:text-fuchsia-300/80">
                 Si activas esta casilla, el evento se promocionará dentro del Club de Amigos
-                y los socios podrán validar su asistencia escaneando un código QR
-                con la app de LPMBE. Recibirán puntos por su asistencia.
+                y los socios ganarán puntos por asistir.
               </p>
               <p className="mt-1 text-xs text-fuchsia-900/70 dark:text-fuchsia-300/70">
-                <strong>Importante:</strong> al guardar el evento se generará un código QR
-                único que tendrás que mostrar el día del evento (impreso o en pantalla)
-                para que los socios lo escaneen con su app.
+                <strong>Cómo funciona la validación:</strong> el día del evento, tú o un
+                colaborador autorizado abrís la app de LPMBE, seleccionáis este evento y
+                escaneáis el QR del carnet del Club que cada socio os enseñará en su
+                móvil. Es el mismo flujo que para validar un recurso turístico.
               </p>
             </div>
           </label>
 
-          {incluidoEnClub && (
+          {incluidoEnClub && rol === 'ADMIN' && (
             <div className="mt-4 space-y-3 border-t border-fuchsia-200 pt-3 dark:border-fuchsia-900/50">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
-                    Latitud (opcional)
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={lat}
-                    onChange={(e) => setLat(e.target.value)}
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
-                    placeholder="42.42"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
-                    Longitud (opcional)
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={lng}
-                    onChange={(e) => setLng(e.target.value)}
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
-                    placeholder="-2.84"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
+                  Puntos personalizados (opcional · solo admin)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={puntosCustom}
+                  onChange={(e) => setPuntosCustom(e.target.value)}
+                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
+                  placeholder="Vacío = usar genérico (10)"
+                />
+                <p className="mt-1 text-[11px] text-fuchsia-900/70 dark:text-fuchsia-300/70">
+                  Si dejas vacío, se aplica la regla genérica EVENTO_PUEBLO_QR
+                  (10 puntos). Edita la regla genérica desde Gamificación de la asociación.
+                </p>
               </div>
-              <p className="text-[11px] text-fuchsia-900/70 dark:text-fuchsia-300/70">
-                Coordenadas opcionales del lugar del evento. Si las rellenas, los socios
-                podrán validar también por geolocalización (estando físicamente cerca)
-                como alternativa al QR. Útil si esperas mucha afluencia.
-              </p>
-              {rol === 'ADMIN' && (
-                <div>
-                  <label className="block text-xs font-medium text-fuchsia-900 dark:text-fuchsia-200">
-                    Puntos personalizados (opcional · solo admin)
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={puntosCustom}
-                    onChange={(e) => setPuntosCustom(e.target.value)}
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm font-mono"
-                    placeholder="Vacío = usar genérico (10)"
-                  />
-                  <p className="mt-1 text-[11px] text-fuchsia-900/70 dark:text-fuchsia-300/70">
-                    Si dejas vacío, se aplica la regla genérica EVENTO_PUEBLO_QR
-                    (10 puntos). Edita la regla genérica desde Gamificación de la asociación.
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </div>

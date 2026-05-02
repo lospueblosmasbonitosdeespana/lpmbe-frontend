@@ -10,7 +10,6 @@ type EventoItem = {
   fecha_fin?: string | null;
   ocultoEnPlanificaFinDeSemana?: boolean;
   incluidoEnClub?: boolean;
-  qr?: string | null;
   puntosCustom?: number | null;
 };
 
@@ -85,17 +84,16 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
                 Ocultar en Planifica
               </label>
             </div>
-            {ev.incluidoEnClub && ev.qr && (
+            {ev.incluidoEnClub && (
               <div className="rounded-md border border-fuchsia-200 bg-fuchsia-50 p-2 text-xs dark:border-fuchsia-900/50 dark:bg-fuchsia-950/30">
                 <p className="font-medium text-fuchsia-900 dark:text-fuchsia-200">
-                  Código QR para validar asistencia:
+                  Validación en el Club de Amigos
                 </p>
-                <code className="mt-1 inline-block rounded bg-white px-2 py-1 font-mono text-sm tracking-widest text-fuchsia-900 dark:bg-fuchsia-900/40 dark:text-fuchsia-100">
-                  {ev.qr}
-                </code>
-                <p className="mt-1 text-fuchsia-900/70 dark:text-fuchsia-300/70">
-                  Imprime o muestra este código el día del evento. Los socios lo escanearán
-                  con la app de LPMBE para validar su asistencia y ganar puntos.
+                <p className="mt-1 text-fuchsia-900/80 dark:text-fuchsia-300/80">
+                  El día del evento, abre la app de LPMBE como alcalde o colaborador
+                  autorizado y escanea el QR del carnet del Club que cada socio te
+                  enseñará en su móvil. Es el mismo flujo que para validar un recurso
+                  turístico, pero seleccionando este evento.
                 </p>
               </div>
             )}
