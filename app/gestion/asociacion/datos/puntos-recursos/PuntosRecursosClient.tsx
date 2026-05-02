@@ -4,12 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Award,
   Building2,
+  CalendarDays,
   ChevronDown,
   ChevronRight,
   HelpCircle,
   MapPin,
   Mountain,
   QrCode,
+  Route,
   Search,
   Sparkles,
   Store,
@@ -22,10 +24,16 @@ type ScopeFilter =
   | 'PUEBLO_NAT'
   | 'ASOC_QR'
   | 'ASOC_NAT'
-  | 'NEGOCIO';
+  | 'NEGOCIO'
+  | 'POI'
+  | 'MULTIEXP'
+  | 'MULTIEXP_PARADA'
+  | 'EVENTO';
 
 type Recurso = {
   id: number;
+  kind: 'RECURSO' | 'POI' | 'MULTIEXP' | 'MULTIEXP_PARADA' | 'EVENTO';
+  supportsLimits?: boolean;
   nombre: string;
   slug: string | null;
   tipo: string;
@@ -64,7 +72,7 @@ const PLAN_LABEL: Record<string, string> = {
 };
 
 function isNatural(r: Recurso) {
-  return r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS';
+  return r.kind === 'RECURSO' && (r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS');
 }
 
 // ─── Badge de validación ────────────────────────────────────────────────────
@@ -76,6 +84,38 @@ const PLAN_BADGE: Record<string, { bg: string; text: string; label: string }> = 
 };
 
 function ValidacionBadge({ r }: { r: Recurso }) {
+  if (r.kind === 'MULTIEXP') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-800">
+        <Route className="h-3 w-3" />
+        Bonus completa
+      </span>
+    );
+  }
+  if (r.kind === 'MULTIEXP_PARADA') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-semibold text-indigo-800">
+        <MapPin className="h-3 w-3" />
+        Parada custom
+      </span>
+    );
+  }
+  if (r.kind === 'EVENTO') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-800">
+        <CalendarDays className="h-3 w-3" />
+        Evento Club
+      </span>
+    );
+  }
+  if (r.kind === 'POI') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-cyan-100 px-2 py-0.5 text-[11px] font-semibold text-cyan-800">
+        <MapPin className="h-3 w-3" />
+        POI
+      </span>
+    );
+  }
   // Negocios: badge con el plan
   if (r.scope === 'NEGOCIO') {
     const plan = r.planNegocio ?? 'FREE';
@@ -156,12 +196,13 @@ function formatTope(
 }
 
 export default function PuntosRecursosClient() {
+  const itemKey = (r: Recurso) => `${r.kind}:${r.id}`;
   const [data, setData] = useState<Resp | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scopeFilter, setScopeFilter] = useState<ScopeFilter>('todos');
   const [search, setSearch] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [editCooldown, setEditCooldown] = useState('');
   const [editMax, setEditMax] = useState('');
@@ -216,6 +257,18 @@ export default function PuntosRecursosClient() {
       case 'NEGOCIO':
         items = items.filter((r) => r.scope === 'NEGOCIO');
         break;
+      case 'POI':
+        items = items.filter((r) => r.kind === 'POI');
+        break;
+      case 'MULTIEXP':
+        items = items.filter((r) => r.kind === 'MULTIEXP');
+        break;
+      case 'MULTIEXP_PARADA':
+        items = items.filter((r) => r.kind === 'MULTIEXP_PARADA');
+        break;
+      case 'EVENTO':
+        items = items.filter((r) => r.kind === 'EVENTO');
+        break;
       default:
         break;
     }
@@ -248,6 +301,10 @@ export default function PuntosRecursosClient() {
         (r) => r.scope === 'ASOCIACION' && isNatural(r),
       ).length,
       NEGOCIO: all.filter((r) => r.scope === 'NEGOCIO').length,
+      POI: all.filter((r) => r.kind === 'POI').length,
+      MULTIEXP: all.filter((r) => r.kind === 'MULTIEXP').length,
+      MULTIEXP_PARADA: all.filter((r) => r.kind === 'MULTIEXP_PARADA').length,
+      EVENTO: all.filter((r) => r.kind === 'EVENTO').length,
     } as Record<ScopeFilter, number>;
   }, [data]);
 
@@ -266,7 +323,7 @@ export default function PuntosRecursosClient() {
   }
 
   function startEdit(r: Recurso) {
-    setEditingId(r.id);
+    setEditingKey(itemKey(r));
     setEditValue(r.puntosCustom != null ? String(r.puntosCustom) : '');
     setEditCooldown(
       r.cooldownDiasCustom != null ? String(r.cooldownDiasCustom) : '',
@@ -282,14 +339,19 @@ export default function PuntosRecursosClient() {
   }
 
   function cancelEdit() {
-    setEditingId(null);
+    setEditingKey(null);
     setEditValue('');
     setEditCooldown('');
     setEditMax('');
     setEditPeriodo('');
   }
 
-  async function saveEdit(id: number) {
+  async function saveEdit(r: Recurso) {
+    const target = data?.items.find((it) => it.id === r.id && it.kind === r.kind);
+    if (!target) {
+      alert('No se encontró el elemento a editar.');
+      return;
+    }
     const parseNullableInt = (
       raw: string,
       name: string,
@@ -306,28 +368,39 @@ export default function PuntosRecursosClient() {
 
     const puntosCustom = parseNullableInt(editValue, 'Puntos');
     if (puntosCustom === false) return;
-    const cooldownDiasCustom = parseNullableInt(editCooldown, 'Cooldown');
+
+    const cooldownDiasCustom = target.supportsLimits
+      ? parseNullableInt(editCooldown, 'Cooldown')
+      : null;
     if (cooldownDiasCustom === false) return;
-    const maxValidacionesPeriodoCustom = parseNullableInt(
-      editMax,
-      'Máx. en periodo',
-    );
+    const maxValidacionesPeriodoCustom = target.supportsLimits
+      ? parseNullableInt(editMax, 'Máx. en periodo')
+      : null;
     if (maxValidacionesPeriodoCustom === false) return;
-    const periodoDiasCustom = parseNullableInt(editPeriodo, 'Periodo');
+    const periodoDiasCustom = target.supportsLimits
+      ? parseNullableInt(editPeriodo, 'Periodo')
+      : null;
     if (periodoDiasCustom === false) return;
 
     setSaving(true);
     try {
-      const res = await fetch(`/api/club/admin/recursos/${id}/puntos`, {
+      const res = await fetch(
+        `/api/club/admin/recursos/${target.id}/puntos?kind=${encodeURIComponent(target.kind)}`,
+        {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           puntosCustom,
-          cooldownDiasCustom,
-          maxValidacionesPeriodoCustom,
-          periodoDiasCustom,
+          ...(target.supportsLimits
+            ? {
+                cooldownDiasCustom,
+                maxValidacionesPeriodoCustom,
+                periodoDiasCustom,
+              }
+            : {}),
         }),
-      });
+        },
+      );
       if (!res.ok) throw new Error('Error guardando');
       await load();
       cancelEdit();
@@ -373,6 +446,26 @@ export default function PuntosRecursosClient() {
       desc: 'Recursos naturales de la asociación con validación por GPS',
     },
     { key: 'NEGOCIO', label: 'Negocios', desc: 'Negocios adheridos al Club (hoteles, restaurantes, tiendas…)' },
+    {
+      key: 'POI',
+      label: 'POIs',
+      desc: 'Puntos de interés turísticos por pueblo (gamificación individual por POI).',
+    },
+    {
+      key: 'MULTIEXP',
+      label: 'Multiexperiencias',
+      desc: 'Bonus de puntos por completar cada multiexperiencia.',
+    },
+    {
+      key: 'MULTIEXP_PARADA',
+      label: 'Paradas multi',
+      desc: 'Puntos por parada custom de multiexperiencias.',
+    },
+    {
+      key: 'EVENTO',
+      label: 'Eventos Club',
+      desc: 'Puntos por validación de asistencia en eventos del Club.',
+    },
   ];
   const TABS = ALL_TABS.filter(
     (t) => t.key === 'todos' || (counts[t.key as ScopeFilter] ?? 0) > 0,
@@ -383,7 +476,7 @@ export default function PuntosRecursosClient() {
   // ─── Fila de recurso ────────────────────────────────────────────────────
   function buildRows(items: Recurso[]) {
     return items.flatMap((r) => {
-      const isEditing = editingId === r.id;
+      const isEditing = editingKey === itemKey(r);
       const isSelectionSinPuntos = r.esSelection && r.puntosCustom == null;
       const tieneOverride =
         r.puntosCustom != null ||
@@ -407,7 +500,15 @@ export default function PuntosRecursosClient() {
             <div className="flex items-start gap-2">
               {/* Icono scope */}
               <div className="mt-0.5 shrink-0">
-                {r.esSelection ? (
+                {r.kind === 'MULTIEXP' ? (
+                  <Route className="h-4 w-4 text-violet-600" />
+                ) : r.kind === 'MULTIEXP_PARADA' ? (
+                  <MapPin className="h-4 w-4 text-indigo-600" />
+                ) : r.kind === 'EVENTO' ? (
+                  <CalendarDays className="h-4 w-4 text-orange-600" />
+                ) : r.kind === 'POI' ? (
+                  <MapPin className="h-4 w-4 text-cyan-600" />
+                ) : r.esSelection ? (
                   <Sparkles className="h-4 w-4 text-amber-600" />
                 ) : isNatural(r) ? (
                   <Mountain className="h-4 w-4 text-teal-600" />
@@ -473,23 +574,29 @@ export default function PuntosRecursosClient() {
 
           {/* Tope / Cooldown */}
           <td className="px-3 py-2.5 text-right tabular-nums text-sm">
-            <div className="font-semibold text-foreground">
-              {formatTope(
-                r.maxValidacionesPeriodoEfectivo,
-                r.periodoDiasEfectivo,
-                r.cooldownDiasEfectivo,
-              )}
-            </div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">
-              espera: {r.cooldownDiasEfectivo}d
-              {(r.cooldownDiasCustom != null ||
-                r.maxValidacionesPeriodoCustom != null ||
-                r.periodoDiasCustom != null) && (
-                <span className="ml-1 rounded bg-amber-100 px-1 text-amber-800">
-                  custom
-                </span>
-              )}
-            </div>
+            {r.supportsLimits ? (
+              <>
+                <div className="font-semibold text-foreground">
+                  {formatTope(
+                    r.maxValidacionesPeriodoEfectivo,
+                    r.periodoDiasEfectivo,
+                    r.cooldownDiasEfectivo,
+                  )}
+                </div>
+                <div className="mt-0.5 text-[11px] text-muted-foreground">
+                  espera: {r.cooldownDiasEfectivo}d
+                  {(r.cooldownDiasCustom != null ||
+                    r.maxValidacionesPeriodoCustom != null ||
+                    r.periodoDiasCustom != null) && (
+                    <span className="ml-1 rounded bg-amber-100 px-1 text-amber-800">
+                      custom
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-xs text-muted-foreground">No aplica</div>
+            )}
           </td>
 
           {/* Acción */}
@@ -511,11 +618,15 @@ export default function PuntosRecursosClient() {
       if (isEditing) {
         rows.push(
           <tr
-            key={`${r.id}-editor`}
+            key={`${itemKey(r)}-editor`}
             className="border-b border-border bg-blue-50/40 dark:bg-blue-950/20"
           >
             <td colSpan={5} className="px-4 py-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div
+                className={`grid grid-cols-1 gap-4 ${
+                  r.supportsLimits ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 lg:grid-cols-2'
+                }`}
+              >
                 <div>
                   <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
                     Puntos que gana el socio
@@ -534,67 +645,71 @@ export default function PuntosRecursosClient() {
                   </p>
                 </div>
 
-                <div>
-                  <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
-                    Espera entre visitas (días)
-                    <Tooltip text="Mínimo de días que deben pasar para que el mismo socio pueda volver a ganar puntos en este recurso. Ejemplo: 365 = solo pueden ganar puntos una vez al año." />
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder={`Genérico: ${r.cooldownDiasGenerico} días`}
-                    value={editCooldown}
-                    onChange={(e) => setEditCooldown(e.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-blue-400 bg-white px-3 py-1.5 text-sm dark:bg-card"
-                  />
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    Vacío = usa el genérico ({r.cooldownDiasGenerico}d)
-                  </p>
-                </div>
+                {r.supportsLimits && (
+                  <>
+                    <div>
+                      <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
+                        Espera entre visitas (días)
+                        <Tooltip text="Mínimo de días que deben pasar para que el mismo socio pueda volver a ganar puntos en este recurso. Ejemplo: 365 = solo pueden ganar puntos una vez al año." />
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder={`Genérico: ${r.cooldownDiasGenerico} días`}
+                        value={editCooldown}
+                        onChange={(e) => setEditCooldown(e.target.value)}
+                        className="mt-1.5 w-full rounded-md border border-blue-400 bg-white px-3 py-1.5 text-sm dark:bg-card"
+                      />
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Vacío = usa el genérico ({r.cooldownDiasGenerico}d)
+                      </p>
+                    </div>
 
-                <div>
-                  <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
-                    Máx. visitas en el periodo
-                    <Tooltip text="Número máximo de veces que el mismo socio puede ganar puntos dentro del periodo indicado. Ejemplo: 3 = máximo 3 veces en el periodo. Úsalo junto al campo 'Días del periodo'." />
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder={
-                      r.maxValidacionesPeriodoGenerico != null
-                        ? `Genérico: ${r.maxValidacionesPeriodoGenerico}`
-                        : 'Sin límite'
-                    }
-                    value={editMax}
-                    onChange={(e) => setEditMax(e.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-blue-400 bg-white px-3 py-1.5 text-sm dark:bg-card"
-                  />
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    Vacío = sin tope por periodo
-                  </p>
-                </div>
+                    <div>
+                      <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
+                        Máx. visitas en el periodo
+                        <Tooltip text="Número máximo de veces que el mismo socio puede ganar puntos dentro del periodo indicado. Ejemplo: 3 = máximo 3 veces en el periodo. Úsalo junto al campo 'Días del periodo'." />
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder={
+                          r.maxValidacionesPeriodoGenerico != null
+                            ? `Genérico: ${r.maxValidacionesPeriodoGenerico}`
+                            : 'Sin límite'
+                        }
+                        value={editMax}
+                        onChange={(e) => setEditMax(e.target.value)}
+                        className="mt-1.5 w-full rounded-md border border-blue-400 bg-white px-3 py-1.5 text-sm dark:bg-card"
+                      />
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Vacío = sin tope por periodo
+                      </p>
+                    </div>
 
-                <div>
-                  <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
-                    Días del periodo
-                    <Tooltip text="Número de días que forma la ventana del máximo de visitas. Ejemplo: 30 = el límite se cuenta en una ventana de 30 días. Se usa junto a 'Máx. visitas en el periodo'." />
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder={
-                      r.periodoDiasGenerico != null
-                        ? `Genérico: ${r.periodoDiasGenerico}d`
-                        : 'Sin periodo'
-                    }
-                    value={editPeriodo}
-                    onChange={(e) => setEditPeriodo(e.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-blue-400 bg-white px-3 py-1.5 text-sm dark:bg-card"
-                  />
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    Ejemplo: máx 5 en 30d = un hotel habitual
-                  </p>
-                </div>
+                    <div>
+                      <label className="flex items-center gap-1 text-xs font-semibold text-foreground">
+                        Días del periodo
+                        <Tooltip text="Número de días que forma la ventana del máximo de visitas. Ejemplo: 30 = el límite se cuenta en una ventana de 30 días. Se usa junto a 'Máx. visitas en el periodo'." />
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder={
+                          r.periodoDiasGenerico != null
+                            ? `Genérico: ${r.periodoDiasGenerico}d`
+                            : 'Sin periodo'
+                        }
+                        value={editPeriodo}
+                        onChange={(e) => setEditPeriodo(e.target.value)}
+                        className="mt-1.5 w-full rounded-md border border-blue-400 bg-white px-3 py-1.5 text-sm dark:bg-card"
+                      />
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Ejemplo: máx 5 en 30d = un hotel habitual
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="mt-4 flex items-center justify-between">
@@ -611,7 +726,7 @@ export default function PuntosRecursosClient() {
                     Cancelar
                   </button>
                   <button
-                    onClick={() => saveEdit(r.id)}
+                    onClick={() => saveEdit(r)}
                     disabled={saving}
                     className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                   >
@@ -820,9 +935,7 @@ export default function PuntosRecursosClient() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Mostrando {visibleCount} de {data.total} recursos.{' '}
-        <span className="font-medium text-amber-700">Negocios SELECTION</span>{' '}
-        sin puntos personalizados aparecen resaltados — recuerda fijarles un valor individual.
+        Mostrando {visibleCount} de {data.total} elementos gamificables del Club.
       </p>
     </div>
   );

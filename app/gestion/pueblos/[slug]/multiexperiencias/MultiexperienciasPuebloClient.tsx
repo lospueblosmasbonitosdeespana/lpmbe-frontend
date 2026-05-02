@@ -13,6 +13,7 @@ type Multiexperiencia = {
   slug: string;
   activo: boolean;
   legacyId?: number | null;
+  bonusCompletaCustom?: number | null;
 };
 
 type Parada = {
@@ -25,6 +26,7 @@ type Parada = {
   lat: number | null;
   lng: number | null;
   orden: number | null;
+  puntosCustom?: number | null;
 };
 
 export default function MultiexperienciasPuebloClient({ slug }: { slug: string }) {
@@ -47,6 +49,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   const [createParadaLat, setCreateParadaLat] = useState("");
   const [createParadaLng, setCreateParadaLng] = useState("");
   const [createParadaFoto, setCreateParadaFoto] = useState("");
+  const [createParadaPuntosCustom, setCreateParadaPuntosCustom] = useState<number | "">("");
 
   // Editar parada inline (legacy o custom)
   const [editParadaIdx, setEditParadaIdx] = useState<number | null>(null);
@@ -55,6 +58,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   const [editParadaLat, setEditParadaLat] = useState("");
   const [editParadaLng, setEditParadaLng] = useState("");
   const [editParadaFoto, setEditParadaFoto] = useState("");
+  const [editParadaPuntosCustom, setEditParadaPuntosCustom] = useState<number | "">("");
 
   // Editar foto de multiexperiencia
   const [editingMxFoto, setEditingMxFoto] = useState<number | null>(null);
@@ -64,6 +68,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
   const [editingMxMetaId, setEditingMxMetaId] = useState<number | null>(null);
   const [editMxTitulo, setEditMxTitulo] = useState("");
   const [editMxDescripcion, setEditMxDescripcion] = useState("");
+  const [editMxBonusCompletaCustom, setEditMxBonusCompletaCustom] = useState<number | "">("");
 
   // flyTo para el mapa
   const [flyToPos, setFlyToPos] = useState<[number, number] | null>(null);
@@ -186,11 +191,25 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       alert("El título no puede estar vacío");
       return;
     }
+    const parsedBonus =
+      typeof editMxBonusCompletaCustom === "number"
+        ? editMxBonusCompletaCustom
+        : typeof editMxBonusCompletaCustom === "string" && editMxBonusCompletaCustom.trim() !== ""
+          ? Number(editMxBonusCompletaCustom)
+          : null;
+    if (parsedBonus != null && (!Number.isInteger(parsedBonus) || parsedBonus < 0)) {
+      alert("El bonus de completar debe ser un entero >= 0 o vacío para usar genérico");
+      return;
+    }
     try {
       const res = await fetch(`/api/admin/multiexperiencias/${mx.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titulo: tituloTrim, descripcion: editMxDescripcion.trim() || null }),
+        body: JSON.stringify({
+          titulo: tituloTrim,
+          descripcion: editMxDescripcion.trim() || null,
+          bonusCompletaCustom: parsedBonus,
+        }),
       });
       if (!res.ok) {
         const text = await res.text();
@@ -206,6 +225,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       setEditingMxMetaId(null);
       setEditMxTitulo("");
       setEditMxDescripcion("");
+      setEditMxBonusCompletaCustom("");
       alert("Multiexperiencia actualizada");
     } catch (err: any) {
       alert(`Error: ${err.message}`);
@@ -247,6 +267,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     setCreateParadaFoto("");
     setCreateParadaLat("");
     setCreateParadaLng("");
+    setCreateParadaPuntosCustom("");
     setShowCreateParada(false);
   }
 
@@ -271,10 +292,21 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
         return;
       }
     }
+    const parsedPuntosCustom =
+      typeof createParadaPuntosCustom === "number"
+        ? createParadaPuntosCustom
+        : typeof createParadaPuntosCustom === "string" && createParadaPuntosCustom.trim() !== ""
+          ? Number(createParadaPuntosCustom)
+          : null;
+    if (parsedPuntosCustom != null && (!Number.isInteger(parsedPuntosCustom) || parsedPuntosCustom < 0)) {
+      alert("Puntos Club debe ser entero >= 0 o vacío para regla genérica");
+      return;
+    }
     try {
       const payload: any = { titulo: createParadaTitulo.trim() };
       if (createParadaDescripcion?.trim()) payload.descripcion = createParadaDescripcion.trim();
       if (createParadaFoto?.trim()) payload.foto = createParadaFoto.trim();
+      payload.puntosCustom = parsedPuntosCustom;
       if (latStr && lngStr) {
         payload.lat = lat!;
         payload.lng = lng!;
@@ -308,6 +340,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     setEditParadaFoto(p.foto ?? "");
     setEditParadaLat(p.lat != null ? String(p.lat) : "");
     setEditParadaLng(p.lng != null ? String(p.lng) : "");
+    setEditParadaPuntosCustom(p.puntosCustom ?? "");
     setShowCreateParada(false);
     // Fly al punto en el mapa
     if (p.lat != null && p.lng != null) {
@@ -326,6 +359,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     setEditParadaFoto("");
     setEditParadaLat("");
     setEditParadaLng("");
+    setEditParadaPuntosCustom("");
     setFlyToPos(null);
   }
 
@@ -356,10 +390,21 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
         return;
       }
     }
+    const parsedPuntosCustom =
+      typeof editParadaPuntosCustom === "number"
+        ? editParadaPuntosCustom
+        : typeof editParadaPuntosCustom === "string" && editParadaPuntosCustom.trim() !== ""
+          ? Number(editParadaPuntosCustom)
+          : null;
+    if (parsedPuntosCustom != null && (!Number.isInteger(parsedPuntosCustom) || parsedPuntosCustom < 0)) {
+      alert("Puntos Club debe ser entero >= 0 o vacío para regla genérica");
+      return;
+    }
 
     try {
       const payload: any = {
         titulo: editParadaTitulo.trim(),
+        puntosCustom: parsedPuntosCustom,
       };
       if (editParadaDescripcion?.trim()) {
         payload.descripcion = editParadaDescripcion.trim();
@@ -710,6 +755,19 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           rows={2}
                           placeholder="Descripción"
                         />
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={editMxBonusCompletaCustom}
+                          onChange={(e) =>
+                            setEditMxBonusCompletaCustom(
+                              e.target.value === "" ? "" : Number(e.target.value),
+                            )
+                          }
+                          className="w-full rounded border border-border px-3 py-1.5 text-sm"
+                          placeholder="Bonus completa (vacío = genérico)"
+                        />
                       </div>
                     ) : (
                       <>
@@ -721,6 +779,10 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                     )}
                     <p className="mt-1 text-xs text-muted-foreground">
                       Slug: {mx.slug} | Activa: {mx.activo ? "Sí" : "No"}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Bonus completa Club:{" "}
+                      {mx.bonusCompletaCustom == null ? "Genérico" : mx.bonusCompletaCustom}
                     </p>
                     {editingMxFoto === mx.id ? (
                       <div className="mt-2 space-y-2">
@@ -813,6 +875,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                             setEditingMxMetaId(null);
                             setEditMxTitulo("");
                             setEditMxDescripcion("");
+                            setEditMxBonusCompletaCustom("");
                           }}
                           className="rounded bg-gray-300 px-3 py-1 text-sm font-medium hover:bg-gray-400"
                         >
@@ -825,6 +888,7 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           setEditingMxMetaId(mx.id);
                           setEditMxTitulo(mx.titulo ?? "");
                           setEditMxDescripcion(mx.descripcion ?? "");
+                          setEditMxBonusCompletaCustom(mx.bonusCompletaCustom ?? "");
                         }}
                         className="rounded bg-amber-600 px-3 py-1 text-sm font-medium text-white hover:bg-amber-700 whitespace-nowrap"
                       >
@@ -956,6 +1020,22 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           />
                         </div>
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium">Puntos Club (parada)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={createParadaPuntosCustom}
+                          onChange={(e) =>
+                            setCreateParadaPuntosCustom(
+                              e.target.value === "" ? "" : Number(e.target.value),
+                            )
+                          }
+                          className="mt-1 w-full rounded border border-border px-3 py-2"
+                          placeholder="Vacío = regla genérica"
+                        />
+                      </div>
                       <p className="text-xs text-blue-600 font-medium">
                         {createParadaLat && createParadaLng
                           ? `Coordenadas: ${createParadaLat}, ${createParadaLng}`
@@ -1073,6 +1153,24 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                     />
                                   </div>
                                 </div>
+                                <div>
+                                  <label className="block text-sm font-medium">
+                                    Puntos Club (parada)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    value={editParadaPuntosCustom}
+                                    onChange={(e) =>
+                                      setEditParadaPuntosCustom(
+                                        e.target.value === "" ? "" : Number(e.target.value),
+                                      )
+                                    }
+                                    className="mt-1 w-full rounded border border-border px-3 py-2"
+                                    placeholder="Vacío = regla genérica"
+                                  />
+                                </div>
                                 <div className="flex items-center gap-2">
                                   <button
                                     type="button"
@@ -1153,6 +1251,10 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                     {parada.kind === "LEGACY" &&
                                       `legacyLugarId: ${parada.legacyLugarId}`}
                                     {parada.kind === "CUSTOM" && `customId: ${parada.customId}`}
+                                  </p>
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    Puntos Club:{" "}
+                                    {parada.puntosCustom == null ? "Genérico" : parada.puntosCustom}
                                   </p>
                                   {parada.descripcion && (
                                     <p className="mt-1 text-sm text-muted-foreground line-clamp-2">

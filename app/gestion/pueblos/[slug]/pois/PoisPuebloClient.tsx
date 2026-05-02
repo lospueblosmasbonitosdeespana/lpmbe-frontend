@@ -31,6 +31,7 @@ type PoiRow = {
   lat?: number | null;
   lng?: number | null;
   orden?: number | null;
+  puntosCustom?: number | null;
 };
 
 // Helpers para comparar coordenadas con tolerancia (~5m)
@@ -160,6 +161,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
   const [editDescripcion, setEditDescripcion] = useState("");
   const [editLat, setEditLat] = useState<number | "">("");
   const [editLng, setEditLng] = useState<number | "">("");
+  const [editPuntosCustom, setEditPuntosCustom] = useState<number | "">("");
 
   // Formulario de creación
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -316,6 +318,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditDescripcion(row.descripcion ?? "");
     setEditLat(isValidCoord(row.lat, row.lng) ? (row.lat ?? "") : "");
     setEditLng(isValidCoord(row.lat, row.lng) ? (row.lng ?? "") : "");
+    setEditPuntosCustom(row.puntosCustom ?? "");
     setShowCreateForm(false);
     if (isValidCoord(row.lat, row.lng)) {
       setFlyToPos([row.lat!, row.lng!]);
@@ -333,6 +336,7 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
     setEditDescripcion("");
     setEditLat("");
     setEditLng("");
+    setEditPuntosCustom("");
     setFlyToPos(null);
   }
 
@@ -356,12 +360,24 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
 
     const finalLat = parsedLat != null && !Number.isNaN(parsedLat) && isValidCoord(parsedLat, parsedLng ?? null) ? parsedLat : null;
     const finalLng = parsedLng != null && !Number.isNaN(parsedLng) && isValidCoord(parsedLat ?? null, parsedLng) ? parsedLng : null;
+    const parsedPuntosCustom =
+      typeof editPuntosCustom === "number"
+        ? editPuntosCustom
+        : typeof editPuntosCustom === "string" && editPuntosCustom.trim() !== ""
+          ? Number(editPuntosCustom)
+          : null;
+
+    if (parsedPuntosCustom != null && (!Number.isInteger(parsedPuntosCustom) || parsedPuntosCustom < 0)) {
+      alert("Puntos Club debe ser un entero mayor o igual que 0 (o vacío para usar genérico)");
+      return;
+    }
 
     const payload: any = {
       nombre: editNombre.trim() || undefined,
       descripcion: editDescripcion.trim() || undefined,
       lat: finalLat,
       lng: finalLng,
+      puntosCustom: parsedPuntosCustom,
     };
 
     const r = await fetch(`/api/admin/pois/${editId}`, {
@@ -768,6 +784,22 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-foreground">
+                        Puntos Club (individual)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={editPuntosCustom}
+                        onChange={(e) =>
+                          setEditPuntosCustom(e.target.value === "" ? "" : Number(e.target.value))
+                        }
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                        placeholder="Vacío = usar regla genérica"
+                      />
+                    </div>
                     
                     {editId && (
                       <div className="mt-4">
@@ -828,6 +860,9 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         ) : (
                           <p className="text-xs text-muted-foreground italic">Sin descripción</p>
                         )}
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Puntos Club: {row.puntosCustom == null ? "Genérico" : row.puntosCustom}
+                        </p>
                         {row.foto && (
                           <RotatedImage
                             src={row.foto}

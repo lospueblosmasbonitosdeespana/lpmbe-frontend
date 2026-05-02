@@ -8,7 +8,7 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const target = new URL(`${getApiUrl()}/club/admin/recursos-puntos`);
-  for (const k of ['scope', 'plan', 'search']) {
+  for (const k of ['scope', 'plan', 'search', 'kind']) {
     const v = url.searchParams.get(k);
     if (v) target.searchParams.set(k, v);
   }

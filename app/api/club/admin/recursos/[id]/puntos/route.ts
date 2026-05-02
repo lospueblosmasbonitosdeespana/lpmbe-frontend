@@ -11,9 +11,12 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
+  const url = new URL(req.url);
+  const kind = url.searchParams.get('kind');
+  const qs = kind ? `?kind=${encodeURIComponent(kind)}` : '';
 
   const res = await fetch(
-    `${getApiUrl()}/club/admin/recursos/${id}/puntos`,
+    `${getApiUrl()}/club/admin/recursos/${id}/puntos${qs}`,
     {
       method: 'PATCH',
       headers: {
