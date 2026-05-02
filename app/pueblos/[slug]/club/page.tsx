@@ -110,7 +110,7 @@ const SCOPE_LABELS: Record<string, string> = {
 type Recurso = {
   id: number;
   nombre: string;
-  slug: string;
+  slug: string | null;
   tipo: string;
   scope: string;
   descripcion?: string | null;
@@ -156,9 +156,17 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
   const fotos = r.imagenes && r.imagenes.length > 0 ? r.imagenes : null;
   const mainImage = fotos?.[0]?.url ?? r.fotoUrl;
   const routeSlug = r.scope === "NEGOCIO" ? TIPO_TO_ROUTE[r.tipo] : undefined;
-  const detailHref = routeSlug
-    ? `/${routeSlug}/${puebloSlug}/${r.slug}`
-    : `/pueblos/${puebloSlug}/club/${r.slug}`;
+  const recursoSlug = r.slug?.trim() ?? "";
+  let detailHref = `/pueblos/${puebloSlug}/club`;
+  if (recursoSlug) {
+    if (r.scope === "NEGOCIO") {
+      detailHref = routeSlug
+        ? `/${routeSlug}/${puebloSlug}/${recursoSlug}`
+        : `/pueblos/${puebloSlug}/club/${recursoSlug}`;
+    } else {
+      detailHref = `/recursos/${recursoSlug}`;
+    }
+  }
 
   const plan = r.planNegocio ?? "FREE";
   const features = getPlanFeatures(plan);
@@ -392,9 +400,12 @@ export default async function ClubPuebloPage({
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {featuredOffers.map((fo) => {
-                const detailHref = TIPO_TO_ROUTE[fo.negocio.tipo]
-                  ? `/${TIPO_TO_ROUTE[fo.negocio.tipo]}/${slug}/${fo.negocio.slug}`
-                  : `/pueblos/${slug}/club/${fo.negocio.slug}`;
+                const negocioSlug = fo.negocio.slug?.trim() ?? "";
+                const detailHref = !negocioSlug
+                  ? `/pueblos/${slug}/club`
+                  : TIPO_TO_ROUTE[fo.negocio.tipo]
+                    ? `/${TIPO_TO_ROUTE[fo.negocio.tipo]}/${slug}/${negocioSlug}`
+                    : `/pueblos/${slug}/club/${negocioSlug}`;
                 return (
                   <Link
                     key={`${fo.negocio.id}-${fo.id}`}
