@@ -42,7 +42,7 @@ export default function NivelAvatarViewer({
           onClick={() => setOpen(false)}
         >
           <div
-            className="relative flex max-h-[92vh] w-auto max-w-[96vw] items-center justify-center"
+            className="relative flex max-h-[96vh] w-auto max-w-[99vw] items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -58,7 +58,7 @@ export default function NivelAvatarViewer({
               alt={nombreNivel}
               width={1800}
               height={1800}
-              className="max-h-[88vh] w-auto max-w-[94vw] object-contain drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)]"
+              className="max-h-[94vh] w-auto max-w-[98vw] scale-[1.35] object-contain drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)] md:scale-[1.45]"
               priority
             />
           </div>
