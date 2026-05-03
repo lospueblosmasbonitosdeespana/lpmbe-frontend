@@ -17,11 +17,51 @@ import {
 import { LogoutButton } from './components/LogoutButton';
 import ThemeSelector from '@/app/cuenta/ThemeSelector';
 import NotifCenterBadgeLink from './components/NotifCenterBadgeLink';
+import { getToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
+import NivelIcono from './components/NivelIcono';
 
 type SectionTone = 'amber' | 'emerald' | 'violet' | 'sky';
 
 export default async function MiCuentaPage() {
   const t = await getTranslations('myAccount');
+  const levelsT = await getTranslations('levels');
+  const pointsT = await getTranslations('points');
+
+  const token = await getToken();
+  const API_BASE = getApiUrl();
+  let puntosTotales = 0;
+  let nivelNombre = 'Turista Curioso';
+  if (token) {
+    try {
+      const puntosRes = await fetch(`${API_BASE}/usuarios/me/puntos`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      });
+      if (puntosRes.ok) {
+        const puntosData = await puntosRes.json();
+        puntosTotales = Number(puntosData?.total ?? 0);
+        nivelNombre = String(puntosData?.nivel ?? 'Turista Curioso');
+      }
+    } catch {
+      // Fallo no crítico: mostramos la home de /mi-cuenta igualmente.
+    }
+  }
+
+  const NIVEL_SLUG: Record<string, string> = {
+    'Turista Curioso': 'turistaCurioso',
+    'Explorador Local': 'exploradorLocal',
+    'Viajero Apasionado': 'viajeroApasionado',
+    'Amante de los Pueblos': 'amantePueblos',
+    'Gran Viajero': 'granViajero',
+    'Leyenda LPBE': 'leyendaLpbe',
+    'Embajador de los Pueblos': 'embajadorPueblos',
+    'Maestro Viajero': 'maestroViajero',
+    'Gran Maestre de los Pueblos': 'granMaestre',
+  };
+  const nivelTraducido = NIVEL_SLUG[nivelNombre]
+    ? levelsT(NIVEL_SLUG[nivelNombre])
+    : nivelNombre;
 
   const notifCenter = {
     href: '/mi-cuenta/bandeja',
@@ -150,6 +190,39 @@ export default async function MiCuentaPage() {
               </div>
 
               <div className="w-full max-w-5xl space-y-6">
+                <section className="rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-5 text-left shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <NivelIcono
+                      nombreNivel={nivelNombre}
+                      className="h-28 w-28 shrink-0 sm:h-32 sm:w-32"
+                      imgClassName="scale-105"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
+                        {pointsT('myAccount')}
+                      </span>
+                      <p className="mt-2 text-3xl font-semibold leading-none tracking-tight text-foreground sm:text-4xl">
+                        {puntosTotales} {pointsT('pointsLabel')}
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-foreground">
+                        {nivelTraducido}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {levelsT('allPointsCount')}
+                      </p>
+                    </div>
+                    <div className="h-[96px] w-[96px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-0.5 shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
+                      <Image
+                        src="/club-escudo-monocromo.png"
+                        alt={links[7].title}
+                        width={112}
+                        height={112}
+                        className="h-full w-full scale-[1.28] object-contain"
+                      />
+                    </div>
+                  </div>
+                </section>
+
                 <Link
                   href={links[7].href}
                   className="group relative block overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-7"

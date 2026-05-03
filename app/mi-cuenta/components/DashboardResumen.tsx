@@ -58,37 +58,57 @@ export default function DashboardResumen({
   const nombreNivel = nivelActual?.nombre ? translateNivel(nivelActual.nombre) : t('initialLevel');
 
   return (
-    <section className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
-      <div className="flex items-center gap-4">
-        <NivelIcono nombreNivel={nombreNivel} className="shrink-0" />
-        <div>
-          <Headline as="h1" className="mb-0.5">{t('myAccount')}</Headline>
-          <Caption>{nombreNivel}</Caption>
+    <section className="space-y-6 rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm dark:from-card dark:via-card dark:to-card">
+      <div className="flex flex-col gap-5 md:flex-row md:items-center">
+        <div className="mx-auto md:mx-0">
+          <NivelIcono
+            nombreNivel={nombreNivel}
+            className="h-32 w-32 md:h-36 md:w-36"
+            imgClassName="scale-105"
+          />
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
+          <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
+            {t('myAccount')}
+          </span>
+          <Headline as="h1" className="mb-0.5">
+            {nombreNivel}
+          </Headline>
+          <Caption>{t('pointsLabel')}</Caption>
         </div>
       </div>
 
       {/* Total desglosado */}
-      <div className="space-y-3">
-        <p className="font-serif text-3xl font-medium tracking-tight sm:text-4xl">
+      <div className="space-y-4">
+        <p className="font-serif text-4xl font-medium tracking-tight sm:text-5xl">
           {puntosTotales} {t('pointsLabel')}
         </p>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
-              <path d="M8 0a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 4.095 0 5.555 0 7.318 0 9.366 1.708 11 3.781 11H7.5V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11h4.188C14.502 11 16 9.57 16 7.773c0-1.636-1.242-2.969-2.834-3.194C12.923 1.999 10.69 0 8 0z" />
-            </svg>
-            {puntosCanjeables} {t('gpsPoints')}
-          </span>
-          <span className="text-muted-foreground">+</span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
-            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
-              <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-            </svg>
-            {puntosNoCanjeables} {t('manualPoints')}
-          </span>
-          <span className="text-muted-foreground">=</span>
-          <span className="font-semibold">{puntosTotales} {t('totalPoints')}</span>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+              {t('gpsPoints')}
+            </p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-emerald-800 dark:text-emerald-200">
+              {puntosCanjeables}
+            </p>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+              {t('manualPoints')}
+            </p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-amber-800 dark:text-amber-200">
+              {puntosNoCanjeables}
+            </p>
+          </div>
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              {t('totalPoints')}
+            </p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-primary">
+              {puntosTotales}
+            </p>
+          </div>
         </div>
 
         {puntosCanjeables > 0 && (
@@ -117,7 +137,7 @@ export default function DashboardResumen({
       )}
 
       {/* Barra de progreso */}
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-4">
         <div className="h-2.5 overflow-hidden rounded-full bg-muted">
           <div
             className="h-full rounded-full bg-primary transition-all duration-500"
