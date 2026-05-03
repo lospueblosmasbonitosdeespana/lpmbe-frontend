@@ -238,13 +238,13 @@ export default async function MiCuentaPage() {
                       ) : null}
                     </div>
                     <div className="flex shrink-0 flex-col items-center gap-2">
-                      <div className="h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-0.5 shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
+                      <div className="relative h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
                         <Image
-                          src="/club-escudo-monocromo.png"
+                          src="/club-escudo.png"
                           alt={links[7].title}
-                          width={112}
-                          height={112}
-                        className="h-full w-full scale-[1.58] object-contain"
+                          fill
+                          sizes="112px"
+                          className="object-contain scale-[1.24]"
                         />
                       </div>
                       {clubActivo ? (
@@ -262,13 +262,13 @@ export default async function MiCuentaPage() {
                 >
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl dark:bg-amber-900/30" />
                   <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-                    <div className="h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-0.5 shadow-sm dark:border-amber-900/60">
+                    <div className="relative h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60">
                       <Image
-                        src="/club-escudo-monocromo.png"
+                        src="/club-escudo.png"
                         alt={links[7].title}
-                        width={132}
-                        height={132}
-                        className="h-full w-full scale-[1.6] object-contain"
+                        fill
+                        sizes="132px"
+                        className="object-contain scale-[1.26]"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
