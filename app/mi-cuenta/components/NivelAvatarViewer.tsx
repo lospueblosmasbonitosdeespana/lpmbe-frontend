@@ -38,32 +38,29 @@ export default function NivelAvatarViewer({
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 backdrop-blur-[3px]"
           onClick={() => setOpen(false)}
         >
           <div
-            className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-b from-neutral-900 to-neutral-950 p-3 shadow-2xl"
+            className="relative flex max-h-[92vh] w-auto max-w-[96vw] items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close"
-              className="absolute right-3 top-3 z-10 rounded-full bg-black/65 px-2.5 py-1 text-sm font-semibold text-white hover:bg-black/85"
+              className="absolute right-1 top-1 z-10 rounded-full border border-white/25 bg-black/70 px-2.5 py-1 text-sm font-semibold text-white hover:bg-black/90"
             >
               ×
             </button>
-
-            <div className="relative flex h-[72vh] w-full items-center justify-center rounded-2xl bg-neutral-100/90 p-4">
-              <Image
-                src={src}
-                alt={nombreNivel}
-                width={1400}
-                height={1400}
-                className="max-h-full w-auto max-w-full object-contain drop-shadow-[0_8px_22px_rgba(0,0,0,0.28)]"
-                priority
-              />
-            </div>
+            <Image
+              src={src}
+              alt={nombreNivel}
+              width={1800}
+              height={1800}
+              className="max-h-[88vh] w-auto max-w-[94vw] object-contain drop-shadow-[0_18px_36px_rgba(0,0,0,0.45)]"
+              priority
+            />
           </div>
         </div>
       )}
