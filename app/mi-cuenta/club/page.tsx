@@ -26,7 +26,7 @@ import {
 import { Section } from '@/app/components/ui/section';
 import { Container } from '@/app/components/ui/container';
 import { Headline, Title, Caption } from '@/app/components/ui/typography';
-import { ClubShield, getMemberYear } from '@/app/_components/club/ClubShield';
+import { ClubShield, getMemberYear, useClubLogoFromSettings } from '@/app/_components/club/ClubShield';
 import { CuentanosCard } from '@/app/_components/club/CuentanosCard';
 import { WalletHeader } from '@/app/_components/club/WalletHeader';
 
@@ -149,6 +149,7 @@ function formatCodigoCorto(raw: string | null | undefined): string | null {
 export default function ClubPage() {
   const t = useTranslations('club');
   const tAccount = useTranslations('myAccount');
+  const clubLogo = useClubLogoFromSettings();
   const [clubMe, setClubMe] = useState<ClubMe | null>(null);
   const [validaciones, setValidaciones] = useState<ClubValidacion[]>([]);
   const [validacionesNoDisponible, setValidacionesNoDisponible] = useState(false);
@@ -675,6 +676,8 @@ export default function ClubPage() {
                   <ClubShield
                     year={getMemberYear(clubMe.validUntil, clubMe.plan)}
                     size={160}
+                    srcOverride={clubLogo.srcOverride}
+                    transform={clubLogo.transform}
                   />
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                     {t('member')}
