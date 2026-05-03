@@ -149,7 +149,7 @@ function formatCodigoCorto(raw: string | null | undefined): string | null {
 export default function ClubPage() {
   const t = useTranslations('club');
   const tAccount = useTranslations('myAccount');
-  const clubLogo = useClubLogoFromSettings();
+  const clubLogo = useClubLogoFromSettings('card');
   const [clubMe, setClubMe] = useState<ClubMe | null>(null);
   const [validaciones, setValidaciones] = useState<ClubValidacion[]>([]);
   const [validacionesNoDisponible, setValidacionesNoDisponible] = useState(false);

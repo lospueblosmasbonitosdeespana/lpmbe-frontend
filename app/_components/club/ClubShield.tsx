@@ -107,7 +107,7 @@ export function ClubShield({
  * y devuelve el override + transform listos para pasar a <ClubShield />.
  * Reutilizable en cualquier client component.
  */
-export function useClubLogoFromSettings() {
+export function useClubLogoFromSettings(variant: 'header' | 'card' = 'header') {
   const [assets, setAssets] = useState<MiCuentaAssets | null>(null);
 
   useEffect(() => {
@@ -127,9 +127,15 @@ export function useClubLogoFromSettings() {
     };
   }, []);
 
+  const cardOverride = getClubLogoOverride(assets, 'card');
+  const headerOverride = getClubLogoOverride(assets, 'header');
+  const resolvedVariant =
+    variant === 'card' && cardOverride ? 'card' : 'header';
+
   return {
-    srcOverride: getClubLogoOverride(assets, 'header'),
-    transform: getClubLogoTransform(assets, 'header'),
+    srcOverride:
+      variant === 'card' ? cardOverride ?? headerOverride : headerOverride,
+    transform: getClubLogoTransform(assets, resolvedVariant),
   };
 }
 
