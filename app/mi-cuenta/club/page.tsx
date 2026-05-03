@@ -490,10 +490,18 @@ export default function ClubPage() {
           <div className="overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-orange-50/70 to-white p-6 shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-8">
             <div className="mx-auto mb-8 max-w-3xl rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-100/60 to-orange-100/50 p-6 text-center dark:border-amber-900/60 dark:from-amber-950/30 dark:to-card">
               <div className="mx-auto mb-4 h-64 w-64 overflow-hidden rounded-xl bg-transparent sm:h-72 sm:w-72">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/club-escudo-monocromo.png"
+                  src={clubLogo.srcOverride ?? '/club-escudo-monocromo.png'}
                   alt={t('prelaunchLogoAlt')}
-                  className="h-full w-full scale-[2.15] object-contain"
+                  className="h-full w-full object-contain"
+                  style={
+                    clubLogo.srcOverride
+                      ? {
+                          transform: `translate(${clubLogo.transform.offsetX}%, ${clubLogo.transform.offsetY}%) scale(${clubLogo.transform.scale})`,
+                        }
+                      : { transform: 'scale(2.15)' }
+                  }
                 />
               </div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/80 bg-white/80 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-200">
