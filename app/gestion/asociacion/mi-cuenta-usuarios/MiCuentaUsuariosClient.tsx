@@ -1,13 +1,24 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Upload, X, Trash2, Save } from 'lucide-react';
+import { Upload, Trash2, Save, RotateCcw } from 'lucide-react';
 import {
   NIVEL_SLOTS,
+  CLUB_LOGO_DEFAULTS,
   type MiCuentaAssets,
 } from '@/app/mi-cuenta/components/miCuentaAssets';
 
-type ClubSlot = { key: 'clubLogo' | 'clubLogoCard'; label: string; description: string };
+type ClubSlotKey = 'clubLogo' | 'clubLogoCard';
+type ClubSlot = {
+  key: ClubSlotKey;
+  label: string;
+  description: string;
+  // Tamaño real del cuadrado donde se ve en /mi-cuenta (en px)
+  previewSize: number;
+  scaleField: 'clubLogoScale' | 'clubLogoCardScale';
+  offsetXField: 'clubLogoOffsetX' | 'clubLogoCardOffsetX';
+  offsetYField: 'clubLogoOffsetY' | 'clubLogoCardOffsetY';
+};
 
 const CLUB_SLOTS: ClubSlot[] = [
   {
@@ -15,12 +26,20 @@ const CLUB_SLOTS: ClubSlot[] = [
     label: 'Logo del Club (cabecera de Mi cuenta)',
     description:
       'Aparece arriba del todo, junto a tus puntos. Recomendado: PNG transparente cuadrado.',
+    previewSize: 112,
+    scaleField: 'clubLogoScale',
+    offsetXField: 'clubLogoOffsetX',
+    offsetYField: 'clubLogoOffsetY',
   },
   {
     key: 'clubLogoCard',
     label: 'Logo del Club (tarjeta "Club de Amigos")',
     description:
       'Tarjeta que enlaza al Club. Si está vacío, usa el de cabecera. Recomendado: PNG transparente.',
+    previewSize: 132,
+    scaleField: 'clubLogoCardScale',
+    offsetXField: 'clubLogoCardOffsetX',
+    offsetYField: 'clubLogoCardOffsetY',
   },
 ];
 
@@ -70,10 +89,27 @@ export default function MiCuentaUsuariosClient() {
     };
   }, []);
 
-  const setClubUrl = useCallback((key: 'clubLogo' | 'clubLogoCard', url: string | null) => {
+  const setClubUrl = useCallback((key: ClubSlotKey, url: string | null) => {
     setAssets((prev) => ({ ...prev, [key]: url }));
     setDirty(true);
   }, []);
+
+  const setClubFit = useCallback(
+    (
+      field:
+        | 'clubLogoScale'
+        | 'clubLogoOffsetX'
+        | 'clubLogoOffsetY'
+        | 'clubLogoCardScale'
+        | 'clubLogoCardOffsetX'
+        | 'clubLogoCardOffsetY',
+      value: number | null,
+    ) => {
+      setAssets((prev) => ({ ...prev, [field]: value }));
+      setDirty(true);
+    },
+    [],
+  );
 
   const setNivelUrl = useCallback((slug: string, url: string | null) => {
     setAssets((prev) => ({
@@ -151,17 +187,30 @@ export default function MiCuentaUsuariosClient() {
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           {CLUB_SLOTS.map((slot) => {
             const value = assets[slot.key] ?? null;
+            const scale = num(assets[slot.scaleField], CLUB_LOGO_DEFAULTS.scale);
+            const offsetX = num(assets[slot.offsetXField], CLUB_LOGO_DEFAULTS.offsetX);
+            const offsetY = num(assets[slot.offsetYField], CLUB_LOGO_DEFAULTS.offsetY);
             return (
-              <SlotCard
+              <ClubSlotCard
                 key={slot.key}
-                slotKey={slot.key}
-                label={slot.label}
-                description={slot.description}
+                slot={slot}
                 value={value}
-                onUpload={(file) => handleUpload(slot.key, file, (url) => setClubUrl(slot.key, url))}
-                onClear={() => setClubUrl(slot.key, null)}
+                scale={scale}
+                offsetX={offsetX}
+                offsetY={offsetY}
                 uploading={uploadingKey === slot.key}
-                background="cream"
+                onUpload={(file) =>
+                  handleUpload(slot.key, file, (url) => setClubUrl(slot.key, url))
+                }
+                onClear={() => setClubUrl(slot.key, null)}
+                onScale={(v) => setClubFit(slot.scaleField, v)}
+                onOffsetX={(v) => setClubFit(slot.offsetXField, v)}
+                onOffsetY={(v) => setClubFit(slot.offsetYField, v)}
+                onResetFit={() => {
+                  setClubFit(slot.scaleField, null);
+                  setClubFit(slot.offsetXField, null);
+                  setClubFit(slot.offsetYField, null);
+                }}
               />
             );
           })}
@@ -301,4 +350,184 @@ function SlotCard({
       )}
     </div>
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tarjeta especial para los logos del Club: incluye preview a tamaño real
+// del cuadrado de /mi-cuenta y sliders para escalar y mover el logo dentro.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type ClubSlotCardProps = {
+  slot: ClubSlot;
+  value: string | null | undefined;
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  uploading: boolean;
+  onUpload: (file: File) => void;
+  onClear: () => void;
+  onScale: (v: number) => void;
+  onOffsetX: (v: number) => void;
+  onOffsetY: (v: number) => void;
+  onResetFit: () => void;
+};
+
+function ClubSlotCard({
+  slot,
+  value,
+  scale,
+  offsetX,
+  offsetY,
+  uploading,
+  onUpload,
+  onClear,
+  onScale,
+  onOffsetX,
+  onOffsetY,
+  onResetFit,
+}: ClubSlotCardProps) {
+  const transform = `translate(${offsetX}%, ${offsetY}%) scale(${scale})`;
+  return (
+    <div className="flex flex-col rounded-xl border bg-card p-4 shadow-sm">
+      <p className="text-sm font-medium leading-tight">{slot.label}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{slot.description}</p>
+
+      <div className="mt-3 flex flex-col items-center gap-2">
+        <div
+          className="relative overflow-hidden rounded-2xl border border-amber-200 bg-[radial-gradient(circle_at_top,_#fff7e6_0%,_#fdf3da_70%)] shadow-sm"
+          style={{ width: slot.previewSize, height: slot.previewSize }}
+        >
+          {value ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={value}
+              alt={slot.label}
+              className="absolute inset-0 h-full w-full object-contain"
+              style={{ transform }}
+            />
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-[10px] italic text-muted-foreground">
+              Sin imagen — usa la por defecto
+            </span>
+          )}
+        </div>
+        <p className="text-[10px] text-muted-foreground">
+          Preview a tamaño real ({slot.previewSize}×{slot.previewSize}px)
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-3 rounded-lg border bg-muted/30 p-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium">Encaje en el cuadrado</p>
+          <button
+            type="button"
+            onClick={onResetFit}
+            className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+            title="Restablecer escala y posición"
+          >
+            <RotateCcw className="h-3 w-3" /> Restablecer
+          </button>
+        </div>
+
+        <FitSlider
+          label="Tamaño"
+          value={scale}
+          min={0.5}
+          max={2}
+          step={0.02}
+          format={(v) => `${Math.round(v * 100)}%`}
+          onChange={onScale}
+        />
+        <FitSlider
+          label="Mover ←/→"
+          value={offsetX}
+          min={-50}
+          max={50}
+          step={1}
+          format={(v) => `${v > 0 ? '+' : ''}${v}%`}
+          onChange={onOffsetX}
+        />
+        <FitSlider
+          label="Mover ↑/↓"
+          value={offsetY}
+          min={-50}
+          max={50}
+          step={1}
+          format={(v) => `${v > 0 ? '+' : ''}${v}%`}
+          onChange={onOffsetY}
+        />
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <label
+          className={`inline-flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition hover:bg-muted ${
+            uploading ? 'opacity-50' : ''
+          }`}
+        >
+          <Upload className="h-3.5 w-3.5" />
+          {uploading ? 'Subiendo…' : value ? 'Reemplazar' : 'Subir imagen'}
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="hidden"
+            disabled={uploading}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onUpload(f);
+              e.currentTarget.value = '';
+            }}
+          />
+        </label>
+        {value && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="inline-flex items-center gap-1.5 rounded-md border border-destructive px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Quitar
+          </button>
+        )}
+      </div>
+
+      {value && (
+        <p className="mt-2 truncate text-[10px] text-muted-foreground" title={value}>
+          {value}
+        </p>
+      )}
+    </div>
+  );
+}
+
+type FitSliderProps = {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  format: (v: number) => string;
+  onChange: (v: number) => void;
+};
+
+function FitSlider({ label, value, min, max, step, format, onChange }: FitSliderProps) {
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between text-[11px]">
+        <span className="font-medium">{label}</span>
+        <span className="tabular-nums text-muted-foreground">{format(value)}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-primary"
+      />
+    </div>
+  );
+}
+
+function num(v: unknown, fallback: number): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }

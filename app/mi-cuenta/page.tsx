@@ -23,6 +23,7 @@ import NivelAvatarViewer from './components/NivelAvatarViewer';
 import {
   type MiCuentaAssets,
   getClubLogoOverride,
+  getClubLogoTransform,
   getNivelOverride,
 } from './components/miCuentaAssets';
 
@@ -264,16 +265,24 @@ export default async function MiCuentaPage() {
                     </div>
                     <div className="flex shrink-0 flex-col items-center gap-2">
                       <div className="relative h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
-                        <Image
-                          src={
-                            getClubLogoOverride(miCuentaAssets, 'header') ??
-                            '/club-logo-oficial-v4.png'
-                          }
-                          alt={links[7].title}
-                          fill
-                          sizes="112px"
-                          className="object-contain scale-[0.96]"
-                        />
+                        {(() => {
+                          const t = getClubLogoTransform(miCuentaAssets, 'header');
+                          return (
+                            <Image
+                              src={
+                                getClubLogoOverride(miCuentaAssets, 'header') ??
+                                '/club-logo-oficial-v4.png'
+                              }
+                              alt={links[7].title}
+                              fill
+                              sizes="112px"
+                              className="object-contain"
+                              style={{
+                                transform: `translate(${t.offsetX}%, ${t.offsetY}%) scale(${t.scale})`,
+                              }}
+                            />
+                          );
+                        })()}
                       </div>
                       {clubActivo ? (
                         <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
@@ -291,17 +300,31 @@ export default async function MiCuentaPage() {
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl dark:bg-amber-900/30" />
                   <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
                     <div className="relative h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60">
-                      <Image
-                        src={
-                          getClubLogoOverride(miCuentaAssets, 'card') ??
-                          getClubLogoOverride(miCuentaAssets, 'header') ??
-                          '/club-logo-oficial-v4.png'
-                        }
-                        alt={links[7].title}
-                        fill
-                        sizes="132px"
-                        className="object-contain scale-[0.96]"
-                      />
+                      {(() => {
+                        // Para la tarjeta usamos sus ajustes propios; si el admin
+                        // no ha tocado los del card, hereda de los del header
+                        // (así un único ajuste basta cuando es el mismo logo).
+                        const cardOverride = getClubLogoOverride(miCuentaAssets, 'card');
+                        const t = cardOverride
+                          ? getClubLogoTransform(miCuentaAssets, 'card')
+                          : getClubLogoTransform(miCuentaAssets, 'header');
+                        return (
+                          <Image
+                            src={
+                              cardOverride ??
+                              getClubLogoOverride(miCuentaAssets, 'header') ??
+                              '/club-logo-oficial-v4.png'
+                            }
+                            alt={links[7].title}
+                            fill
+                            sizes="132px"
+                            className="object-contain"
+                            style={{
+                              transform: `translate(${t.offsetX}%, ${t.offsetY}%) scale(${t.scale})`,
+                            }}
+                          />
+                        );
+                      })()}
                     </div>
                     <div className="min-w-0 flex-1">
                       <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">

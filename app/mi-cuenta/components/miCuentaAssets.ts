@@ -20,8 +20,55 @@
 export type MiCuentaAssets = {
   clubLogo?: string | null;
   clubLogoCard?: string | null;
+  // Ajustes de encaje del logo dentro del cuadrado (todos opcionales).
+  // scale: 1 = tamaño "normal" (object-contain). Sobre 1 amplía y recorta;
+  // por debajo encoge dejando aire alrededor.
+  clubLogoScale?: number | null;
+  clubLogoOffsetX?: number | null; // % horizontal (-50 a 50)
+  clubLogoOffsetY?: number | null; // % vertical
+  clubLogoCardScale?: number | null;
+  clubLogoCardOffsetX?: number | null;
+  clubLogoCardOffsetY?: number | null;
   nivelAvatares?: Record<string, string | null> | null;
 };
+
+export const CLUB_LOGO_DEFAULTS = {
+  scale: 0.96,
+  offsetX: 0,
+  offsetY: 0,
+};
+
+export type ClubLogoTransform = {
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+};
+
+export function getClubLogoTransform(
+  assets: MiCuentaAssets | null | undefined,
+  variant: 'header' | 'card' = 'header',
+): ClubLogoTransform {
+  if (variant === 'card') {
+    return {
+      scale: clamp(num(assets?.clubLogoCardScale, CLUB_LOGO_DEFAULTS.scale), 0.3, 2.5),
+      offsetX: clamp(num(assets?.clubLogoCardOffsetX, CLUB_LOGO_DEFAULTS.offsetX), -50, 50),
+      offsetY: clamp(num(assets?.clubLogoCardOffsetY, CLUB_LOGO_DEFAULTS.offsetY), -50, 50),
+    };
+  }
+  return {
+    scale: clamp(num(assets?.clubLogoScale, CLUB_LOGO_DEFAULTS.scale), 0.3, 2.5),
+    offsetX: clamp(num(assets?.clubLogoOffsetX, CLUB_LOGO_DEFAULTS.offsetX), -50, 50),
+    offsetY: clamp(num(assets?.clubLogoOffsetY, CLUB_LOGO_DEFAULTS.offsetY), -50, 50),
+  };
+}
+
+function num(v: unknown, fallback: number): number {
+  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+function clamp(v: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, v));
+}
 
 export const NIVEL_SLUG: Record<string, string> = {
   'Turista Curioso': 'turistaCurioso',
