@@ -20,6 +20,11 @@ import NotifCenterBadgeLink from './components/NotifCenterBadgeLink';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 import NivelAvatarViewer from './components/NivelAvatarViewer';
+import {
+  type MiCuentaAssets,
+  getClubLogoOverride,
+  getNivelOverride,
+} from './components/miCuentaAssets';
 
 type SectionTone = 'amber' | 'emerald' | 'violet' | 'sky';
 
@@ -36,6 +41,25 @@ export default async function MiCuentaPage() {
   let nivelSiguienteNombre: string | null = null;
   let puntosNecesariosNivel = 0;
   let clubActivo = false;
+  let miCuentaAssets: MiCuentaAssets | null = null;
+
+  // Activos editables desde /gestion/asociacion/mi-cuenta-usuarios.
+  // Se hace fuera del bloque de token porque también aplica para usuarios
+  // anónimos en el futuro (aquí no afecta, pero deja la lógica simétrica).
+  try {
+    const settingsRes = await fetch(`${API_BASE}/public/site-settings`, {
+      cache: 'no-store',
+    });
+    if (settingsRes.ok) {
+      const settingsJson = (await settingsRes.json()) as {
+        miCuentaAssets?: MiCuentaAssets | null;
+      };
+      miCuentaAssets = settingsJson?.miCuentaAssets ?? null;
+    }
+  } catch {
+    // Fallback silencioso: usaremos los assets por defecto del bundle.
+  }
+
   if (token) {
     try {
       const puntosRes = await fetch(`${API_BASE}/usuarios/me/puntos`, {
@@ -217,6 +241,7 @@ export default async function MiCuentaPage() {
                       nombreNivel={nivelNombre}
                       className="h-28 w-28 sm:h-32 sm:w-32"
                       imgClassName="scale-105"
+                      srcOverride={getNivelOverride(miCuentaAssets, nivelNombre)}
                     />
                     <div className="min-w-0 flex-1">
                       <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
@@ -240,7 +265,10 @@ export default async function MiCuentaPage() {
                     <div className="flex shrink-0 flex-col items-center gap-2">
                       <div className="relative h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
                         <Image
-                          src="/club-logo-oficial-v4.png"
+                          src={
+                            getClubLogoOverride(miCuentaAssets, 'header') ??
+                            '/club-logo-oficial-v4.png'
+                          }
                           alt={links[7].title}
                           fill
                           sizes="112px"
@@ -264,7 +292,11 @@ export default async function MiCuentaPage() {
                   <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
                     <div className="relative h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60">
                       <Image
-                        src="/club-logo-oficial-v4.png"
+                        src={
+                          getClubLogoOverride(miCuentaAssets, 'card') ??
+                          getClubLogoOverride(miCuentaAssets, 'header') ??
+                          '/club-logo-oficial-v4.png'
+                        }
                         alt={links[7].title}
                         fill
                         sizes="132px"

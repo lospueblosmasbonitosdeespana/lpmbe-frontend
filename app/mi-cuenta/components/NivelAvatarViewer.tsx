@@ -8,6 +8,8 @@ type Props = {
   nombreNivel: string;
   className?: string;
   imgClassName?: string;
+  /** URL alternativa configurada por el admin (mi-cuenta-usuarios) */
+  srcOverride?: string | null;
 };
 
 /**
@@ -18,9 +20,12 @@ export default function NivelAvatarViewer({
   nombreNivel,
   className = '',
   imgClassName = '',
+  srcOverride,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const src = NIVEL_AVATAR_SRC[nombreNivel] ?? NIVEL_AVATAR_SRC['Turista Curioso'];
+  const fallback =
+    NIVEL_AVATAR_SRC[nombreNivel] ?? NIVEL_AVATAR_SRC['Turista Curioso'];
+  const src = srcOverride && srcOverride.trim() ? srcOverride : fallback;
 
   return (
     <>
@@ -33,6 +38,7 @@ export default function NivelAvatarViewer({
           nombreNivel={nombreNivel}
           className={className}
           imgClassName={imgClassName}
+          srcOverride={srcOverride}
         />
       </button>
 

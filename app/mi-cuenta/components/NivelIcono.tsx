@@ -21,14 +21,19 @@ type Props = {
   nombreNivel: string;
   className?: string;
   imgClassName?: string;
+  /** Permite a la página inyectar URLs administradas desde SiteSettings.miCuentaAssets */
+  srcOverride?: string | null;
 };
 
 export default function NivelIcono({
   nombreNivel,
   className = '',
   imgClassName = '',
+  srcOverride,
 }: Props) {
-  const src = NIVEL_AVATAR_SRC[nombreNivel] ?? NIVEL_AVATAR_SRC['Turista Curioso'];
+  const fallback =
+    NIVEL_AVATAR_SRC[nombreNivel] ?? NIVEL_AVATAR_SRC['Turista Curioso'];
+  const src = srcOverride && srcOverride.trim() ? srcOverride : fallback;
   return (
     <div
       className={`relative h-14 w-14 overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-b from-amber-50 to-amber-100/50 shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:to-amber-900/20 ${className}`}

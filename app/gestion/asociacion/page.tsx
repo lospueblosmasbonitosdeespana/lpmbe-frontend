@@ -44,6 +44,7 @@ const SECCIONES: Seccion[] = [
       { href: '/gestion/asociacion/notificaciones', title: 'Notificaciones',          description: 'Noticias, eventos y alertas en un solo listado',                iconKey: 'bell',           tone: 'sky'     },
       { href: '/gestion/asociacion/alertas',        title: 'Alertas globales',        description: 'Avisos visibles a nivel nacional',                              iconKey: 'alertTriangle',  tone: 'red',     badge: 'Urgente' },
       { href: '/gestion/asociacion/colecciones',    title: 'Colecciones',             description: 'Páginas temáticas de /descubre · incluye Hero y SEO',           iconKey: 'layers',         tone: 'orange'  },
+      { href: '/gestion/asociacion/mi-cuenta-usuarios', title: 'Mi Cuenta (usuarios)', description: 'Iconos y avatares que ven los usuarios en /mi-cuenta',          iconKey: 'pencil',         tone: 'pink'    },
     ],
   },
   {
