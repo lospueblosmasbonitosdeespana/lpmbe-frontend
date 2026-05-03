@@ -264,7 +264,7 @@ export default async function MiCuentaPage() {
                           alt={links[7].title}
                           width={112}
                           height={112}
-                          className="h-full w-full scale-[1.28] object-contain"
+                        className="h-full w-full scale-[1.58] object-contain"
                         />
                       </div>
                       {clubActivo ? (
@@ -288,7 +288,7 @@ export default async function MiCuentaPage() {
                         alt={links[7].title}
                         width={132}
                         height={132}
-                        className="h-full w-full scale-[1.32] object-contain"
+                        className="h-full w-full scale-[1.6] object-contain"
                       />
                     </div>
                     <div className="min-w-0 flex-1">

@@ -40,7 +40,7 @@ export default function NivelIcono({
         alt={nombreNivel}
         fill
         sizes="(max-width: 768px) 96px, 128px"
-        className={`object-contain p-1 drop-shadow-[0_2px_3px_rgba(0,0,0,0.2)] ${imgClassName}`}
+        className={`object-contain p-[2px] scale-[1.22] drop-shadow-[0_2px_3px_rgba(0,0,0,0.2)] ${imgClassName}`}
       />
     </div>
   );
