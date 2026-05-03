@@ -240,11 +240,11 @@ export default async function MiCuentaPage() {
                     <div className="flex shrink-0 flex-col items-center gap-2">
                       <div className="relative h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
                         <Image
-                          src="/club-escudo.png"
+                          src="/club-logo-oficial.png"
                           alt={links[7].title}
                           fill
                           sizes="112px"
-                          className="object-contain scale-[1.24]"
+                          className="object-contain scale-[1.78]"
                         />
                       </div>
                       {clubActivo ? (
@@ -264,11 +264,11 @@ export default async function MiCuentaPage() {
                   <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
                     <div className="relative h-[132px] w-[132px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60">
                       <Image
-                        src="/club-escudo.png"
+                        src="/club-logo-oficial.png"
                         alt={links[7].title}
                         fill
                         sizes="132px"
-                        className="object-contain scale-[1.26]"
+                        className="object-contain scale-[1.84]"
                       />
                     </div>
                     <div className="min-w-0 flex-1">
