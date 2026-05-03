@@ -19,7 +19,7 @@ import ThemeSelector from '@/app/cuenta/ThemeSelector';
 import NotifCenterBadgeLink from './components/NotifCenterBadgeLink';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
-import NivelIcono from './components/NivelIcono';
+import NivelAvatarViewer from './components/NivelAvatarViewer';
 
 type SectionTone = 'amber' | 'emerald' | 'violet' | 'sky';
 
@@ -213,31 +213,11 @@ export default async function MiCuentaPage() {
               <div className="w-full max-w-5xl space-y-6">
                 <section className="rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-5 text-left shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-6">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <a
-                      href={`/niveles-avatares/${encodeURIComponent(
-                        {
-                          'Turista Curioso': 'turista curioso 1.png',
-                          'Explorador Local': 'Explorador Local 2.png',
-                          'Viajero Apasionado': 'Viajero apasionado 3.png',
-                          'Amante de los Pueblos': 'Amante de los pueblos 4.png',
-                          'Gran Viajero': 'Gran viajero 5.png',
-                          'Leyenda LPBE': 'Leyenda LPBE 6.png',
-                          'Embajador de los Pueblos': 'Embajador de los pueblos 7.png',
-                          'Maestro Viajero': 'Maestro viajero 8.png',
-                          'Gran Maestre de los Pueblos': 'Gran Maestre de los Pueblos 9.png',
-                        }[nivelNombre] ?? 'turista curioso 1.png',
-                      )}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Abrir avatar en tamaño real"
-                      className="shrink-0"
-                    >
-                      <NivelIcono
-                        nombreNivel={nivelNombre}
-                        className="h-28 w-28 sm:h-32 sm:w-32"
-                        imgClassName="scale-105"
-                      />
-                    </a>
+                    <NivelAvatarViewer
+                      nombreNivel={nivelNombre}
+                      className="h-28 w-28 sm:h-32 sm:w-32"
+                      imgClassName="scale-105"
+                    />
                     <div className="min-w-0 flex-1">
                       <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
                         {pointsT('myAccount')}
