@@ -20,6 +20,7 @@ import NotifCenterBadgeLink from './components/NotifCenterBadgeLink';
 import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 import NivelAvatarViewer from './components/NivelAvatarViewer';
+import ClubLogoViewer from './components/ClubLogoViewer';
 import {
   type MiCuentaAssets,
   getClubLogoOverride,
@@ -219,6 +220,10 @@ export default async function MiCuentaPage() {
     },
   };
 
+  const clubLogoHeaderSrc =
+    getClubLogoOverride(miCuentaAssets, 'header') ?? '/club-logo-oficial-v4.png';
+  const clubLogoHeaderTransform = getClubLogoTransform(miCuentaAssets, 'header');
+
   return (
     <main>
       <Section spacing="none" background="default">
@@ -264,26 +269,11 @@ export default async function MiCuentaPage() {
                       ) : null}
                     </div>
                     <div className="flex shrink-0 flex-col items-center gap-2">
-                      <div className="relative h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
-                        {(() => {
-                          const t = getClubLogoTransform(miCuentaAssets, 'header');
-                          return (
-                            <Image
-                              src={
-                                getClubLogoOverride(miCuentaAssets, 'header') ??
-                                '/club-logo-oficial-v4.png'
-                              }
-                              alt={links[7].title}
-                              fill
-                              sizes="112px"
-                              className="object-contain"
-                              style={{
-                                transform: `translate(${t.offsetX}%, ${t.offsetY}%) scale(${t.scale})`,
-                              }}
-                            />
-                          );
-                        })()}
-                      </div>
+                      <ClubLogoViewer
+                        src={clubLogoHeaderSrc}
+                        alt={links[7].title}
+                        transform={clubLogoHeaderTransform}
+                      />
                       {clubActivo ? (
                         <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
                           {clubT('active')}
