@@ -27,11 +27,15 @@ export default async function MiCuentaPage() {
   const t = await getTranslations('myAccount');
   const levelsT = await getTranslations('levels');
   const pointsT = await getTranslations('points');
+  const clubT = await getTranslations('club');
 
   const token = await getToken();
   const API_BASE = getApiUrl();
   let puntosTotales = 0;
   let nivelNombre = 'Turista Curioso';
+  let nivelSiguienteNombre: string | null = null;
+  let puntosNecesariosNivel = 0;
+  let clubActivo = false;
   if (token) {
     try {
       const puntosRes = await fetch(`${API_BASE}/usuarios/me/puntos`, {
@@ -42,6 +46,19 @@ export default async function MiCuentaPage() {
         const puntosData = await puntosRes.json();
         puntosTotales = Number(puntosData?.total ?? 0);
         nivelNombre = String(puntosData?.nivel ?? 'Turista Curioso');
+        nivelSiguienteNombre = puntosData?.nivel_siguiente
+          ? String(puntosData.nivel_siguiente)
+          : null;
+        puntosNecesariosNivel = Number(puntosData?.puntos_necesarios ?? 0);
+      }
+
+      const clubRes = await fetch(`${API_BASE}/club/me?lang=es`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      });
+      if (clubRes.ok) {
+        const clubData = await clubRes.json();
+        clubActivo = !!clubData?.isMember;
       }
     } catch {
       // Fallo no crítico: mostramos la home de /mi-cuenta igualmente.
@@ -62,6 +79,10 @@ export default async function MiCuentaPage() {
   const nivelTraducido = NIVEL_SLUG[nivelNombre]
     ? levelsT(NIVEL_SLUG[nivelNombre])
     : nivelNombre;
+  const nivelSiguienteTraducido =
+    nivelSiguienteNombre && NIVEL_SLUG[nivelSiguienteNombre]
+      ? levelsT(NIVEL_SLUG[nivelSiguienteNombre])
+      : nivelSiguienteNombre;
 
   const notifCenter = {
     href: '/mi-cuenta/bandeja',
@@ -192,11 +213,31 @@ export default async function MiCuentaPage() {
               <div className="w-full max-w-5xl space-y-6">
                 <section className="rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-5 text-left shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-6">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <NivelIcono
-                      nombreNivel={nivelNombre}
-                      className="h-28 w-28 shrink-0 sm:h-32 sm:w-32"
-                      imgClassName="scale-105"
-                    />
+                    <a
+                      href={`/niveles-avatares/${encodeURIComponent(
+                        {
+                          'Turista Curioso': 'turista curioso 1.png',
+                          'Explorador Local': 'Explorador Local 2.png',
+                          'Viajero Apasionado': 'Viajero apasionado 3.png',
+                          'Amante de los Pueblos': 'Amante de los pueblos 4.png',
+                          'Gran Viajero': 'Gran viajero 5.png',
+                          'Leyenda LPBE': 'Leyenda LPBE 6.png',
+                          'Embajador de los Pueblos': 'Embajador de los pueblos 7.png',
+                          'Maestro Viajero': 'Maestro viajero 8.png',
+                          'Gran Maestre de los Pueblos': 'Gran Maestre de los Pueblos 9.png',
+                        }[nivelNombre] ?? 'turista curioso 1.png',
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Abrir avatar en tamaño real"
+                      className="shrink-0"
+                    >
+                      <NivelIcono
+                        nombreNivel={nivelNombre}
+                        className="h-28 w-28 sm:h-32 sm:w-32"
+                        imgClassName="scale-105"
+                      />
+                    </a>
                     <div className="min-w-0 flex-1">
                       <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
                         {pointsT('myAccount')}
@@ -207,18 +248,30 @@ export default async function MiCuentaPage() {
                       <p className="mt-2 text-sm font-medium text-foreground">
                         {nivelTraducido}
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {levelsT('allPointsCount')}
-                      </p>
+                      {nivelSiguienteTraducido && puntosNecesariosNivel > 0 ? (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {levelsT('pointsToNext', {
+                            points: puntosNecesariosNivel,
+                            next: nivelSiguienteTraducido,
+                          })}
+                        </p>
+                      ) : null}
                     </div>
-                    <div className="h-[96px] w-[96px] shrink-0 overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-0.5 shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
-                      <Image
-                        src="/club-escudo-monocromo.png"
-                        alt={links[7].title}
-                        width={112}
-                        height={112}
-                        className="h-full w-full scale-[1.28] object-contain"
-                      />
+                    <div className="flex shrink-0 flex-col items-center gap-2">
+                      <div className="h-[96px] w-[96px] overflow-hidden rounded-2xl border border-amber-200 bg-transparent p-0.5 shadow-sm dark:border-amber-900/60 sm:h-[112px] sm:w-[112px]">
+                        <Image
+                          src="/club-escudo-monocromo.png"
+                          alt={links[7].title}
+                          width={112}
+                          height={112}
+                          className="h-full w-full scale-[1.28] object-contain"
+                        />
+                      </div>
+                      {clubActivo ? (
+                        <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+                          {clubT('active')}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </section>

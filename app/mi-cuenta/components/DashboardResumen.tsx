@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import NivelIcono from './NivelIcono';
+import NivelIcono, { NIVEL_AVATAR_SRC } from './NivelIcono';
 import { Headline, Caption } from '@/app/components/ui/typography';
 
 const NIVEL_SLUG: Record<string, string> = {
@@ -49,6 +50,7 @@ export default function DashboardResumen({
   posicionGps,
   posicionTotal,
 }: Props) {
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const t = useTranslations('points');
   const tl = useTranslations('levels');
   const translateNivel = (nombre: string) => {
@@ -56,16 +58,23 @@ export default function DashboardResumen({
     return slug ? tl(slug) : nombre;
   };
   const nombreNivel = nivelActual?.nombre ? translateNivel(nivelActual.nombre) : t('initialLevel');
+  const avatarSrc = NIVEL_AVATAR_SRC[nivelActual?.nombre ?? ''] ?? NIVEL_AVATAR_SRC['Turista Curioso'];
 
   return (
     <section className="space-y-6 rounded-2xl border border-border/80 bg-gradient-to-br from-white via-card to-card p-6 shadow-sm dark:from-card dark:via-card dark:to-card">
       <div className="flex flex-col gap-5 md:flex-row md:items-center">
         <div className="mx-auto md:mx-0">
-          <NivelIcono
-            nombreNivel={nombreNivel}
-            className="h-32 w-32 md:h-36 md:w-36"
-            imgClassName="scale-105"
-          />
+          <button
+            type="button"
+            onClick={() => setShowAvatarModal(true)}
+            className="rounded-2xl transition-transform hover:scale-[1.02]"
+          >
+            <NivelIcono
+              nombreNivel={nombreNivel}
+              className="h-32 w-32 md:h-36 md:w-36"
+              imgClassName="scale-105"
+            />
+          </button>
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
@@ -170,6 +179,32 @@ export default function DashboardResumen({
           <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
         </svg>
       </Link>
+
+      {showAvatarModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+          onClick={() => setShowAvatarModal(false)}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl border border-white/30 bg-black/20 p-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={avatarSrc}
+              alt={nombreNivel}
+              className="max-h-[80vh] max-w-[80vw] object-contain"
+            />
+            <button
+              type="button"
+              onClick={() => setShowAvatarModal(false)}
+              className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white hover:bg-black/90"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
