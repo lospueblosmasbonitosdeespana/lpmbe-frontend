@@ -111,13 +111,37 @@ function formatPrecio(cents: number): string {
   return `${euros} €`;
 }
 
-const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-const DIAS_SHORT = ["L", "M", "X", "J", "V", "S", "D"];
+const LOCALE_MAP: Record<string, string> = { ca: "ca-ES", pt: "pt-PT" };
 
-/** Agrupa días consecutivos con el mismo horario para mostrarlo compacto: "L-V  09:00-18:00" */
-function buildHorarioRows(horariosSemana: HorarioDia[]): Array<{ label: string; horario: string; abierto: boolean }> {
+/** Genera nombres de días de la semana en el locale indicado (lunes=0 → domingo=6) */
+function getDayNames(locale: string): string[] {
+  const intlLocale = LOCALE_MAP[locale] ?? locale;
+  const base = new Date(2024, 0, 1); // lunes 1 enero 2024
+  const fmt = new Intl.DateTimeFormat(intlLocale, { weekday: "long" });
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + i);
+    const name = fmt.format(d);
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  });
+}
+
+const HORARIO_I18N: Record<string, { closed: string; open: string; toWord: string; heading: string; closureDays: string }> = {
+  es: { closed: "Cerrado", open: "Abierto", toWord: "a", heading: "Horarios", closureDays: "Próximos días de cierre" },
+  en: { closed: "Closed", open: "Open", toWord: "to", heading: "Opening hours", closureDays: "Upcoming closure dates" },
+  fr: { closed: "Fermé", open: "Ouvert", toWord: "à", heading: "Horaires", closureDays: "Prochaines fermetures" },
+  de: { closed: "Geschlossen", open: "Geöffnet", toWord: "bis", heading: "Öffnungszeiten", closureDays: "Kommende Schließtage" },
+  pt: { closed: "Fechado", open: "Aberto", toWord: "a", heading: "Horários", closureDays: "Próximos dias de encerramento" },
+  it: { closed: "Chiuso", open: "Aperto", toWord: "a", heading: "Orari", closureDays: "Prossime chiusure" },
+  ca: { closed: "Tancat", open: "Obert", toWord: "a", heading: "Horaris", closureDays: "Propers dies de tancament" },
+};
+
+/** Agrupa días consecutivos con el mismo horario: "Martes a Domingo  10:00 - 19:00" */
+function buildHorarioRows(horariosSemana: HorarioDia[], locale = "es"): Array<{ label: string; horario: string; abierto: boolean }> {
   if (!horariosSemana || horariosSemana.length === 0) return [];
 
+  const dias = getDayNames(locale);
+  const t = HORARIO_I18N[locale] ?? HORARIO_I18N.es;
   const rows: Array<{ label: string; horario: string; abierto: boolean }> = [];
   const sorted = [...horariosSemana].sort((a, b) => a.diaSemana - b.diaSemana);
 
@@ -126,7 +150,6 @@ function buildHorarioRows(horariosSemana: HorarioDia[]): Array<{ label: string; 
     const cur = sorted[i];
     const key = `${cur.abierto}-${cur.horaAbre}-${cur.horaCierra}`;
     let j = i + 1;
-    // agrupar días consecutivos con mismo horario
     while (
       j < sorted.length &&
       sorted[j].diaSemana === sorted[j - 1].diaSemana + 1 &&
@@ -138,14 +161,14 @@ function buildHorarioRows(horariosSemana: HorarioDia[]): Array<{ label: string; 
     const to = sorted[j - 1];
     const label =
       from.diaSemana === to.diaSemana
-        ? DIAS[from.diaSemana]
-        : `${DIAS_SHORT[from.diaSemana]}-${DIAS_SHORT[to.diaSemana]}`;
+        ? dias[from.diaSemana]
+        : `${dias[from.diaSemana]} ${t.toWord} ${dias[to.diaSemana]}`;
 
     const horario = from.abierto
       ? from.horaAbre && from.horaCierra
         ? `${from.horaAbre} - ${from.horaCierra}`
-        : "Abierto"
-      : "Cerrado";
+        : t.open
+      : t.closed;
 
     rows.push({ label, horario, abierto: from.abierto });
     i = j;
@@ -153,10 +176,10 @@ function buildHorarioRows(horariosSemana: HorarioDia[]): Array<{ label: string; 
   return rows;
 }
 
-function formatFechaCierre(isoDate: string): string {
+function formatFechaCierre(isoDate: string, locale = "es"): string {
   const d = new Date(isoDate);
   if (isNaN(d.getTime())) return isoDate;
-  return d.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString(LOCALE_MAP[locale] ?? locale, { day: "numeric", month: "long", year: "numeric" });
 }
 
 /** Detecta si el campo contacto tiene email o teléfono */
@@ -251,9 +274,10 @@ export default async function RecursoDetailPage({
       ? [{ titulo: recurso.nombre, lat: recurso.lat, lng: recurso.lng, tipo: recurso.tipo }]
       : [];
   const parrafos = toParagraphs(recurso.descripcion);
-  const horarioRows = buildHorarioRows(recurso.horariosSemana ?? []);
+  const horarioRows = buildHorarioRows(recurso.horariosSemana ?? [], locale);
   const hasHorarios = horarioRows.length > 0 || (recurso.horarios && recurso.horarios.trim());
   const hasCierres = (recurso.cierresEspeciales ?? []).length > 0;
+  const tHorario = HORARIO_I18N[locale] ?? HORARIO_I18N.es;
   const contactoParsed = parseContacto(recurso.contacto ?? null);
   const telefono = recurso.telefono || contactoParsed.telefono;
   const email = recurso.email || contactoParsed.email;
@@ -574,7 +598,7 @@ export default async function RecursoDetailPage({
           <Container size="md">
             <Headline as="h2" className="mb-4 flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />
-              Horarios
+              {tHorario.heading}
             </Headline>
 
             {/* Horarios estructurados por día */}
@@ -587,7 +611,7 @@ export default async function RecursoDetailPage({
                       i > 0 ? "border-t border-border" : ""
                     }`}
                   >
-                    <span className="w-28 font-medium text-foreground">{row.label}</span>
+                    <span className="font-medium text-foreground">{row.label}</span>
                     <span
                       className={
                         row.abierto
@@ -614,7 +638,7 @@ export default async function RecursoDetailPage({
               <div className="mt-4">
                 <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-amber-700">
                   <CalendarX className="h-4 w-4" />
-                  Próximos días de cierre
+                  {tHorario.closureDays}
                 </p>
                 <ul className="space-y-1">
                   {recurso.cierresEspeciales.map((c, i) => (
@@ -622,7 +646,7 @@ export default async function RecursoDetailPage({
                       key={i}
                       className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800"
                     >
-                      <span className="font-medium">{formatFechaCierre(c.fecha)}</span>
+                      <span className="font-medium">{formatFechaCierre(c.fecha, locale)}</span>
                       {c.motivo && <span className="text-amber-700">— {c.motivo}</span>}
                     </li>
                   ))}
