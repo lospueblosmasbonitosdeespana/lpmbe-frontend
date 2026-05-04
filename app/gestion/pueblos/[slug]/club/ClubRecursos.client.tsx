@@ -1075,12 +1075,11 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         </p>
         <p className="mt-1">
           Si el lugar <strong>no tiene personal</strong> que pueda validar la visita (parques, miradores, ermitas al aire libre,
-          lavaderos, fuentes históricas, museos al aire libre…) <strong>no debe registrarse aquí como RRTT</strong>.
-          Se debe añadir como <strong>POI</strong> (Punto de Interés del pueblo), donde la validación se hace por
-          geolocalización del socio.
-        </p>
-        <p className="mt-1 text-xs text-blue-800">
-          Excepción: recursos rurales / naturales con validación GEO ya configurada por administración.
+          lavaderos, fuentes históricas, museos al aire libre…) pueden registrarse como{' '}
+          <strong>RRTT Naturales/Rurales</strong> o directamente como <strong>POIs</strong> del pueblo.
+          Se recomienda registrarlo como <strong>Recurso Natural/Rural</strong> si está más alejado del pueblo,
+          y como <strong>POI</strong> si está dentro del mismo pueblo.
+          Los dos dan puntos, pero los Recursos Turísticos valen más.
         </p>
       </div>
 
