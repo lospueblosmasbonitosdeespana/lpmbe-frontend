@@ -2421,7 +2421,7 @@ function ComboForm({
   onSubmit, onCancel, submitting,
 }: ComboFormProps) {
   const componentesCandidatos = recursosDelPueblo.filter(
-    (x) => x.id !== recursoActualId && !x.esCombo,
+    (x) => x.id !== recursoActualId && !x.esCombo && x.validacionTipo !== 'GEO' && x.validacionTipo !== 'AMBOS',
   );
   const precioNum = Number(precio);
   const hayPrecio = precio !== '' && !isNaN(precioNum) && precioNum >= 0;
