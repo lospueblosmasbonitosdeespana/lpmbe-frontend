@@ -344,7 +344,6 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
   });
   const [horariosSemana, setHorariosSemana] = useState<HorarioDia[]>(recurso.horariosSemana ?? []);
   const [cierresEspeciales, setCierresEspeciales] = useState<CierreEspecial[]>(recurso.cierresEspeciales ?? []);
-  const [abierto24h, setAbierto24h] = useState<boolean>((recurso as any).abierto24h ?? false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -385,7 +384,6 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         edadMaxMenor: form.edadMaxMenor,
         descuentoPorcentaje: form.descuentoPorcentaje ? Number(form.descuentoPorcentaje) : null,
         precioCents: form.precioCents ? Math.round(Number(form.precioCents) * 100) : null,
-        abierto24h,
         horariosSemana: horariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }: any) => ({ diaSemana, abierto, horaAbre, horaCierra })),
         cierresEspeciales: cierresEspeciales.map(({ fecha, motivo }: any) => ({ fecha, motivo })),
       };
@@ -565,9 +563,7 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
         <HorariosEditor
           horariosSemana={horariosSemana}
           cierresEspeciales={cierresEspeciales}
-          abierto24h={abierto24h}
           onChange={(h, c) => { setHorariosSemana(h); setCierresEspeciales(c); }}
-          onAbierto24hChange={setAbierto24h}
         />
       </div>
 

@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { Clock } from "lucide-react";
 import { getPlanFeatures, type PlanNegocio, SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS } from "@/lib/plan-features";
 
 const TIPO_LABELS: Record<string, string> = {
@@ -501,17 +500,7 @@ export default function NegocioDetail({
       )}
 
       {/* Schedule - only for paid plans or non-negocios */}
-      {showSchedule && (recurso as any).abierto24h && (
-        <div>
-          <h2 className="text-lg font-semibold text-foreground mb-3">Horarios</h2>
-          <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
-            <Clock className="h-4 w-4 text-emerald-600" />
-            Abierto 24 horas
-          </div>
-        </div>
-      )}
-
-      {showSchedule && !(recurso as any).abierto24h && recurso.horariosSemana && recurso.horariosSemana.length > 0 && (
+      {showSchedule && recurso.horariosSemana && recurso.horariosSemana.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-3">Horarios</h2>
           <div className="grid gap-1.5 sm:grid-cols-2">
@@ -536,7 +525,7 @@ export default function NegocioDetail({
         </div>
       )}
 
-      {showSchedule && !(recurso as any).abierto24h && recurso.horarios && !recurso.horariosSemana?.length && (
+      {showSchedule && recurso.horarios && !recurso.horariosSemana?.length && (
         <div>
           <h2 className="text-lg font-semibold text-foreground mb-2">Horarios</h2>
           <p className="text-sm text-muted-foreground">{recurso.horarios}</p>

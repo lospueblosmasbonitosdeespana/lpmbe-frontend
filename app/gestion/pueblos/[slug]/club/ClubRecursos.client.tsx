@@ -63,7 +63,6 @@ type Recurso = {
   bookingUrl?: string | null;
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
-  abierto24h?: boolean;
   // Extras Club
   regaloActivo?: boolean;
   regaloTitulo?: string | null;
@@ -256,7 +255,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
   const [editLng, setEditLng] = useState('');
   const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
   const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
-  const [editAbierto24h, setEditAbierto24h] = useState(false);
   // Información pública del recurso
   const [editFotoUrl, setEditFotoUrl] = useState('');
   const [editDescripcion, setEditDescripcion] = useState('');
@@ -546,7 +544,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setEditLng(r.lng != null ? String(r.lng) : '');
     setEditHorariosSemana(r.horariosSemana ?? []);
     setEditCierresEspeciales(r.cierresEspeciales ?? []);
-    setEditAbierto24h(r.abierto24h ?? false);
     setEditFotoUrl(r.fotoUrl ?? '');
     setEditDescripcion(r.descripcion ?? '');
     setEditHorarios(r.horarios ?? '');
@@ -584,7 +581,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setEditEsExterno(false);
     setEditLat('');
     setEditLng('');
-    setEditAbierto24h(false);
     setEditFotoUrl('');
     setEditDescripcion('');
     setEditHorarios('');
@@ -653,7 +649,6 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         edadMaxMenor: Math.max(0, Number(editEdadMaxMenor) || 12),
         lat: Number(editLat),
         lng: Number(editLng),
-        abierto24h: editAbierto24h,
         horariosSemana: editHorariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra })),
         cierresEspeciales: editCierresEspeciales.map(({ fecha, motivo }) => ({ fecha, motivo })),
         // Información pública del recurso
@@ -1069,6 +1064,25 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         </div>
       )}
 
+      {/* Aviso permanente: requisito de validación presencial en RRTT */}
+      <div className="mt-4 p-3 rounded-lg border border-blue-300 bg-blue-50 text-sm text-blue-900">
+        <p className="font-semibold mb-1">Importante: validación presencial obligatoria en RRTT normales</p>
+        <p>
+          Los <strong>Recursos Turísticos normales</strong> (museos, castillos, iglesias, monumentos…) deben poder validarse{' '}
+          <strong>presencialmente por una persona física</strong>: el socio escanea el QR del recurso o entrega el código
+          de 6 cifras al encargado al llegar.
+        </p>
+        <p className="mt-1">
+          Si el lugar <strong>no tiene personal</strong> que pueda validar la visita (parques, miradores, ermitas al aire libre,
+          lavaderos, fuentes históricas, museos al aire libre…) <strong>no debe registrarse aquí como RRTT</strong>.
+          Se debe añadir como <strong>POI</strong> (Punto de Interés del pueblo), donde la validación se hace por
+          geolocalización del socio.
+        </p>
+        <p className="mt-1 text-xs text-blue-800">
+          Excepción: recursos rurales / naturales con validación GEO ya configurada por administración.
+        </p>
+      </div>
+
       {/* Warning: recursos sin geolocalizar */}
       {sinGeolocalizar.length > 0 && !loading && (
         <div className="mt-4 p-3 rounded-lg border border-amber-300 bg-amber-50 text-sm text-amber-900">
@@ -1464,9 +1478,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                     <HorariosEditor
                       horariosSemana={editHorariosSemana}
                       cierresEspeciales={editCierresEspeciales}
-                      abierto24h={editAbierto24h}
                       onChange={(h, c) => { setEditHorariosSemana(h); setEditCierresEspeciales(c); }}
-                      onAbierto24hChange={setEditAbierto24h}
                     />
                   </div>
 
