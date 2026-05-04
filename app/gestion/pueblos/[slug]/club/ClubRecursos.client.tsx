@@ -63,6 +63,7 @@ type Recurso = {
   bookingUrl?: string | null;
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
+  abierto24h?: boolean;
   // Extras Club
   regaloActivo?: boolean;
   regaloTitulo?: string | null;
