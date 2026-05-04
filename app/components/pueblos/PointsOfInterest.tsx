@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { stripHtml } from "@/lib/html"
 import { Section } from "@/app/components/ui/section"
 import { Container } from "@/app/components/ui/container"
 import { Grid } from "@/app/components/ui/grid"
@@ -77,7 +78,8 @@ export function PointsOfInterest({ points, className, maxItems = 6, hideHeader, 
 }
 
 function PointOfInterestCard({ point, index, showFullDescription }: { point: PointOfInterest; index: number; showFullDescription?: boolean }) {
-  const hasDescription = point.description?.trim() && !/^sin descripción\.?$/i.test(point.description.trim())
+  const cleanDescription = stripHtml(point.description)
+  const hasDescription = cleanDescription && !/^sin descripción\.?$/i.test(cleanDescription)
   const content = (
     <article
       className={cn(
@@ -118,7 +120,7 @@ function PointOfInterestCard({ point, index, showFullDescription }: { point: Poi
               "text-xs leading-relaxed text-foreground/90 dark:text-muted-foreground sm:text-sm mt-0.5",
               !showFullDescription && "line-clamp-2"
             )}>
-              {point.description}
+              {cleanDescription}
             </p>
           )}
         </div>
