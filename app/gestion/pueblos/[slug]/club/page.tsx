@@ -77,6 +77,7 @@ export default async function ClubGestionPage({
         puebloNombre={pueblo.nombre}
         puebloLat={pueblo.lat ?? null}
         puebloLng={pueblo.lng ?? null}
+        esAdmin={me.rol === 'ADMIN'}
       />
     </GestionPuebloSubpageShell>
   );

@@ -1322,9 +1322,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
           <div className="text-sm text-muted-foreground">No hay recursos todavía.</div>
         ) : (
           recursos.filter((r) => r.validacionTipo !== 'GEO' && r.validacionTipo !== 'AMBOS').map((r) => (
-            <div
+            <article
               key={r.id}
-              className={`p-4 border rounded space-y-2 ${
+              className={`rounded-2xl border border-border bg-white p-4 shadow-sm ${
                 r.esCombo ? 'border-purple-300 bg-gradient-to-br from-purple-50/40 to-fuchsia-50/40' : ''
               }`}
             >
@@ -1493,218 +1493,147 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                 </>
               ) : (
                 <>
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
                     {r.fotoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={r.fotoUrl}
                         alt={r.nombre}
-                        className="hidden sm:block h-20 w-20 object-cover rounded border flex-shrink-0"
+                        className="h-20 w-20 shrink-0 rounded-xl object-cover"
                       />
                     ) : (
-                      <div className="hidden sm:flex h-20 w-20 items-center justify-center rounded border-2 border-dashed border-amber-300 bg-amber-50 text-amber-700 text-[10px] text-center px-1 flex-shrink-0">
+                      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 text-amber-700 text-[10px] text-center px-1">
                         Sin foto
                       </div>
                     )}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium">{r.nombre}</span>
-                        <span
-                          className={`inline-block px-2 py-0.5 text-xs font-semibold rounded ${
-                            r.esExterno
-                              ? 'bg-orange-50 text-orange-700 border border-orange-200'
-                              : 'bg-green-50 text-green-700 border border-green-200'
-                          }`}
-                        >
+                    <div className="min-w-0 flex-1">
+                      {/* Nombre + badge activo */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="text-sm font-semibold text-foreground">{r.nombre}</div>
+                          <div className="text-xs text-muted-foreground">{r.tipo || '—'}</div>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${r.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
+                          {r.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </div>
+                      {/* Badges */}
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded border ${r.esExterno ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
                           {r.esExterno ? 'Externo' : 'Municipal'}
                         </span>
                         {!r.fotoUrl && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-amber-50 text-amber-800 border border-amber-200">
-                            <Camera className="h-3 w-3" aria-hidden />
-                            Sin foto
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-amber-50 text-amber-800 border-amber-200">
+                            <Camera className="h-3 w-3" aria-hidden />Sin foto
                           </span>
                         )}
                         {r.lat != null && r.lng != null ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-emerald-50 text-emerald-700 border-emerald-200">
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                             Geolocalizado
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-red-50 text-red-700 border border-red-200">
-                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-red-50 text-red-700 border-red-200">
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             Sin ubicación
                           </span>
                         )}
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded border ${
-                            r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : 'bg-blue-50 text-blue-700 border-blue-200'
-                          }`}
-                        >
-                          {r.validacionTipo === 'GEO' || r.validacionTipo === 'AMBOS'
-                            ? 'Rural/Natural'
-                            : 'RRTT normal'}
-                        </span>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-blue-50 text-blue-700 border-blue-200">RRTT normal</span>
                         {r.regaloActivo && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-amber-50 text-amber-700 border border-amber-200">
-                            <Gift className="h-3 w-3" aria-hidden />
-                            Regalo
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-amber-50 text-amber-700 border-amber-200">
+                            <Gift className="h-3 w-3" aria-hidden />Regalo
                           </span>
                         )}
                         {r.esCombo && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-50 text-purple-700 border border-purple-200">
-                            <Layers className="h-3 w-3" aria-hidden />
-                            Combo ({r.comboItems?.length ?? 0})
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-purple-50 text-purple-700 border-purple-200">
+                            <Layers className="h-3 w-3" aria-hidden />Combo ({r.comboItems?.length ?? 0})
                           </span>
                         )}
                         {(r.perteneceACombos?.length ?? 0) > 0 && (
-                          <span
-                            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200"
-                            title={`Incluido en: ${r.perteneceACombos!.map((c) => c.nombre).join(', ')}`}
-                          >
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200" title={`Incluido en: ${r.perteneceACombos!.map((c) => c.nombre).join(', ')}`}>
                             <Layers className="h-3 w-3" aria-hidden />
-                            {r.perteneceACombos!.length === 1
-                              ? `Parte del combo «${r.perteneceACombos![0].nombre}»`
-                              : `Parte de ${r.perteneceACombos!.length} combos`}
+                            {r.perteneceACombos!.length === 1 ? `Parte del combo «${r.perteneceACombos![0].nombre}»` : `Parte de ${r.perteneceACombos!.length} combos`}
                           </span>
                         )}
                         {r.soloEnCombo && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-800 border border-purple-300">
-                            <Layers className="h-3 w-3" aria-hidden />
-                            Solo en combo
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-purple-100 text-purple-800 border-purple-300">
+                            <Layers className="h-3 w-3" aria-hidden />Solo en combo
                           </span>
                         )}
                         {(r.precios?.length ?? 0) > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-slate-100 text-slate-700 border border-slate-300">
-                            <Euro className="h-3 w-3" aria-hidden />
-                            {r.precios!.length} tramo{r.precios!.length > 1 ? 's' : ''}
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded border bg-slate-100 text-slate-700 border-slate-300">
+                            <Euro className="h-3 w-3" aria-hidden />{r.precios!.length} tramo{r.precios!.length > 1 ? 's' : ''}
                           </span>
                         )}
                         {(r.puntosEfectivos ?? 0) > 0 && (
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded border ${
-                              r.puntosCustom != null
-                                ? 'bg-amber-50 text-amber-800 border-amber-300'
-                                : 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200'
-                            }`}
-                            title={
-                              r.puntosCustom != null
-                                ? `Puntos personalizados (genérico: ${r.puntosGenericos ?? 0})`
-                                : `Valor genérico de la regla ${r.reglaGenerica ?? 'RECURSO_VISITADO'}`
-                            }
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded border ${r.puntosCustom != null ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200'}`}
+                            title={r.puntosCustom != null ? `Puntos personalizados (genérico: ${r.puntosGenericos ?? 0})` : `Valor genérico de la regla ${r.reglaGenerica ?? 'RECURSO_VISITADO'}`}
                           >
-                            <Sparkles className="h-3 w-3" aria-hidden />
-                            +{r.puntosEfectivos} pts
-                            {r.puntosCustom != null ? ' · custom' : ''}
+                            <Sparkles className="h-3 w-3" aria-hidden />+{r.puntosEfectivos} pts{r.puntosCustom != null ? ' · custom' : ''}
                           </span>
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">Tipo: {r.tipo || '—'}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Precio: {r.precioCents !== null && r.precioCents !== undefined ? (r.precioCents === 0 ? <span className="text-emerald-600 font-medium">Gratuito</span> : `${(r.precioCents / 100).toFixed(2)} €`) : '—'}
+                      {/* Info compacta */}
+                      <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                        <div>Precio: {r.precioCents !== null && r.precioCents !== undefined ? (r.precioCents === 0 ? <span className="text-emerald-600 font-medium">Gratuito</span> : `${(r.precioCents / 100).toFixed(2)} €`) : '—'}</div>
+                        {r.descuentoPorcentaje != null && r.precioCents ? (
+                          <div className="text-green-600 font-medium">Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €</div>
+                        ) : (
+                          <div>Descuento: {r.descuentoPorcentaje != null ? `${r.descuentoPorcentaje}%` : '—'}</div>
+                        )}
+                        <div className="text-blue-700 font-medium">Condiciones: {formatCondiciones(r)}</div>
+                        <div className="font-mono break-all">QR: {r.codigoQr}</div>
                       </div>
-                      {r.descuentoPorcentaje && r.precioCents && (
-                        <div className="text-sm text-green-600 font-medium">
-                          Con descuento: {((r.precioCents / 100) * (1 - r.descuentoPorcentaje / 100)).toFixed(2)} €
-                        </div>
-                      )}
+                      {/* Ahorro combo */}
                       {r.esCombo && r.ahorroCombo && (
-                        <div
-                          data-testid="combo-ahorro"
-                          data-build="ahorro-v2"
-                          className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm"
-                        >
-                          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                            <span className="text-emerald-800 font-semibold">
-                              Ahorro del combo:{' '}
-                              {(r.ahorroCombo.ahorroCents / 100).toFixed(2)} €
-                              {' '}
-                              <span className="inline-flex items-center rounded-full bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 ml-1">
-                                −{r.ahorroCombo.ahorroPorcentaje}%
-                              </span>
-                            </span>
-                          </div>
-                          <div className="text-xs text-emerald-700/90 mt-0.5">
-                            Por separado costaría{' '}
-                            <span className="line-through">
-                              {(r.ahorroCombo.sumaComponentesCents / 100).toFixed(2)} €
-                            </span>
-                            {r.precioCents ? (
-                              <>
-                                {' '}
-                                · En combo:{' '}
-                                <strong>{(r.precioCents / 100).toFixed(2)} €</strong>
-                              </>
-                            ) : null}
-                          </div>
+                        <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs">
+                          <span className="text-emerald-800 font-semibold">Ahorro: {(r.ahorroCombo.ahorroCents / 100).toFixed(2)} € </span>
+                          <span className="inline-flex items-center rounded-full bg-emerald-600 text-white text-xs font-bold px-2 py-0.5">−{r.ahorroCombo.ahorroPorcentaje}%</span>
+                          <span className="text-emerald-700/90 ml-2">
+                            Por separado: <span className="line-through">{(r.ahorroCombo.sumaComponentesCents / 100).toFixed(2)} €</span>
+                            {r.precioCents ? <> · En combo: <strong>{(r.precioCents / 100).toFixed(2)} €</strong></> : null}
+                          </span>
                         </div>
                       )}
-                      <div className="text-sm text-muted-foreground">
-                        Descuento: {r.descuentoPorcentaje !== null && r.descuentoPorcentaje !== undefined ? `${r.descuentoPorcentaje}%` : '—'}
-                      </div>
-                      <div className="text-sm text-blue-700 font-medium">
-                        Condiciones: {formatCondiciones(r)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Activo: <strong>{r.activo ? 'Sí' : 'No'}</strong>
-                      </div>
-                      <div className="text-sm text-muted-foreground font-mono mt-1 break-all">
-                        QR: {r.codigoQr}
-                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-3 flex-wrap">
+                  {/* Botones */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={() => (r.esCombo ? handleIniciarEdicionCombo(r) : handleIniciarEdicion(r))}
-                      className={`px-3 py-1 text-sm border rounded hover:bg-muted/30 ${
-                        r.esCombo ? 'border-purple-300 text-purple-700 hover:bg-purple-50' : ''
-                      }`}
+                      className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white shadow-sm ${r.esCombo ? 'bg-purple-600 hover:bg-purple-700' : 'bg-amber-600 hover:bg-amber-700'}`}
                     >
                       {r.esCombo ? 'Editar combo' : 'Editar'}
                     </button>
-                    <button type="button" onClick={() => handleToggleActivo(r.id, r.activo)} className="px-3 py-1 text-sm border rounded hover:bg-muted/30">
+                    <button type="button" onClick={() => handleToggleActivo(r.id, r.activo)} className="inline-flex items-center gap-1 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/30">
                       {r.activo ? 'Desactivar' : 'Activar'}
                     </button>
-                    <button type="button" onClick={() => handleEliminar(r.id)} className="px-3 py-1 text-sm border rounded hover:bg-muted/30">
+                    <button type="button" onClick={() => handleEliminar(r.id)} className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50">
                       Eliminar
                     </button>
                     {r.slug && (
-                      <a href={`/recursos/${r.slug}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center">
+                      <a href={`/recursos/${r.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">
                         Ver en web ↗
                       </a>
                     )}
-                    {r.activo && (
-                      <a href={`/validador/${r.id}`} target="_blank" rel="noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-muted/30 inline-block text-center">
-                        Validador
-                      </a>
-                    )}
-                    <a href={`/gestion/asociacion/club/metricas/${puebloId}`} className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center">
+                    <a href={`/gestion/asociacion/club/metricas/${puebloId}`} className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">
                       Métricas
                     </a>
                     {esAdmin ? (
                       <button
                         type="button"
                         onClick={() => startEditPuntos(r)}
-                        className="px-3 py-1 text-sm border rounded hover:bg-fuchsia-50 text-fuchsia-700 border-fuchsia-300 inline-flex items-center gap-1"
+                        className="inline-flex items-center gap-1 rounded-lg border border-fuchsia-300 bg-white px-3 py-1.5 text-xs font-medium text-fuchsia-700 hover:bg-fuchsia-50"
                         title="Cambiar los puntos del Club que otorga este recurso"
                       >
                         <Sparkles className="h-3 w-3" aria-hidden />
                         Puntos
                       </button>
                     ) : (r.puntosEfectivos ?? 0) > 0 ? (
-                      <span
-                        className="px-3 py-1 text-xs rounded bg-muted/30 text-muted-foreground inline-flex items-center gap-1"
-                        title="Solo el admin de la asociación puede modificar los puntos"
-                      >
-                        <Lock className="h-3 w-3" aria-hidden />
-                        Puntos: solo admin
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground" title="Solo el admin de la asociación puede modificar los puntos">
+                        <Lock className="h-3 w-3" aria-hidden />Puntos: solo admin
                       </span>
                     ) : null}
                   </div>
@@ -1727,7 +1656,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                   ) : null}
                 </>
               )}
-            </div>
+            </article>
           ))
         )}
       </div>

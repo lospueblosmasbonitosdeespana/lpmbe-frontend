@@ -37,6 +37,9 @@ type RecursoRural = {
   puebloId: number | null;
   puebloNombre: string | null;
   puebloSlug: string | null;
+  puntosCustom?: number | null;
+  puntosEfectivos?: number;
+  puntosGenericos?: number;
 };
 
 type ReglaGamif = {
@@ -65,11 +68,13 @@ export default function ClubRecursosRurales({
   puebloLat,
   puebloLng,
   puebloNombre,
+  esAdmin = false,
 }: {
   puebloId: number;
   puebloLat: number | null;
   puebloLng: number | null;
   puebloNombre?: string;
+  esAdmin?: boolean;
 }) {
   const [items, setItems] = useState<RecursoRural[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +83,11 @@ export default function ClubRecursosRurales({
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [puntosNatural, setPuntosNatural] = useState<number | null>(null);
+
+  // Puntos por recurso (solo admin)
+  const [editandoPuntosId, setEditandoPuntosId] = useState<number | null>(null);
+  const [editPuntosValor, setEditPuntosValor] = useState('');
+  const [guardandoPuntos, setGuardandoPuntos] = useState(false);
 
   // Form state
   const [nombre, setNombre] = useState('');
@@ -215,6 +225,51 @@ export default function ClubRecursosRurales({
       await load();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function toggleActivo(r: RecursoRural) {
+    setError(null);
+    try {
+      const res = await fetch(`/api/club/recursos-rurales/${r.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: !r.activo }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? 'Error al cambiar estado');
+        return;
+      }
+      await load();
+    } catch {
+      setError('Error de red');
+    }
+  }
+
+  function startEditPuntos(r: RecursoRural) {
+    setEditandoPuntosId(r.id);
+    setEditPuntosValor(r.puntosCustom != null ? String(r.puntosCustom) : '');
+  }
+
+  async function handleGuardarPuntos(id: number, payload: { puntosCustom: number | null }) {
+    setGuardandoPuntos(true);
+    try {
+      const res = await fetch(`/api/club/admin/recursos/${id}/puntos`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data?.message ?? 'No se pudieron guardar los puntos.');
+        return;
+      }
+      setEditandoPuntosId(null);
+      setEditPuntosValor('');
+      await load();
+    } finally {
+      setGuardandoPuntos(false);
     }
   }
 
@@ -599,7 +654,21 @@ export default function ClubRecursosRurales({
                   </div>
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-end gap-2">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => startEdit(r)}
+                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleActivo(r)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/30"
+                >
+                  {r.activo ? 'Desactivar' : 'Activar'}
+                </button>
                 <button
                   type="button"
                   onClick={() => eliminar(r)}
@@ -608,14 +677,93 @@ export default function ClubRecursosRurales({
                   <Trash2 className="h-3.5 w-3.5" />
                   Eliminar
                 </button>
-                <button
-                  type="button"
-                  onClick={() => startEdit(r)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+                {r.slug && (
+                  <a
+                    href={`/recursos/${r.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                  >
+                    Ver en web ↗
+                  </a>
+                )}
+                <a
+                  href={`/gestion/asociacion/club/metricas/${puebloId}`}
+                  className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
                 >
-                  Editar
-                </button>
+                  Métricas
+                </a>
+                {esAdmin ? (
+                  <button
+                    type="button"
+                    onClick={() => startEditPuntos(r)}
+                    className="inline-flex items-center gap-1 rounded-lg border border-fuchsia-300 bg-white px-3 py-1.5 text-xs font-medium text-fuchsia-700 hover:bg-fuchsia-50"
+                    title="Cambiar los puntos del Club que otorga este recurso"
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    Puntos
+                  </button>
+                ) : (r.puntosEfectivos ?? 0) > 0 ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-lg bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground"
+                    title="Solo el admin de la asociación puede modificar los puntos"
+                  >
+                    <Lock className="h-3 w-3" />
+                    Puntos: solo admin
+                  </span>
+                ) : null}
               </div>
+              {esAdmin && editandoPuntosId === r.id && (
+                <div className="mt-3 rounded-lg border border-fuchsia-200 bg-fuchsia-50/40 p-3">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[180px]">
+                      <label className="block text-xs font-semibold text-fuchsia-900 mb-1">
+                        Puntos del Club al validar este recurso
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        placeholder={`gen: ${r.puntosGenericos ?? puntosNatural ?? 0}`}
+                        value={editPuntosValor}
+                        onChange={(e) => setEditPuntosValor(e.target.value)}
+                        className="w-full rounded border border-fuchsia-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40"
+                        autoFocus
+                      />
+                      <p className="mt-1 text-[11px] text-fuchsia-800/80">
+                        Deja vacío para usar el genérico ({r.puntosGenericos ?? puntosNatural ?? 0} pts).
+                        {r.puntosCustom != null ? ' Ahora tiene valor personalizado.' : ' Ahora hereda el genérico.'}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setEditandoPuntosId(null); setEditPuntosValor(''); }}
+                        disabled={guardandoPuntos}
+                        className="rounded border border-border bg-white px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted/30"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={guardandoPuntos}
+                        onClick={() => {
+                          const t = editPuntosValor.trim();
+                          const payload = t === '' ? { puntosCustom: null } : { puntosCustom: parseInt(t, 10) };
+                          if (t !== '' && (Number.isNaN((payload as any).puntosCustom) || (payload as any).puntosCustom < 0)) {
+                            alert('Introduce un entero ≥ 0, o vacío para el valor genérico.');
+                            return;
+                          }
+                          handleGuardarPuntos(r.id, payload);
+                        }}
+                        className="rounded bg-fuchsia-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-fuchsia-700 disabled:opacity-50"
+                      >
+                        {guardandoPuntos ? 'Guardando…' : 'Guardar'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </article>
           ))}
         </div>
