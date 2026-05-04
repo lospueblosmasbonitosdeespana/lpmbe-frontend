@@ -242,13 +242,34 @@ export default async function MiCuentaPage() {
 
               <div className="w-full max-w-5xl space-y-6">
                 <section className="rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-5 text-left shadow-sm dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <NivelAvatarViewer
-                      nombreNivel={nivelNombre}
-                      className="h-28 w-28 sm:h-32 sm:w-32"
-                      imgClassName="scale-105"
-                      srcOverride={getNivelOverride(miCuentaAssets, nivelNombre)}
-                    />
+                  {/* Móvil: avatar + escudo en misma fila, texto debajo.
+                      Desktop (sm+): todo en una fila: avatar | texto | escudo. */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+
+                    {/* Fila superior en móvil: avatar a la izquierda, escudo a la derecha */}
+                    <div className="flex items-center justify-between gap-4 sm:contents">
+                      <NivelAvatarViewer
+                        nombreNivel={nivelNombre}
+                        className="h-28 w-28 shrink-0 sm:h-32 sm:w-32"
+                        imgClassName="scale-105"
+                        srcOverride={getNivelOverride(miCuentaAssets, nivelNombre)}
+                      />
+                      {/* Escudo + ACTIVO: visible en móvil aquí (junto al avatar), oculto en sm+ */}
+                      <div className="flex shrink-0 flex-col items-center gap-2 sm:hidden">
+                        <ClubLogoViewer
+                          src={clubLogoHeaderSrc}
+                          alt={links[7].title}
+                          transform={clubLogoHeaderTransform}
+                        />
+                        {clubActivo ? (
+                          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-300">
+                            {clubT('active')}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {/* Texto de puntos y nivel */}
                     <div className="min-w-0 flex-1">
                       <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950/70 dark:text-amber-200">
                         {pointsT('myAccount')}
@@ -268,7 +289,9 @@ export default async function MiCuentaPage() {
                         </p>
                       ) : null}
                     </div>
-                    <div className="flex shrink-0 flex-col items-center gap-2">
+
+                    {/* Escudo + ACTIVO: oculto en móvil (ya aparece arriba), visible en sm+ */}
+                    <div className="hidden shrink-0 flex-col items-center gap-2 sm:flex">
                       <ClubLogoViewer
                         src={clubLogoHeaderSrc}
                         alt={links[7].title}
@@ -280,6 +303,7 @@ export default async function MiCuentaPage() {
                         </span>
                       ) : null}
                     </div>
+
                   </div>
                 </section>
 
