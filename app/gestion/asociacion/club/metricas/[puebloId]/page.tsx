@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { GestionAsociacionSubpageShell } from '../../../_components/GestionAsociacionSubpageShell';
 import { AsociacionHeroIconChart } from '../../../_components/asociacion-hero-icons';
 
@@ -100,7 +100,9 @@ const normalizeMetricas = (raw: any): Metricas => {
 
 export default function ClubMetricasPuebloPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const puebloId = params?.puebloId as string;
+  const isGeo = searchParams?.get('tipo') === 'GEO';
   const [loading, setLoading] = useState(true);
   const [metricas, setMetricas] = useState<Metricas | null>(null);
   const [puebloNombre, setPuebloNombre] = useState<string>('');
@@ -130,22 +132,42 @@ export default function ClubMetricasPuebloPage() {
       const enc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
 
       filas.push('Resumen por día');
-      filas.push('Fecha,Total,OK,Adultos,Menores');
-      for (const d of m.ultimosDias) {
-        filas.push([d.fecha, d.total, d.ok, d.adultos, d.menores].map(enc).join(','));
+      if (isGeo) {
+        filas.push('Fecha,Visitas GPS');
+        for (const d of m.ultimosDias) {
+          filas.push([d.fecha, d.total].map(enc).join(','));
+        }
+      } else {
+        filas.push('Fecha,Total,OK,Adultos,Menores');
+        for (const d of m.ultimosDias) {
+          filas.push([d.fecha, d.total, d.ok, d.adultos, d.menores].map(enc).join(','));
+        }
       }
       filas.push('');
 
       if (m.recursos && m.recursos.length > 0) {
         filas.push('Desglose por recurso y fecha');
-        filas.push('Recurso,Fecha,Total,OK,Adultos,Menores');
-        for (const r of m.recursos) {
-          if (r.dias && r.dias.length > 0) {
-            for (const d of r.dias) {
-              filas.push([r.recursoNombre ?? '', d.fecha, d.total, d.ok, d.adultos, d.menores].map(enc).join(','));
+        if (isGeo) {
+          filas.push('Recurso,Fecha,Visitas GPS');
+          for (const r of m.recursos) {
+            if (r.dias && r.dias.length > 0) {
+              for (const d of r.dias) {
+                filas.push([r.recursoNombre ?? '', d.fecha, d.total].map(enc).join(','));
+              }
+            } else {
+              filas.push([r.recursoNombre ?? '', '', r.total].map(enc).join(','));
             }
-          } else {
-            filas.push([r.recursoNombre ?? '', '', r.total, r.ok, r.adultos, r.menores].map(enc).join(','));
+          }
+        } else {
+          filas.push('Recurso,Fecha,Total,OK,Adultos,Menores');
+          for (const r of m.recursos) {
+            if (r.dias && r.dias.length > 0) {
+              for (const d of r.dias) {
+                filas.push([r.recursoNombre ?? '', d.fecha, d.total, d.ok, d.adultos, d.menores].map(enc).join(','));
+              }
+            } else {
+              filas.push([r.recursoNombre ?? '', '', r.total, r.ok, r.adultos, r.menores].map(enc).join(','));
+            }
           }
         }
       }
@@ -210,7 +232,9 @@ export default function ClubMetricasPuebloPage() {
     loadData();
   }, [puebloId]);
 
-  const shellTitle = `Métricas · ${puebloNombre || `Pueblo ${puebloId}`}`;
+  const shellTitle = isGeo
+    ? `Visitas GPS · ${puebloNombre || `Pueblo ${puebloId}`}`
+    : `Métricas · ${puebloNombre || `Pueblo ${puebloId}`}`;
 
   if (loading) {
     return (
@@ -258,7 +282,7 @@ export default function ClubMetricasPuebloPage() {
       heroBadges={
         <div className="rounded-xl bg-white/10 px-4 py-2 ring-1 ring-white/15 backdrop-blur-sm">
           <span className="text-lg font-bold">{metricas.hoy.total}</span>
-          <span className="ml-1.5 text-xs text-white/70">intentos hoy</span>
+          <span className="ml-1.5 text-xs text-white/70">{isGeo ? 'visitas GPS hoy' : 'intentos hoy'}</span>
         </div>
       }
     >
@@ -266,7 +290,11 @@ export default function ClubMetricasPuebloPage() {
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>HOY</div>
         <div style={{ fontSize: 14 }}>
-          {metricas.hoy.total} intentos | OK: {metricas.hoy.ok} | NO OK: {metricas.hoy.noOk} | Adultos: {metricas.hoy.adultos} | Menores: {metricas.hoy.menores}
+          {isGeo ? (
+            <>{metricas.hoy.total} visitas GPS</>
+          ) : (
+            <>{metricas.hoy.total} intentos | OK: {metricas.hoy.ok} | NO OK: {metricas.hoy.noOk} | Adultos: {metricas.hoy.adultos} | Menores: {metricas.hoy.menores}</>
+          )}
         </div>
       </div>
 
@@ -301,21 +329,23 @@ export default function ClubMetricasPuebloPage() {
 
       {/* Últimos 7 días */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>ÚLTIMOS 7 DÍAS</div>
+        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+          {isGeo ? 'GEOLOCALIZACIONES POR DÍA' : 'ÚLTIMOS 7 DÍAS'}
+        </div>
         <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse', border: '1px solid #ddd' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #ddd', background: '#f5f5f5' }}>
               <th style={{ textAlign: 'left', padding: '8px' }}>Fecha</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>Total</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>OK</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>Adultos</th>
-              <th style={{ textAlign: 'center', padding: '8px' }}>Menores</th>
+              <th style={{ textAlign: 'center', padding: '8px' }}>{isGeo ? 'Visitas GPS' : 'Total'}</th>
+              {!isGeo && <th style={{ textAlign: 'center', padding: '8px' }}>OK</th>}
+              {!isGeo && <th style={{ textAlign: 'center', padding: '8px' }}>Adultos</th>}
+              {!isGeo && <th style={{ textAlign: 'center', padding: '8px' }}>Menores</th>}
             </tr>
           </thead>
           <tbody>
             {metricas.ultimosDias.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
+                <td colSpan={isGeo ? 2 : 5} style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
                   No hay datos
                 </td>
               </tr>
@@ -326,9 +356,9 @@ export default function ClubMetricasPuebloPage() {
                     {dia.fecha ? new Date(dia.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '—'}
                   </td>
                   <td style={{ textAlign: 'center', padding: '8px' }}>{dia.total}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{dia.ok}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{dia.adultos}</td>
-                  <td style={{ textAlign: 'center', padding: '8px' }}>{dia.menores}</td>
+                  {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{dia.ok}</td>}
+                  {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{dia.adultos}</td>}
+                  {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{dia.menores}</td>}
                 </tr>
               ))
             )}
@@ -336,29 +366,31 @@ export default function ClubMetricasPuebloPage() {
         </table>
       </div>
 
-      {/* Últimos escaneos */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>ÚLTIMOS ESCANEOS</div>
-        <div style={{ fontSize: 12, maxHeight: 400, overflowY: 'auto', border: '1px solid #ddd', padding: 8 }}>
-          {metricas.ultimosEscaneos.length === 0 ? (
-            <div style={{ color: '#666' }}>No hay escaneos recientes</div>
-          ) : (
-            metricas.ultimosEscaneos.map((escaneo, idx) => {
-              const adultosStr = escaneo.adultosUsados !== undefined ? `A: ${escaneo.adultosUsados}` : '';
-              const menoresStr = escaneo.menoresUsados !== undefined ? `M: ${escaneo.menoresUsados}` : '';
-              const personasStr = [adultosStr, menoresStr].filter(Boolean).join(' / ');
-              return (
-                <div key={idx} style={{ padding: '4px 0', borderBottom: '1px solid #eee' }}>
-                  {escaneo.hora || '—'} — <span style={{ color: escaneo.resultado === 'OK' ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
-                    {escaneo.resultado === 'OK' ? 'OK' : 'NO OK'}
-                  </span>
-                  {personasStr && <span style={{ marginLeft: 8, fontSize: 11, color: '#666' }}>({personasStr})</span>}
-                </div>
-              );
-            })
-          )}
+      {/* Últimos escaneos — solo para RRTT normales (QR) */}
+      {!isGeo && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>ÚLTIMOS ESCANEOS</div>
+          <div style={{ fontSize: 12, maxHeight: 400, overflowY: 'auto', border: '1px solid #ddd', padding: 8 }}>
+            {metricas.ultimosEscaneos.length === 0 ? (
+              <div style={{ color: '#666' }}>No hay escaneos recientes</div>
+            ) : (
+              metricas.ultimosEscaneos.map((escaneo, idx) => {
+                const adultosStr = escaneo.adultosUsados !== undefined ? `A: ${escaneo.adultosUsados}` : '';
+                const menoresStr = escaneo.menoresUsados !== undefined ? `M: ${escaneo.menoresUsados}` : '';
+                const personasStr = [adultosStr, menoresStr].filter(Boolean).join(' / ');
+                return (
+                  <div key={idx} style={{ padding: '4px 0', borderBottom: '1px solid #eee' }}>
+                    {escaneo.hora || '—'} — <span style={{ color: escaneo.resultado === 'OK' ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
+                      {escaneo.resultado === 'OK' ? 'OK' : 'NO OK'}
+                    </span>
+                    {personasStr && <span style={{ marginLeft: 8, fontSize: 11, color: '#666' }}>({personasStr})</span>}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Desglose por recursos */}
       {metricas.recursos && metricas.recursos.length > 0 && (
@@ -369,10 +401,10 @@ export default function ClubMetricasPuebloPage() {
               <tr style={{ borderBottom: '1px solid #ddd', background: '#f5f5f5' }}>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Recurso</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Fecha</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Total</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>OK</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Adultos</th>
-                <th style={{ textAlign: 'center', padding: '8px' }}>Menores</th>
+                <th style={{ textAlign: 'center', padding: '8px' }}>{isGeo ? 'Visitas GPS' : 'Total'}</th>
+                {!isGeo && <th style={{ textAlign: 'center', padding: '8px' }}>OK</th>}
+                {!isGeo && <th style={{ textAlign: 'center', padding: '8px' }}>Adultos</th>}
+                {!isGeo && <th style={{ textAlign: 'center', padding: '8px' }}>Menores</th>}
               </tr>
             </thead>
             <tbody>
@@ -385,9 +417,9 @@ export default function ClubMetricasPuebloPage() {
                         {dia.fecha ? new Date(dia.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '—'}
                       </td>
                       <td style={{ textAlign: 'center', padding: '8px' }}>{dia.total}</td>
-                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.ok}</td>
-                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.adultos}</td>
-                      <td style={{ textAlign: 'center', padding: '8px' }}>{dia.menores}</td>
+                      {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{dia.ok}</td>}
+                      {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{dia.adultos}</td>}
+                      {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{dia.menores}</td>}
                     </tr>
                   ));
                 }
@@ -396,9 +428,9 @@ export default function ClubMetricasPuebloPage() {
                     <td style={{ padding: '8px' }}>{recurso.recursoNombre}</td>
                     <td style={{ padding: '8px', color: '#999' }}>—</td>
                     <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.total}</td>
-                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.ok}</td>
-                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.adultos}</td>
-                    <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.menores}</td>
+                    {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.ok}</td>}
+                    {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.adultos}</td>}
+                    {!isGeo && <td style={{ textAlign: 'center', padding: '8px' }}>{recurso.menores}</td>}
                   </tr>
                 );
               })}
