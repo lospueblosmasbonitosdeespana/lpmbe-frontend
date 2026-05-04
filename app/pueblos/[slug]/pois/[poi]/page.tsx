@@ -184,6 +184,11 @@ export default async function PoiPage({
     notFound();
   }
 
+  // Si llegamos con un ID numérico pero el POI tiene slug, redirigir al slug canónico
+  if (isNumeric(poi) && data.slug?.trim()) {
+    redirect(`/pueblos/${puebloSlug}/pois/${data.slug.trim()}`);
+  }
+
   const foto = pickFotoPrincipal(data);
   const descripcionHtml = pickDescripcionHtml(data);
   const puebloNombre = data.pueblo?.nombre ?? "Pueblo";

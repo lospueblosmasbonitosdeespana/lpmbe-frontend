@@ -27,6 +27,7 @@ type TematicasPueblo = {
 
 type PoiTematica = {
   id: number;
+  slug?: string | null;
   nombre: string;
   descripcion_corta: string | null;
   descripcion_larga: string | null;
@@ -246,7 +247,7 @@ export default function TematicasPuebloTabs({ puebloSlug, pois = [] }: Props) {
               {currentPois.map((poi) => (
                 <Link
                   key={poi.id}
-                  href={`/pueblos/${puebloSlug}/pois/${poi.id}`}
+                  href={`/pueblos/${puebloSlug}/pois/${poi.slug || poi.id}`}
                   style={{
                     border: '1px solid #ddd',
                     borderRadius: '8px',
