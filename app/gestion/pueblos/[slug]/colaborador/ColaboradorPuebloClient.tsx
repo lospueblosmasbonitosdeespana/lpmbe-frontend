@@ -15,6 +15,7 @@ type Recurso = {
   id: number;
   nombre: string;
   tipo: string;
+  slug?: string | null;
   descripcion?: string | null;
   horarios?: string | null;
   contacto?: string | null;
@@ -244,19 +245,31 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
         ) : (
           <div>
             {/* Cabecera */}
-            <div className="border-b px-6 py-4">
-              <h2 className="text-lg font-semibold">{recursoActual.nombre}</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Tipo: {recursoActual.tipo || '—'}
-                {recursoActual.activo ? (
-                  <span className="ml-2 text-green-600">● Activo</span>
-                ) : (
-                  <span className="ml-2 text-red-500">● Inactivo</span>
-                )}
-                {recursoActual.cerradoTemporal && (
-                  <span className="ml-2 text-amber-500">⚠ Cerrado temporalmente</span>
-                )}
-              </p>
+            <div className="border-b px-6 py-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold">{recursoActual.nombre}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Tipo: {recursoActual.tipo || '—'}
+                  {recursoActual.activo ? (
+                    <span className="ml-2 text-green-600">● Activo</span>
+                  ) : (
+                    <span className="ml-2 text-red-500">● Inactivo</span>
+                  )}
+                  {recursoActual.cerradoTemporal && (
+                    <span className="ml-2 text-amber-500">⚠ Cerrado temporalmente</span>
+                  )}
+                </p>
+              </div>
+              {recursoActual.slug && (
+                <a
+                  href={`/recursos/${recursoActual.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 rounded border border-blue-200 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 inline-flex items-center gap-1"
+                >
+                  Ver en web ↗
+                </a>
+              )}
             </div>
 
             {/* Tabs */}

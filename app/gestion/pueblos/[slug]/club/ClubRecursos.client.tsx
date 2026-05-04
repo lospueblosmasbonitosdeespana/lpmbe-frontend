@@ -1675,6 +1675,11 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                     <button type="button" onClick={() => handleEliminar(r.id)} className="px-3 py-1 text-sm border rounded hover:bg-muted/30">
                       Eliminar
                     </button>
+                    {r.slug && (
+                      <a href={`/recursos/${r.slug}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-blue-50 text-blue-600 border-blue-200 inline-block text-center">
+                        Ver en web ↗
+                      </a>
+                    )}
                     {r.activo && (
                       <a href={`/validador/${r.id}`} target="_blank" rel="noreferrer" className="px-3 py-1 text-sm border rounded hover:bg-muted/30 inline-block text-center">
                         Validador

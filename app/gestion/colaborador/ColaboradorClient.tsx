@@ -159,6 +159,16 @@ function RecursoPanel({
             )}
           </div>
         </div>
+        {recurso.slug && (
+          <a
+            href={`/recursos/${recurso.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 rounded border border-blue-200 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 inline-flex items-center gap-1"
+          >
+            Ver en web ↗
+          </a>
+        )}
       </div>
 
       {/* Tabs */}
