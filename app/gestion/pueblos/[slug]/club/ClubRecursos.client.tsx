@@ -38,6 +38,7 @@ type PerteneceACombo = {
 type Recurso = {
   id: number;
   nombre: string;
+  slug?: string | null;
   tipo: string;
   validacionTipo?: 'QR' | 'GEO' | 'AMBOS' | string | null;
   descuentoPorcentaje?: number | null;
