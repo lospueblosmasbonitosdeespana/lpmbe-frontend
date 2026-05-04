@@ -65,6 +65,7 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
   const [editEdadMaxMenor, setEditEdadMaxMenor] = useState('12');
   const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
   const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
+  const [editAbierto24h, setEditAbierto24h] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [guardadoOk, setGuardadoOk] = useState(false);
 
@@ -112,6 +113,7 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
     setEditEdadMaxMenor(String(recurso.edadMaxMenor ?? 12));
     setEditHorariosSemana(recurso.horariosSemana ?? []);
     setEditCierresEspeciales(recurso.cierresEspeciales ?? []);
+    setEditAbierto24h((recurso as any).abierto24h ?? false);
     setGuardadoOk(false);
   }, [selectedId, recursos]);
 
@@ -156,6 +158,7 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
     }
 
     // Horarios siempre editables si puede editar info
+    body.abierto24h = editAbierto24h;
     body.horariosSemana = editHorariosSemana;
     body.cierresEspeciales = editCierresEspeciales;
 
@@ -515,7 +518,9 @@ export default function ColaboradorPuebloClient({ puebloSlug }: { puebloSlug: st
                   <HorariosEditor
                     horariosSemana={editHorariosSemana}
                     cierresEspeciales={editCierresEspeciales}
+                    abierto24h={editAbierto24h}
                     onChange={(h, c) => { setEditHorariosSemana(h); setEditCierresEspeciales(c); }}
+                    onAbierto24hChange={setEditAbierto24h}
                   />
                 </div>
 

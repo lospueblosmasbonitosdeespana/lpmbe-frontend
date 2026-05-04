@@ -59,6 +59,7 @@ type RecursoDetail = {
   horarios: string | null;
   horariosSemana: HorarioDia[];
   cierresEspeciales: CierreEspecial[];
+  abierto24h?: boolean;
   contacto: string | null;
   telefono: string | null;
   email: string | null;
@@ -252,7 +253,7 @@ export default async function RecursoDetailPage({
       : [];
   const parrafos = toParagraphs(recurso.descripcion);
   const horarioRows = buildHorarioRows(recurso.horariosSemana ?? []);
-  const hasHorarios = horarioRows.length > 0 || (recurso.horarios && recurso.horarios.trim());
+  const hasHorarios = recurso.abierto24h || horarioRows.length > 0 || (recurso.horarios && recurso.horarios.trim());
   const hasCierres = (recurso.cierresEspeciales ?? []).length > 0;
   const contactoParsed = parseContacto(recurso.contacto ?? null);
   const telefono = recurso.telefono || contactoParsed.telefono;
@@ -577,8 +578,16 @@ export default async function RecursoDetailPage({
               Horarios
             </Headline>
 
+            {/* Abierto 24 horas */}
+            {recurso.abierto24h && (
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">
+                <Clock className="h-4 w-4 text-emerald-600" />
+                Abierto 24 horas
+              </div>
+            )}
+
             {/* Horarios estructurados por día */}
-            {horarioRows.length > 0 && (
+            {!recurso.abierto24h && horarioRows.length > 0 && (
               <div className="overflow-hidden rounded-xl border border-border bg-card">
                 {horarioRows.map((row, i) => (
                   <div
@@ -602,8 +611,8 @@ export default async function RecursoDetailPage({
               </div>
             )}
 
-            {/* Horarios legacy (texto libre) solo si no hay estructurados */}
-            {horarioRows.length === 0 && recurso.horarios?.trim() && (
+            {/* Horarios legacy (texto libre) solo si no hay estructurados ni 24h */}
+            {!recurso.abierto24h && horarioRows.length === 0 && recurso.horarios?.trim() && (
               <div className="whitespace-pre-wrap rounded-xl border border-border bg-card px-5 py-4 font-mono text-sm text-foreground">
                 {recurso.horarios.trim()}
               </div>

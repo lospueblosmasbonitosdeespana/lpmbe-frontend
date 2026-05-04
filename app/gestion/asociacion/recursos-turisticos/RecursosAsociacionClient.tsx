@@ -107,7 +107,7 @@ const EMPTY_FORM: FormData = {
 
 const API_BASE = '/api/gestion/asociacion/recursos-turisticos';
 
-function formToBody(f: FormData, horariosSemana?: HorarioDia[], cierresEspeciales?: CierreEspecial[]) {
+function formToBody(f: FormData, horariosSemana?: HorarioDia[], cierresEspeciales?: CierreEspecial[], abierto24h?: boolean) {
   const body: Record<string, unknown> = {
     nombre: f.nombre.trim(),
     tipo: f.tipo,
@@ -134,6 +134,7 @@ function formToBody(f: FormData, horariosSemana?: HorarioDia[], cierresEspeciale
   body.descuentoPorcentaje = f.descuentoPorcentaje ? Number(f.descuentoPorcentaje) : null;
   body.precioCents = f.precioCents ? Math.round(Number(f.precioCents) * 100) : null;
 
+  if (abierto24h !== undefined) body.abierto24h = abierto24h;
   if (horariosSemana !== undefined)
     body.horariosSemana = horariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra }));
   if (cierresEspeciales !== undefined)
@@ -180,7 +181,9 @@ function RecursoForm({
   submitLabel,
   horariosSemana,
   cierresEspeciales,
+  abierto24h,
   onHorariosChange,
+  onAbierto24hChange,
 }: {
   data: FormData;
   onChange: (d: FormData) => void;
@@ -190,7 +193,9 @@ function RecursoForm({
   submitLabel: string;
   horariosSemana: HorarioDia[];
   cierresEspeciales: CierreEspecial[];
+  abierto24h: boolean;
   onHorariosChange: (h: HorarioDia[], c: CierreEspecial[]) => void;
+  onAbierto24hChange: (v: boolean) => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -352,7 +357,9 @@ function RecursoForm({
         <HorariosEditor
           horariosSemana={horariosSemana}
           cierresEspeciales={cierresEspeciales}
+          abierto24h={abierto24h}
           onChange={onHorariosChange}
+          onAbierto24hChange={onAbierto24hChange}
         />
       </div>
 
@@ -538,12 +545,14 @@ export default function RecursosAsociacionClient() {
   const [createForm, setCreateForm] = useState<FormData>({ ...EMPTY_FORM });
   const [createHorarios, setCreateHorarios] = useState<HorarioDia[]>([]);
   const [createCierres, setCreateCierres] = useState<CierreEspecial[]>([]);
+  const [createAbierto24h, setCreateAbierto24h] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const [editId, setEditId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<FormData>({ ...EMPTY_FORM });
   const [editHorarios, setEditHorarios] = useState<HorarioDia[]>([]);
   const [editCierres, setEditCierres] = useState<CierreEspecial[]>([]);
+  const [editAbierto24h, setEditAbierto24h] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [expandedColab, setExpandedColab] = useState<number | null>(null);
@@ -678,7 +687,7 @@ export default function RecursosAsociacionClient() {
       const res = await fetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formToBody(createForm, createHorarios, createCierres)),
+        body: JSON.stringify(formToBody(createForm, createHorarios, createCierres, createAbierto24h)),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => null);
@@ -704,6 +713,7 @@ export default function RecursosAsociacionClient() {
     setEditForm(recursoToForm(r));
     setEditHorarios(r.horariosSemana ?? []);
     setEditCierres(r.cierresEspeciales ?? []);
+    setEditAbierto24h((r as any).abierto24h ?? false);
     if (r.lat && r.lng) {
       setFlyToPos([r.lat, r.lng]);
     }
@@ -728,7 +738,7 @@ export default function RecursosAsociacionClient() {
       const res = await fetch(`${API_BASE}/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formToBody(editForm, editHorarios, editCierres)),
+        body: JSON.stringify(formToBody(editForm, editHorarios, editCierres, editAbierto24h)),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => null);
@@ -837,7 +847,9 @@ export default function RecursosAsociacionClient() {
             submitLabel="Crear"
             horariosSemana={createHorarios}
             cierresEspeciales={createCierres}
+            abierto24h={createAbierto24h}
             onHorariosChange={(h, c) => { setCreateHorarios(h); setCreateCierres(c); }}
+            onAbierto24hChange={setCreateAbierto24h}
           />
         </div>
       )}
@@ -914,7 +926,9 @@ export default function RecursosAsociacionClient() {
                       submitLabel="Guardar"
                       horariosSemana={editHorarios}
                       cierresEspeciales={editCierres}
+                      abierto24h={editAbierto24h}
                       onHorariosChange={(h, c) => { setEditHorarios(h); setEditCierres(c); }}
+                      onAbierto24hChange={setEditAbierto24h}
                     />
                   </div>
                 ) : (

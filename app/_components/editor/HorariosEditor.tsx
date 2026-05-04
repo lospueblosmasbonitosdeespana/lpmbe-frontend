@@ -19,7 +19,9 @@ export interface CierreEspecial {
 interface Props {
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
+  abierto24h?: boolean;
   onChange: (horarios: HorarioDia[], cierres: CierreEspecial[]) => void;
+  onAbierto24hChange?: (value: boolean) => void;
   readOnly?: boolean;
 }
 
@@ -49,7 +51,7 @@ function normalizarHorarios(raw?: HorarioDia[]): HorarioDia[] {
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
-export default function HorariosEditor({ horariosSemana, cierresEspeciales, onChange, readOnly }: Props) {
+export default function HorariosEditor({ horariosSemana, cierresEspeciales, abierto24h = false, onChange, onAbierto24hChange, readOnly }: Props) {
   const [horarios, setHorarios] = useState<HorarioDia[]>(() => normalizarHorarios(horariosSemana));
   const [cierres, setCierres] = useState<CierreEspecial[]>(
     (cierresEspeciales ?? []).map(({ fecha, motivo }) => ({ fecha: typeof fecha === 'string' ? fecha.slice(0, 10) : fecha, motivo }))
@@ -89,8 +91,29 @@ export default function HorariosEditor({ horariosSemana, cierresEspeciales, onCh
 
   return (
     <div className="space-y-6">
-      {/* Horario semanal */}
-      <div>
+      {/* Toggle Abierto 24h */}
+      <div className={`flex items-center gap-3 rounded-lg px-4 py-3 border ${abierto24h ? 'bg-emerald-50 border-emerald-300' : 'bg-gray-50 border-gray-200'}`}>
+        {readOnly ? (
+          <span className={`inline-flex items-center gap-2 text-sm font-semibold ${abierto24h ? 'text-emerald-700' : 'text-gray-500'}`}>
+            <span className={`inline-block w-3 h-3 rounded-full ${abierto24h ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+            {abierto24h ? 'Abierto 24 horas' : 'Horario por días'}
+          </span>
+        ) : (
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={abierto24h}
+              onChange={(e) => onAbierto24hChange?.(e.target.checked)}
+              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+            />
+            <span className="text-sm font-semibold text-gray-700">Abierto 24 horas</span>
+            <span className="text-xs text-gray-400">(parques, exteriores, museos al aire libre…)</span>
+          </label>
+        )}
+      </div>
+
+      {/* Horario semanal (solo si no es 24h) */}
+      {!abierto24h && <div>
         <h4 className="font-semibold text-sm text-gray-700 mb-3">Horario semanal</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
@@ -149,7 +172,7 @@ export default function HorariosEditor({ horariosSemana, cierresEspeciales, onCh
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
 
       {/* Cierres especiales */}
       <div>

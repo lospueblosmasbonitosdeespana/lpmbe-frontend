@@ -255,6 +255,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
   const [editLng, setEditLng] = useState('');
   const [editHorariosSemana, setEditHorariosSemana] = useState<HorarioDia[]>([]);
   const [editCierresEspeciales, setEditCierresEspeciales] = useState<CierreEspecial[]>([]);
+  const [editAbierto24h, setEditAbierto24h] = useState(false);
   // Información pública del recurso
   const [editFotoUrl, setEditFotoUrl] = useState('');
   const [editDescripcion, setEditDescripcion] = useState('');
@@ -544,6 +545,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setEditLng(r.lng != null ? String(r.lng) : '');
     setEditHorariosSemana(r.horariosSemana ?? []);
     setEditCierresEspeciales(r.cierresEspeciales ?? []);
+    setEditAbierto24h(r.abierto24h ?? false);
     setEditFotoUrl(r.fotoUrl ?? '');
     setEditDescripcion(r.descripcion ?? '');
     setEditHorarios(r.horarios ?? '');
@@ -581,6 +583,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setEditEsExterno(false);
     setEditLat('');
     setEditLng('');
+    setEditAbierto24h(false);
     setEditFotoUrl('');
     setEditDescripcion('');
     setEditHorarios('');
@@ -649,6 +652,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         edadMaxMenor: Math.max(0, Number(editEdadMaxMenor) || 12),
         lat: Number(editLat),
         lng: Number(editLng),
+        abierto24h: editAbierto24h,
         horariosSemana: editHorariosSemana.map(({ diaSemana, abierto, horaAbre, horaCierra }) => ({ diaSemana, abierto, horaAbre, horaCierra })),
         cierresEspeciales: editCierresEspeciales.map(({ fecha, motivo }) => ({ fecha, motivo })),
         // Información pública del recurso
@@ -1459,7 +1463,9 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                     <HorariosEditor
                       horariosSemana={editHorariosSemana}
                       cierresEspeciales={editCierresEspeciales}
+                      abierto24h={editAbierto24h}
                       onChange={(h, c) => { setEditHorariosSemana(h); setEditCierresEspeciales(c); }}
+                      onAbierto24hChange={setEditAbierto24h}
                     />
                   </div>
 
