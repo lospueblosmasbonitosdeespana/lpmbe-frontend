@@ -1322,7 +1322,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         ) : recursos.length === 0 ? (
           <div className="text-sm text-muted-foreground">No hay recursos todavía.</div>
         ) : (
-          recursos.map((r) => (
+          recursos.filter((r) => r.validacionTipo !== 'GEO' && r.validacionTipo !== 'AMBOS').map((r) => (
             <div
               key={r.id}
               className={`p-4 border rounded space-y-2 ${
