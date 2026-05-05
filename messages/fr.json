@@ -335,7 +335,8 @@
     "semanaSanta": "Semaine Sainte",
     "appPage": "Télécharger l'app",
     "prensa": "Presse",
-    "searchAppDesc": "Téléchargez l'application officielle pour iOS et Android"
+    "searchAppDesc": "Téléchargez l'application officielle pour iOS et Android",
+    "club": "Club"
   },
   "footer": {
     "explore": "Explorer",
@@ -1474,7 +1475,10 @@
     "prelaunchFaq3Q": "Dois-je vivre dans un village en réseau ?",
     "prelaunchFaq3A": "Non. Le Club est ouvert à tous ceux qui souhaitent profiter des villages et les découvrir.",
     "prelaunchFaq4Q": "Puis-je me désinscrire à tout moment ?",
-    "prelaunchFaq4A": "Oui, pas de permanence. Vous annulez le renouvellement en un seul clic."
+    "prelaunchFaq4A": "Oui, pas de permanence. Vous annulez le renouvellement en un seul clic.",
+    "clubHubLockedTitle": "Réservé aux membres du Club",
+    "clubHubLockedDesc": "Devenez membre pour accéder aux ressources touristiques, naturelles, hébergements et réductions exclusives.",
+    "clubHubMemberArea": "Mon espace membre"
   },
   "cuenta": {
     "login": "Accès",

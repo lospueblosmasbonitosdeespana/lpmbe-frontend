@@ -335,7 +335,8 @@
     "semanaSanta": "Semana Santa",
     "appPage": "Descarga la app",
     "prensa": "Prensa",
-    "searchAppDesc": "Descarga la app oficial para iOS y Android"
+    "searchAppDesc": "Descarga la app oficial para iOS y Android",
+    "club": "Club"
   },
   "footer": {
     "explore": "Explorar",
@@ -1512,7 +1513,10 @@
     "lanzamientoActivating": "Activando...",
     "lanzamientoActivate": "Activar mi membresía gratis",
     "lanzamientoFooter": "Sin tarjeta. Sin renovación automática. Cuando termine podrás continuar al precio normal.",
-    "lanzamientoSeatsLeft": " · Quedan {n} plazas disponibles."
+    "lanzamientoSeatsLeft": " · Quedan {n} plazas disponibles.",
+    "clubHubLockedTitle": "Solo para socios del Club",
+    "clubHubLockedDesc": "Hazte socio para acceder a recursos turísticos, naturales, alojamientos y descuentos exclusivos.",
+    "clubHubMemberArea": "Mi área de socio"
   },
   "cuenta": {
     "login": "Acceder",

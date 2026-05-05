@@ -335,7 +335,8 @@
     "semanaSanta": "Páscoa",
     "appPage": "Baixar a app",
     "prensa": "Imprensa",
-    "searchAppDesc": "Baixe o aplicativo oficial para iOS e Android"
+    "searchAppDesc": "Baixe o aplicativo oficial para iOS e Android",
+    "club": "Club"
   },
   "footer": {
     "explore": "Explorar",
@@ -1474,7 +1475,10 @@
     "prelaunchFaq3Q": "Tenho de viver numa aldeia da rede?",
     "prelaunchFaq3A": "Não. O Clube está aberto a todos os que queiram desfrutar e descobrir as aldeias.",
     "prelaunchFaq4Q": "Posso cancelar a subscrição em qualquer altura?",
-    "prelaunchFaq4A": "Sim, sem permanência. Pode cancelar a renovação com um clique."
+    "prelaunchFaq4A": "Sim, sem permanência. Pode cancelar a renovação com um clique.",
+    "clubHubLockedTitle": "Apenas para sócios do Clube",
+    "clubHubLockedDesc": "Torne-se sócio para aceder a recursos turísticos, naturais, alojamentos e descontos exclusivos.",
+    "clubHubMemberArea": "A minha área de sócio"
   },
   "cuenta": {
     "login": "Acesso",

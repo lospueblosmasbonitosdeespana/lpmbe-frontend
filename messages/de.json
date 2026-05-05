@@ -335,7 +335,8 @@
     "appPage": "App herunterladen",
     "prensa": "Presse",
     "searchAppDesc": "Lade die offizielle App für iOS und Android herunter",
-    "searchServiceItem": "{Dienst} in {Name}"
+    "searchServiceItem": "{Dienst} in {Name}",
+    "club": "Club"
   },
   "footer": {
     "explore": "Erkunden Sie",
@@ -1474,7 +1475,10 @@
     "prelaunchFaq3Q": "Muss ich in einem Netzdorf leben?",
     "prelaunchFaq3A": "Nein. Der Club steht jedem offen, der die Dörfer genießen und entdecken möchte.",
     "prelaunchFaq4Q": "Kann ich mich jederzeit wieder abmelden?",
-    "prelaunchFaq4A": "Ja, keine Dauerhaftigkeit. Sie kündigen die Erneuerung mit einem Klick."
+    "prelaunchFaq4A": "Ja, keine Dauerhaftigkeit. Sie kündigen die Erneuerung mit einem Klick.",
+    "clubHubLockedTitle": "Nur für Club-Mitglieder",
+    "clubHubLockedDesc": "Werden Sie Mitglied, um Zugang zu touristischen Ressourcen, Naturgebieten, Unterkünften und exklusiven Rabatten zu erhalten.",
+    "clubHubMemberArea": "Mein Mitgliederbereich"
   },
   "cuenta": {
     "login": "Zugang",

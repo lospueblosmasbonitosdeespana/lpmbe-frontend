@@ -335,7 +335,8 @@
     "semanaSanta": "Setmana Santa",
     "appPage": "Baixa l'app",
     "prensa": "Premsa",
-    "searchAppDesc": "Descarrega l'app oficial per a iOS i Android"
+    "searchAppDesc": "Descarrega l'app oficial per a iOS i Android",
+    "club": "Club"
   },
   "footer": {
     "explore": "Explora",
@@ -1474,7 +1475,10 @@
     "prelaunchFaq3Q": "He de viure en un poble virtual?",
     "prelaunchFaq3A": "No. El Club està obert a tothom qui vulgui gaudir i explorar els pobles.",
     "prelaunchFaq4Q": "Puc cancel·lar la meva subscripció en qualsevol moment?",
-    "prelaunchFaq4A": "Sí. Sense període mínim de contracte. Pots cancel·lar la renovació amb un sol clic."
+    "prelaunchFaq4A": "Sí. Sense període mínim de contracte. Pots cancel·lar la renovació amb un sol clic.",
+    "clubHubLockedTitle": "Només per a socis del Club",
+    "clubHubLockedDesc": "Fes-te soci per accedir a recursos turístics, naturals, allotjaments i descomptes exclusius.",
+    "clubHubMemberArea": "La meva àrea de soci"
   },
   "cuenta": {
     "login": "Inicia la sessió",

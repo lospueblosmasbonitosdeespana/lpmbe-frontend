@@ -335,7 +335,8 @@
     "semanaSanta": "Easter Week",
     "appPage": "Download the app",
     "prensa": "Press",
-    "searchAppDesc": "Download the official app for iOS and Android"
+    "searchAppDesc": "Download the official app for iOS and Android",
+    "club": "Club"
   },
   "footer": {
     "explore": "Explore",
@@ -1474,7 +1475,10 @@
     "prelaunchFaq3Q": "Do I have to live in a network town?",
     "prelaunchFaq3A": "No. The Club is open to anyone who wants to enjoy and discover the villages.",
     "prelaunchFaq4Q": "Can I unsubscribe whenever I want?",
-    "prelaunchFaq4A": "Yes, no permanence. You cancel the renewal with one click."
+    "prelaunchFaq4A": "Yes, no permanence. You cancel the renewal with one click.",
+    "clubHubLockedTitle": "Members only",
+    "clubHubLockedDesc": "Become a member to access tourist resources, natural sites, accommodation and exclusive discounts.",
+    "clubHubMemberArea": "My member area"
   },
   "cuenta": {
     "login": "Access",

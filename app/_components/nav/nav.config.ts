@@ -151,6 +151,12 @@ export function getNavConfig(options?: Partial<CampaignNavOptions>): NavItem[] {
   },
   {
     type: "link",
+    labelKey: "club",
+    labelNs: "nav",
+    href: "/club",
+  },
+  {
+    type: "link",
     labelKey: "tienda",
     labelNs: "nav",
     href: "/tienda",
