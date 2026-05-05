@@ -586,9 +586,9 @@
     "moreInPueblo": "Mehr Veranstaltungen in {pueblo}"
   },
   "recursos": {
-    "eyebrow": "Club der Freunde",
+    "eyebrow": "Club",
     "title": "Touristische Ressourcen",
-    "description": "Einzigartige Erlebnisse und Orte, die Sie auf Ihren Touren durch unsere Dörfer nicht verpassen dürfen. Mitglieder des Friends Club erhalten exklusive Rabatte.",
+    "description": "Einzigartige Erlebnisse und Orte, die Sie auf Ihren Touren durch unsere Dörfer nicht verpassen dürfen. Mitglieder des Club erhalten exklusive Rabatte.",
     "noRecursos": "Zurzeit sind keine touristischen Ressourcen verfügbar.",
     "noRecursosHint": "Schauen Sie später wieder vorbei.",
     "cerradoTemporal": "Vorübergehend geschlossen"
@@ -956,7 +956,7 @@
     "myProfileDesc": "Personenbezogene Daten und Sicherheit",
     "myAddresses": "Meine Adressen",
     "myAddressesDesc": "Lieferadressen für Ihre Einkäufe",
-    "club": "Club der Freunde",
+    "club": "Club",
     "clubDesc": "QR und besuchte touristische Ressourcen",
     "loggingOut": "Abmelden...",
     "logout": "Abmelden",
@@ -971,7 +971,7 @@
     "breadcrumbNotifPrefs": "Einstellungen für Benachrichtigungen",
     "breadcrumbProfile": "Mein Profil",
     "breadcrumbAddresses": "Meine Adressen",
-    "breadcrumbClub": "Club der Freunde",
+    "breadcrumbClub": "Club",
     "breadcrumbMap": "Meine Karte",
     "breadcrumbResources": "Ressourcen",
     "breadcrumbValidations": "Validierungen",
@@ -1010,7 +1010,7 @@
   },
   "myProfile": {
     "title": "Mein Profil",
-    "clubTitle": "Club der Freunde",
+    "clubTitle": "Club",
     "status": "Staat",
     "plan": "Plan",
     "validUntil": "Gültig bis",
@@ -1260,13 +1260,13 @@
     "granMaestre": "Großmeister der Dörfer"
   },
   "clubLanding": {
-    "title": "In wenigen Tagen wird der Club de Amigos Realität sein",
+    "title": "In wenigen Tagen wird der Club Realität sein",
     "description": "In der Zwischenzeit können Sie den Newsletter und die Nachrichten der Vereinigung abonnieren, um nichts zu verpassen.",
     "newsletterTitle": "Abonnieren Sie den Newsletter",
     "newsletterDesc": "Erhalten Sie Neuigkeiten, Veranstaltungen und exklusive Inhalte in Ihrem Posteingang."
   },
   "club": {
-    "title": "Club der Freunde",
+    "title": "Club",
     "status": "Staat",
     "member": "Mitglied",
     "active": "AKTIV",
@@ -1275,9 +1275,9 @@
     "plan": "Plan",
     "statusLabel": "Status",
     "validUntil": "Gültig bis",
-    "joinClub": "Werden Sie Mitglied im Club der Freunde",
+    "joinClub": "Werden Sie Mitglied im Club",
     "joinClubDesc": "Wählen Sie einen Plan, um Ihre Mitgliedschaft zu aktivieren.",
-    "joinClubSoon": "Die Mitgliedschaft im Club der Freunde wird bald verfügbar sein. Es erwarten Sie Ermäßigungen auf touristische Ressourcen, Identitäts-QR und weitere Vorteile.",
+    "joinClubSoon": "Die Mitgliedschaft im Club wird bald verfügbar sein. Es erwarten Sie Ermäßigungen auf touristische Ressourcen, Identitäts-QR und weitere Vorteile.",
     "processing": "Verarbeitung...",
     "annualPlan": "Jahresplan",
     "monthlyPlan": "Monatlicher Plan",
@@ -1426,7 +1426,7 @@
     "lanzamientoFooter": "Keine Karte. Keine automatische Erneuerung. Wenn es endet, können Sie zum normalen Preis weitermachen.",
     "lanzamientoSeatsLeft": " - Es sind {n} Plätze verfügbar.",
     "prelaunchBadge": "Demnächst verfügbar",
-    "prelaunchTitle": "Der Friends Club wird demnächst eröffnet",
+    "prelaunchTitle": "Der Club wird demnächst eröffnet",
     "prelaunchDesc": "Wir bereiten eine schönere Erfahrung vor, nützlicher und mit vielen weiteren Vorteilen, um unsere Dörfer auf der Strecke zu entdecken.",
     "prelaunchBenefit1Title": "Bei jedem Besuch Punkte sammeln",
     "prelaunchBenefit1Desc": "Validieren Sie die QR-Funktion bei teilnehmenden Ressourcen und Standorten, um einlösbare Punkte zu sammeln.",
@@ -1447,7 +1447,7 @@
     "prelaunchEmailInvalid": "Geben Sie eine gültige E-Mail Adresse ein",
     "prelaunchLeadError": "Ihre E-Mail konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
     "prelaunchLogoAlt": "Wappen des Freundeskreises",
-    "prelaunchHeroTitle": "Der Club der Freunde",
+    "prelaunchHeroTitle": "Der Club",
     "prelaunchHeroSubtitle": "Die schönste Art, die schönsten Dörfer Spaniens zu besuchen.",
     "prelaunchHeroDesc": "Wir bereiten etwas Besonderes vor. Melden Sie sich an und wir informieren Sie, sobald es losgeht.",
     "prelaunchBenefitsEyebrow": "Was Sie haben werden",
@@ -2090,7 +2090,7 @@
     "stateRefunded": "Erstattet - Punkte zurückgegeben"
   },
   "clubRecursosRurales": {
-    "back": "Zurück zum Friends Club",
+    "back": "Zurück zum Club",
     "title": "Ländliche / natürliche Ressourcen",
     "intro": "Wasserfälle, Aussichtspunkte, Flecken, Dolmen, Einsiedeleien auf dem Weg... Orte ohne physische QR, die durch GPS von Ihrem Mobiltelefon validiert werden.",
     "howWorksTitle": "Wie es funktioniert",
@@ -2191,7 +2191,7 @@
   "clubSorteos": {
     "back": "Zurück zum Club-Panel",
     "title": "Club-Verlosungen",
-    "subtitle": "Gewinnspiele ausschließlich für Mitglieder des Club de Amigos. Die Teilnahme setzt die Annahme der rechtlichen Bedingungen der jeweiligen Verlosung voraus.",
+    "subtitle": "Gewinnspiele ausschließlich für Mitglieder des Club. Die Teilnahme setzt die Annahme der rechtlichen Bedingungen der jeweiligen Verlosung voraus.",
     "loading": "Zeichnungen laden...",
     "loadError": "Fehler beim Laden von Zeichnungen",
     "needLogin": "Sie müssen eingeloggt sein, um die Verlosungen zu sehen.",
