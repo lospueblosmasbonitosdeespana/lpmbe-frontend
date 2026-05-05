@@ -106,12 +106,289 @@ function cut(s: string, max = 160): string {
   return c.length > max ? c.slice(0, max - 1).trimEnd() + "…" : c;
 }
 
-function formatPrecio(cents: number): string {
-  const euros = (cents / 100).toFixed(2).replace(".", ",");
-  return `${euros} €`;
+const LOCALE_MAP: Record<string, string> = { ca: "ca-ES", pt: "pt-PT" };
+
+function formatPrecio(cents: number, locale = "es"): string {
+  return new Intl.NumberFormat(LOCALE_MAP[locale] ?? locale, {
+    style: "currency",
+    currency: "EUR",
+  }).format(cents / 100);
 }
 
-const LOCALE_MAP: Record<string, string> = { ca: "ca-ES", pt: "pt-PT" };
+const PAGE_I18N: Record<
+  string,
+  {
+    notFoundTitle: string;
+    seoDiscover: (name: string, tipo: string, pueblo: string) => string;
+    home: string;
+    resources: string;
+    backToResources: string;
+    locatedIn: string;
+    temporarilyClosed: string;
+    priceAndDiscounts: string;
+    price: string;
+    perPerson: string;
+    clubPrice: string;
+    joinClub: string;
+    discountCta: (discount: number) => string;
+    discountJoinQuestion: string;
+    clubBannerText: string;
+    admission: string;
+    clubConditions: string;
+    admissionInfo: string;
+    adults: string;
+    minors: string;
+    max: string;
+    upToYears: (years: number) => string;
+    description: string;
+    contact: string;
+    location: string;
+    inCountry: string;
+    footerTitle: string;
+    footerText: string;
+    footerJoinClub: string;
+    footerMoreResources: string;
+  }
+> = {
+  es: {
+    notFoundTitle: "Recurso no encontrado",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Descubre ${name}, ${tipo.toLowerCase()} en ${pueblo}. Horarios, ubicación, contacto y ventajas del Club de Amigos.`,
+    home: "Inicio",
+    resources: "Recursos turísticos",
+    backToResources: "Volver a Recursos",
+    locatedIn: "Ubicado en",
+    temporarilyClosed: "Cerrado temporalmente",
+    priceAndDiscounts: "Precio y descuentos",
+    price: "Precio",
+    perPerson: "por persona",
+    clubPrice: "Precio con Club",
+    joinClub: "Únete al Club",
+    discountCta: (discount) => `Los socios del Club de Amigos disfrutan de un −${discount}% de descuento en este recurso.`,
+    discountJoinQuestion: "¿Todavía no eres socio? Únete aquí",
+    clubBannerText: "descuentos exclusivos en recursos turísticos de toda la red",
+    admission: "Admisión",
+    clubConditions: "Condiciones Club de Amigos",
+    admissionInfo: "Personas admitidas por uso del beneficio con el Club de Amigos.",
+    adults: "Adultos",
+    minors: "Menores",
+    max: "máx.",
+    upToYears: (years) => `(hasta ${years} años)`,
+    description: "Descripción",
+    contact: "Contacto",
+    location: "Ubicación",
+    inCountry: "España",
+    footerTitle: "¿Eres socio del Club de Amigos?",
+    footerText:
+      "Los socios disfrutan de descuentos exclusivos en recursos turísticos, acceso preferente y mucho más en todos los Pueblos Más Bonitos de España.",
+    footerJoinClub: "Únete al Club de Amigos",
+    footerMoreResources: "Ver más recursos",
+  },
+  en: {
+    notFoundTitle: "Resource not found",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Discover ${name}, ${tipo.toLowerCase()} in ${pueblo}. Opening hours, location, contact details and Friends Club benefits.`,
+    home: "Home",
+    resources: "Tourist resources",
+    backToResources: "Back to Resources",
+    locatedIn: "Located in",
+    temporarilyClosed: "Temporarily closed",
+    priceAndDiscounts: "Price and discounts",
+    price: "Price",
+    perPerson: "per person",
+    clubPrice: "Club price",
+    joinClub: "Join the Club",
+    discountCta: (discount) => `Friends Club members enjoy a −${discount}% discount on this resource.`,
+    discountJoinQuestion: "Not a member yet? Join here",
+    clubBannerText: "exclusive discounts on tourist resources across the network",
+    admission: "Admission",
+    clubConditions: "Friends Club conditions",
+    admissionInfo: "People allowed when using this Friends Club benefit.",
+    adults: "Adults",
+    minors: "Children",
+    max: "max.",
+    upToYears: (years) => `(up to ${years} years old)`,
+    description: "Description",
+    contact: "Contact",
+    location: "Location",
+    inCountry: "Spain",
+    footerTitle: "Are you a Friends Club member?",
+    footerText:
+      "Members enjoy exclusive discounts on tourist resources, priority access and much more in all the Most Beautiful Villages of Spain.",
+    footerJoinClub: "Join the Friends Club",
+    footerMoreResources: "See more resources",
+  },
+  fr: {
+    notFoundTitle: "Ressource introuvable",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Découvrez ${name}, ${tipo.toLowerCase()} à ${pueblo}. Horaires, localisation, contact et avantages du Club des Amis.`,
+    home: "Accueil",
+    resources: "Ressources touristiques",
+    backToResources: "Retour aux ressources",
+    locatedIn: "Situé à",
+    temporarilyClosed: "Fermé temporairement",
+    priceAndDiscounts: "Prix et réductions",
+    price: "Prix",
+    perPerson: "par personne",
+    clubPrice: "Prix Club",
+    joinClub: "Rejoindre le Club",
+    discountCta: (discount) => `Les membres du Club des Amis bénéficient d'une réduction de −${discount}% sur cette ressource.`,
+    discountJoinQuestion: "Pas encore membre ? Rejoignez-nous ici",
+    clubBannerText: "réductions exclusives sur les ressources touristiques du réseau",
+    admission: "Admission",
+    clubConditions: "Conditions du Club des Amis",
+    admissionInfo: "Personnes admises avec cet avantage du Club des Amis.",
+    adults: "Adultes",
+    minors: "Mineurs",
+    max: "max.",
+    upToYears: (years) => `(jusqu'à ${years} ans)`,
+    description: "Description",
+    contact: "Contact",
+    location: "Localisation",
+    inCountry: "Espagne",
+    footerTitle: "Êtes-vous membre du Club des Amis ?",
+    footerText:
+      "Les membres bénéficient de réductions exclusives sur les ressources touristiques, d'un accès prioritaire et bien plus dans tous les Plus Beaux Villages d'Espagne.",
+    footerJoinClub: "Rejoindre le Club des Amis",
+    footerMoreResources: "Voir plus de ressources",
+  },
+  de: {
+    notFoundTitle: "Ressource nicht gefunden",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Entdecke ${name}, ${tipo.toLowerCase()} in ${pueblo}. Öffnungszeiten, Lage, Kontakt und Vorteile des Freundesclubs.`,
+    home: "Startseite",
+    resources: "Touristische Ressourcen",
+    backToResources: "Zurück zu Ressourcen",
+    locatedIn: "Gelegen in",
+    temporarilyClosed: "Vorübergehend geschlossen",
+    priceAndDiscounts: "Preis und Rabatte",
+    price: "Preis",
+    perPerson: "pro Person",
+    clubPrice: "Clubpreis",
+    joinClub: "Dem Club beitreten",
+    discountCta: (discount) => `Mitglieder des Freundesclubs erhalten ${discount}% Rabatt auf diese Ressource.`,
+    discountJoinQuestion: "Noch kein Mitglied? Hier beitreten",
+    clubBannerText: "exklusive Rabatte auf touristische Ressourcen im gesamten Netzwerk",
+    admission: "Eintritt",
+    clubConditions: "Bedingungen des Freundesclubs",
+    admissionInfo: "Zugelassene Personen bei Nutzung dieses Freundesclub-Vorteils.",
+    adults: "Erwachsene",
+    minors: "Minderjährige",
+    max: "max.",
+    upToYears: (years) => `(bis ${years} Jahre)`,
+    description: "Beschreibung",
+    contact: "Kontakt",
+    location: "Standort",
+    inCountry: "Spanien",
+    footerTitle: "Bist du Mitglied im Freundesclub?",
+    footerText:
+      "Mitglieder genießen exklusive Rabatte auf touristische Ressourcen, bevorzugten Zugang und vieles mehr in allen schönsten Dörfern Spaniens.",
+    footerJoinClub: "Dem Freundesclub beitreten",
+    footerMoreResources: "Mehr Ressourcen anzeigen",
+  },
+  pt: {
+    notFoundTitle: "Recurso não encontrado",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Descobre ${name}, ${tipo.toLowerCase()} em ${pueblo}. Horários, localização, contacto e vantagens do Clube de Amigos.`,
+    home: "Início",
+    resources: "Recursos turísticos",
+    backToResources: "Voltar aos recursos",
+    locatedIn: "Localizado em",
+    temporarilyClosed: "Temporariamente encerrado",
+    priceAndDiscounts: "Preço e descontos",
+    price: "Preço",
+    perPerson: "por pessoa",
+    clubPrice: "Preço com Clube",
+    joinClub: "Junta-te ao Clube",
+    discountCta: (discount) => `Os sócios do Clube de Amigos desfrutam de ${discount}% de desconto neste recurso.`,
+    discountJoinQuestion: "Ainda não és sócio? Junta-te aqui",
+    clubBannerText: "descontos exclusivos em recursos turísticos de toda a rede",
+    admission: "Admissão",
+    clubConditions: "Condições do Clube de Amigos",
+    admissionInfo: "Pessoas admitidas ao usar este benefício do Clube de Amigos.",
+    adults: "Adultos",
+    minors: "Menores",
+    max: "máx.",
+    upToYears: (years) => `(até ${years} anos)`,
+    description: "Descrição",
+    contact: "Contacto",
+    location: "Localização",
+    inCountry: "Espanha",
+    footerTitle: "És sócio do Clube de Amigos?",
+    footerText:
+      "Os sócios desfrutam de descontos exclusivos em recursos turísticos, acesso preferencial e muito mais em todas as Aldeias Mais Bonitas de Espanha.",
+    footerJoinClub: "Junta-te ao Clube de Amigos",
+    footerMoreResources: "Ver mais recursos",
+  },
+  it: {
+    notFoundTitle: "Risorsa non trovata",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Scopri ${name}, ${tipo.toLowerCase()} a ${pueblo}. Orari, posizione, contatti e vantaggi del Club Amici.`,
+    home: "Home",
+    resources: "Risorse turistiche",
+    backToResources: "Torna alle risorse",
+    locatedIn: "Situato a",
+    temporarilyClosed: "Temporaneamente chiuso",
+    priceAndDiscounts: "Prezzo e sconti",
+    price: "Prezzo",
+    perPerson: "a persona",
+    clubPrice: "Prezzo Club",
+    joinClub: "Unisciti al Club",
+    discountCta: (discount) => `I soci del Club Amici usufruiscono di uno sconto del ${discount}% su questa risorsa.`,
+    discountJoinQuestion: "Non sei ancora socio? Iscriviti qui",
+    clubBannerText: "sconti esclusivi sulle risorse turistiche di tutta la rete",
+    admission: "Accesso",
+    clubConditions: "Condizioni Club Amici",
+    admissionInfo: "Persone ammesse utilizzando questo vantaggio del Club Amici.",
+    adults: "Adulti",
+    minors: "Minori",
+    max: "max.",
+    upToYears: (years) => `(fino a ${years} anni)`,
+    description: "Descrizione",
+    contact: "Contatti",
+    location: "Posizione",
+    inCountry: "Spagna",
+    footerTitle: "Sei socio del Club Amici?",
+    footerText:
+      "I soci usufruiscono di sconti esclusivi sulle risorse turistiche, accesso prioritario e molto altro in tutti i Borghi più belli di Spagna.",
+    footerJoinClub: "Unisciti al Club Amici",
+    footerMoreResources: "Vedi altre risorse",
+  },
+  ca: {
+    notFoundTitle: "Recurs no trobat",
+    seoDiscover: (name, tipo, pueblo) =>
+      `Descobreix ${name}, ${tipo.toLowerCase()} a ${pueblo}. Horaris, ubicació, contacte i avantatges del Club d'Amics.`,
+    home: "Inici",
+    resources: "Recursos turístics",
+    backToResources: "Tornar a recursos",
+    locatedIn: "Ubicat a",
+    temporarilyClosed: "Tancat temporalment",
+    priceAndDiscounts: "Preu i descomptes",
+    price: "Preu",
+    perPerson: "per persona",
+    clubPrice: "Preu amb Club",
+    joinClub: "Uneix-te al Club",
+    discountCta: (discount) => `Els socis del Club d'Amics gaudeixen d'un ${discount}% de descompte en aquest recurs.`,
+    discountJoinQuestion: "Encara no ets soci? Uneix-te aquí",
+    clubBannerText: "descomptes exclusius en recursos turístics de tota la xarxa",
+    admission: "Admissió",
+    clubConditions: "Condicions Club d'Amics",
+    admissionInfo: "Persones admeses en utilitzar aquest benefici del Club d'Amics.",
+    adults: "Adults",
+    minors: "Menors",
+    max: "màx.",
+    upToYears: (years) => `(fins a ${years} anys)`,
+    description: "Descripció",
+    contact: "Contacte",
+    location: "Ubicació",
+    inCountry: "Espanya",
+    footerTitle: "Ets soci del Club d'Amics?",
+    footerText:
+      "Els socis gaudeixen de descomptes exclusius en recursos turístics, accés preferent i molt més a tots els Pobles Més Bonics d'Espanya.",
+    footerJoinClub: "Uneix-te al Club d'Amics",
+    footerMoreResources: "Veure més recursos",
+  },
+};
 
 /** Genera nombres de días de la semana en el locale indicado (lunes=0 → domingo=6) */
 function getDayNames(locale: string): string[] {
@@ -214,8 +491,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const t = PAGE_I18N[locale] ?? PAGE_I18N.es;
   const recurso = await getRecursoBySlug(slug, locale);
-  if (!recurso) return { title: "Recurso no encontrado" };
+  if (!recurso) return { title: t.notFoundTitle };
 
   const tipoLabel = getResourceLabel(recurso.tipo);
   const puebloName = recurso.pueblo?.nombre ?? recurso.provincia ?? recurso.comunidad ?? "España";
@@ -223,9 +501,7 @@ export async function generateMetadata({
   const descText = recurso.descripcion ? stripHtml(recurso.descripcion) : "";
   const description = descText
     ? seoDescription(cut(descText, 160))
-    : seoDescription(
-        `Descubre ${recurso.nombre}, ${tipoLabel.toLowerCase()} en ${puebloName}. Horarios, ubicación, contacto y ventajas del Club de Amigos.`,
-      );
+    : seoDescription(t.seoDiscover(recurso.nombre, tipoLabel, puebloName));
   const path = `/recursos/${recurso.slug ?? slug}`;
   const heroImage = recurso.fotoUrl?.trim() || null;
 
@@ -263,6 +539,7 @@ export default async function RecursoDetailPage({
 }) {
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
+  const t = PAGE_I18N[locale] ?? PAGE_I18N.es;
   const recurso = await getRecursoBySlug(slug, locale);
 
   if (!recurso) notFound();
@@ -296,13 +573,13 @@ export default async function RecursoDetailPage({
       {
         "@type": "ListItem",
         position: 1,
-        name: "Inicio",
+        name: t.home,
         item: `${baseUrl}/`,
       },
       {
         "@type": "ListItem",
         position: 2,
-        name: "Recursos turísticos",
+        name: t.resources,
         item: `${baseUrl}/recursos`,
       },
       {
@@ -338,8 +615,8 @@ export default async function RecursoDetailPage({
   };
 
   const breadcrumbs = [
-    { label: "Inicio", href: "/" },
-    { label: "Recursos turísticos", href: "/recursos" },
+    { label: t.home, href: "/" },
+    { label: t.resources, href: "/recursos" },
     { label: recurso.nombre, href: `/recursos/${recurso.slug ?? slug}` },
   ];
 
@@ -369,7 +646,7 @@ export default async function RecursoDetailPage({
               className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
-              Volver a Recursos
+              {t.backToResources}
             </Link>
           </div>
         </Container>
@@ -423,7 +700,7 @@ export default async function RecursoDetailPage({
           {/* Pueblo asociado */}
           {recurso.pueblo && (
             <p className="mt-3 text-sm text-muted-foreground">
-              Ubicado en{" "}
+              {t.locatedIn}{" "}
               <Link
                 href={`/pueblos/${recurso.pueblo.slug}`}
                 className="font-medium text-foreground underline-offset-4 hover:underline"
@@ -441,7 +718,7 @@ export default async function RecursoDetailPage({
           <Container size="md">
             <div className="flex items-center gap-2 py-3 text-amber-800">
               <AlertTriangle className="h-5 w-5 shrink-0" />
-              <span className="font-medium">Cerrado temporalmente</span>
+              <span className="font-medium">{t.temporarilyClosed}</span>
             </div>
           </Container>
         </div>
@@ -453,7 +730,7 @@ export default async function RecursoDetailPage({
           <Container size="md">
             <Headline as="h2" className="mb-4 flex items-center gap-2">
               <Tag className="h-5 w-5 text-primary" />
-              Precio y descuentos
+              {t.priceAndDiscounts}
             </Headline>
             <div className="grid gap-4 sm:grid-cols-2">
               {hasPrecio && (
@@ -461,12 +738,12 @@ export default async function RecursoDetailPage({
                   <Euro className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Precio
+                      {t.price}
                     </p>
                     <p className="mt-1 text-2xl font-bold text-foreground">
-                      {formatPrecio(recurso.precioCents!)}
+                      {formatPrecio(recurso.precioCents!, locale)}
                     </p>
-                    <p className="text-xs text-muted-foreground">por persona</p>
+                    <p className="text-xs text-muted-foreground">{t.perPerson}</p>
                   </div>
                 </div>
               )}
@@ -482,9 +759,11 @@ export default async function RecursoDetailPage({
                     </p>
                     {hasPrecio && (
                       <p className="text-sm font-medium text-foreground">
-                        Precio con Club:{" "}
+                        {t.clubPrice}:{" "}
                         {formatPrecio(
                           Math.round(recurso.precioCents! * (1 - recurso.descuentoPorcentaje! / 100))
+                          ,
+                          locale
                         )}
                       </p>
                     )}
@@ -492,7 +771,7 @@ export default async function RecursoDetailPage({
                       href="/club"
                       className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
                     >
-                      Únete al Club →
+                      {t.joinClub} →
                     </Link>
                   </div>
                 </div>
@@ -502,11 +781,9 @@ export default async function RecursoDetailPage({
             {/* CTA Club si solo hay descuento sin precio */}
             {hasDescuento && !hasPrecio && (
               <p className="mt-3 text-sm text-muted-foreground">
-                Los socios del Club de Amigos disfrutan de un{" "}
-                <strong className="text-primary">−{recurso.descuentoPorcentaje}% de descuento</strong>{" "}
-                en este recurso.{" "}
+                {t.discountCta(recurso.descuentoPorcentaje!)}{" "}
                 <Link href="/club" className="font-medium text-primary underline-offset-4 hover:underline">
-                  ¿Todavía no eres socio? Únete aquí →
+                  {t.discountJoinQuestion} →
                 </Link>
               </p>
             )}
@@ -522,14 +799,14 @@ export default async function RecursoDetailPage({
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-primary" />
                 <p className="text-sm text-foreground">
-                  <strong>Club de Amigos</strong> — descuentos exclusivos en recursos turísticos de toda la red
+                  <strong>Club de Amigos</strong> — {t.clubBannerText}
                 </p>
               </div>
               <Link
                 href="/club"
                 className="shrink-0 rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
-                Únete al Club →
+                {t.joinClub} →
               </Link>
             </div>
           </Container>
@@ -543,29 +820,29 @@ export default async function RecursoDetailPage({
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <Headline as="h2" className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
-                Admisión
+                {t.admission}
               </Headline>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/8 px-3 py-1 text-xs font-semibold text-primary">
                 <Star className="h-3.5 w-3.5" />
-                Condiciones Club de Amigos
+                {t.clubConditions}
               </span>
             </div>
             <p className="mb-3 text-sm text-muted-foreground">
-              Personas admitidas por uso del beneficio con el <Link href="/club" className="font-medium text-primary underline-offset-4 hover:underline">Club de Amigos</Link>.
+              {t.admissionInfo} <Link href="/club" className="font-medium text-primary underline-offset-4 hover:underline">Club de Amigos</Link>.
             </p>
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-foreground">
-                  <strong>Adultos:</strong> máx. {recurso.maxAdultos}
+                  <strong>{t.adults}:</strong> {t.max} {recurso.maxAdultos}
                 </span>
               </div>
               {recurso.maxMenores > 0 && (
                 <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3">
                   <Baby className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-foreground">
-                    <strong>Menores:</strong> máx. {recurso.maxMenores}
-                    {recurso.edadMaxMenor > 0 && ` (hasta ${recurso.edadMaxMenor} años)`}
+                    <strong>{t.minors}:</strong> {t.max} {recurso.maxMenores}
+                    {recurso.edadMaxMenor > 0 && ` ${t.upToYears(recurso.edadMaxMenor)}`}
                   </span>
                 </div>
               )}
@@ -579,7 +856,7 @@ export default async function RecursoDetailPage({
         <Section spacing="sm">
           <Container size="md">
             <Headline as="h2" className="mb-4">
-              Descripción
+              {t.description}
             </Headline>
             <div className="prose max-w-none space-y-3 text-muted-foreground">
               {parrafos.map((p, i) => (
@@ -662,7 +939,7 @@ export default async function RecursoDetailPage({
         <Section spacing="sm">
           <Container size="md">
             <Headline as="h2" className="mb-4">
-              Contacto
+              {t.contact}
             </Headline>
             <div className="flex flex-col gap-3">
               {telefono && (
@@ -705,10 +982,10 @@ export default async function RecursoDetailPage({
           <Container size="md">
             <Headline as="h2" className="mb-3 flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
-              Ubicación
+              {t.location}
             </Headline>
             <Lead className="mb-4 text-sm">
-              {recurso.nombre} en {recurso.provincia ?? recurso.comunidad ?? "España"}
+              {recurso.nombre} en {recurso.provincia ?? recurso.comunidad ?? t.inCountry}
             </Lead>
             <div className="overflow-hidden rounded-xl border border-border [&>div]:!h-[300px]">
               <ParadasMap paradas={paradas} puebloNombre={recurso.nombre} resourceTipo={recurso.tipo} />
@@ -723,23 +1000,23 @@ export default async function RecursoDetailPage({
           <div className="rounded-2xl border border-primary/20 bg-primary/5 px-6 py-8 text-center sm:px-10">
             <Star className="mx-auto mb-3 h-8 w-8 text-primary" />
             <h2 className="font-serif text-xl font-bold text-foreground sm:text-2xl">
-              ¿Eres socio del Club de Amigos?
+              {t.footerTitle}
             </h2>
             <p className="mx-auto mt-2 max-w-lg text-sm text-muted-foreground">
-              Los socios disfrutan de descuentos exclusivos en recursos turísticos, acceso preferente y mucho más en todos los Pueblos Más Bonitos de España.
+              {t.footerText}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/club"
                 className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
-                Únete al Club de Amigos
+                {t.footerJoinClub}
               </Link>
               <Link
                 href="/recursos"
                 className="rounded-full border border-border px-6 py-2.5 text-sm font-medium text-foreground transition hover:border-primary/40"
               >
-                Ver más recursos
+                {t.footerMoreResources}
               </Link>
             </div>
           </div>
