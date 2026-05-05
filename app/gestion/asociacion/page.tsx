@@ -52,7 +52,7 @@ const SECCIONES: Seccion[] = [
     subtitle: 'Socios, recursos, comercios locales, tienda online y la app móvil.',
     tone: 'violet',
     items: [
-      { href: '/gestion/asociacion/club',                title: 'Club de amigos',          description: 'Configuración del club y socios',                                iconKey: 'members',        tone: 'violet'  },
+      { href: '/gestion/asociacion/club',                title: 'El Club de los más Bonitos',          description: 'Configuración del club y socios',                                iconKey: 'members',        tone: 'violet'  },
       { href: '/gestion/asociacion/recursos-turisticos', title: 'Recursos turísticos',     description: 'Castillos, monasterios y otros recursos de la asociación',       iconKey: 'castle',         tone: 'stone'   },
       { href: '/gestion/asociacion/recursos-rurales',    title: 'Recursos rurales/naturales', description: 'Cascadas, miradores, parajes · validados por GPS',           iconKey: 'mountain',       tone: 'emerald' },
       { href: '/gestion/asociacion/gamificacion',        title: 'Gamificación',            description: 'Puntos del Club por cada acción · solo admin',                   iconKey: 'sparkles',       tone: 'fuchsia' },

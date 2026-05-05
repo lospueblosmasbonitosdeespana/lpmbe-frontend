@@ -80,7 +80,7 @@ const KEYS_PROTEGIDAS = new Set([
 const CATEGORIAS: Array<{ id: string; label: string; descripcion: string; color: string }> = [
   {
     id: 'CLUB',
-    label: 'Club de amigos',
+    label: 'El Club',
     descripcion:
       'Acciones del Club: visitas a RRTT (museos, castillos…), recursos rurales/naturales, sorteos, combos…',
     color: 'fuchsia',

@@ -196,7 +196,7 @@ export default async function GestionAsociacionClubPage() {
 
   return (
     <GestionAsociacionSubpageShell
-      title="Club de amigos"
+      title="El Club de los más Bonitos"
       subtitle="Socios, inscripciones, precios y estadísticas · Asociación LPMBE"
       heroIcon={<AsociacionHeroIconUsers />}
       maxWidthClass="max-w-5xl"

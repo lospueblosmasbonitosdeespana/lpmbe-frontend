@@ -6,7 +6,7 @@ import { GestionAsociacionSubpageShell } from '../../_components/GestionAsociaci
 import { AsociacionHeroIconChart } from '../../_components/asociacion-hero-icons';
 
 const CLUB_BACK = '/gestion/asociacion/club';
-const CLUB_BACK_LABEL = 'Volver al Club de amigos';
+const CLUB_BACK_LABEL = 'Volver al Club';
 
 const shellBase = {
   title: 'Métricas del club',

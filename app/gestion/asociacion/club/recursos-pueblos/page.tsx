@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
 const BACK = '/gestion/asociacion/club';
-const BACK_LABEL = 'Volver al Club de amigos';
+const BACK_LABEL = 'Volver al Club';
 
 export default async function RecursosPueblosPage() {
   const me = await getMeServer();

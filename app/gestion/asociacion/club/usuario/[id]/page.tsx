@@ -5,7 +5,7 @@ import { GestionAsociacionSubpageShell } from '../../../_components/GestionAsoci
 import { AsociacionHeroIconUserCircle } from '../../../_components/asociacion-hero-icons';
 
 const CLUB_BACK = '/gestion/asociacion/club';
-const CLUB_BACK_LABEL = 'Volver al Club de amigos';
+const CLUB_BACK_LABEL = 'Volver al Club';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
