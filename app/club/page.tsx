@@ -116,7 +116,7 @@ export default function ClubHubPage() {
             {t('prelaunchBadge')}
           </span>
           <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            {t('prelaunchHeroTitle')}
+            El Club de los más Bonitos
           </h1>
           <p className="mt-3 text-base text-muted-foreground">
             {t('prelaunchHeroSubtitle')}
