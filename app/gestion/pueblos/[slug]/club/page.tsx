@@ -36,7 +36,7 @@ export default async function ClubGestionPage({
   return (
     <GestionPuebloSubpageShell
       slug={slug}
-      title="Club de Amigos"
+      title="El Club de Los Pueblos más Bonitos"
       subtitle={
         <>
           Recursos turísticos y métricas del club ·{' '}

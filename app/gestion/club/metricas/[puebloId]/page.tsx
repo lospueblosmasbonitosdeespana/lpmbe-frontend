@@ -142,7 +142,7 @@ export default function ClubMetricasPuebloPage() {
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-          Métricas Club de Amigos {puebloNombre && `- ${puebloNombre}`}
+          Métricas El Club de Los Pueblos más Bonitos {puebloNombre && `- ${puebloNombre}`}
         </h1>
         <div style={{ fontSize: 14, color: '#666' }}>
           <Link href="/gestion/asociacion/club/metricas" style={{ color: '#0066cc', textDecoration: 'none' }}>

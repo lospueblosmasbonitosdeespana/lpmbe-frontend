@@ -53,7 +53,7 @@ const FIELDS: FieldDef[] = [
   },
   {
     key: 'emailFromClub',
-    title: 'Club de Amigos',
+    title: 'El Club de Los Pueblos más Bonitos',
     description: 'Comunicaciones a socios. Si lo dejas vacío, hereda del de la Newsletter pública.',
     envFallback: 'EMAIL_FROM_NEWSLETTER (heredado)',
     defaultExample: 'info@lospueblosmasbonitosdeespana.org',

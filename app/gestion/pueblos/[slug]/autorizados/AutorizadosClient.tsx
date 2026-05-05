@@ -413,7 +413,7 @@ export default function AutorizadosClient({
                 </label>
                 {(data?.recursos?.length ?? 0) === 0 ? (
                   <p className="text-sm text-amber-600">
-                    No hay recursos turísticos en este pueblo. Crea uno primero en el Club de Amigos.
+                    No hay recursos turísticos en este pueblo. Crea uno primero en el el Club.
                   </p>
                 ) : (
                   <select
