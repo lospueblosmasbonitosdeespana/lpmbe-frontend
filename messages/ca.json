@@ -1813,7 +1813,7 @@
     "lugaresDeInteresDesc": "Descobreix els punts d'interès imprescindibles de {nombre}.",
     "clubTitle": "Club a {nombre}",
     "clubDesc": "Comerços, restaurants i allotjaments del Club a {nombre}. Descomptes exclusius per a socis.",
-    "clubNegocioTitle": "{negocio} · Club · {pueblo}",
+    "clubNegocioTitle": "{business} · Club · {town}",
     "clubNegocioDesc": "{negocio} a {pueblo}: descobreix el que ofereix als socis del Club.",
     "alertasPuebloTitle": "Alertes a {nombre}",
     "alertasPuebloDesc": "Alertes actives a {nombre}, un dels pobles més bonics d'Espanya.",

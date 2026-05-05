@@ -336,7 +336,7 @@
     "appPage": "Baixar a app",
     "prensa": "Imprensa",
     "searchAppDesc": "Baixe o aplicativo oficial para iOS e Android",
-    "club": "Club"
+    "club": "Clube"
   },
   "footer": {
     "explore": "Explorar",
@@ -1001,7 +1001,7 @@
         "PENDING": "Pagamento pendente",
         "PAID": "Pago",
         "PROCESSING": "Em preparação",
-        "SHIPPED": "Enviado",
+        "SHIPPED": "Enviado para",
         "DELIVERED": "Entregue",
         "CANCELLED": "Cancelado",
         "FAILED": "Falha no pagamento"

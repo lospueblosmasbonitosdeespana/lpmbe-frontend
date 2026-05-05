@@ -1813,7 +1813,7 @@
     "lugaresDeInteresDesc": "Discover the must-see points of interest and places in {nombre}.",
     "clubTitle": "Club in {nombre}",
     "clubDesc": "Shops, restaurants and accommodations of the Club in {nombre}. Exclusive discounts for members.",
-    "clubNegocioTitle": "{negocio} · Club · {pueblo}",
+    "clubNegocioTitle": "{business} - Club - {town}",
     "clubNegocioDesc": "{negocio} in {pueblo}: discover what it offers to Club members.",
     "alertasPuebloTitle": "Alerts in {nombre}",
     "alertasPuebloDesc": "Active alerts in {nombre}, one of the most beautiful villages of Spain.",
