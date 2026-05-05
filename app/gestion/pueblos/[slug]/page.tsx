@@ -165,7 +165,7 @@ export default async function GestionPuebloPage({
       subtitle: 'Programa de socios y métricas de la ficha.',
       tone: 'violet',
       items: [
-        { href: `${baseUrl}/club`,     title: 'El Club de Los Pueblos más Bonitos', description: 'Métricas y recursos del club',                      iconKey: 'members', tone: 'violet' },
+        { href: `${baseUrl}/club`,     title: 'El Club de los más Bonitos', description: 'Métricas y recursos del club',                      iconKey: 'members', tone: 'violet' },
         // MISMO iconKey "metrics" que se usa en /gestion/asociacion (Datos)
         { href: `${baseUrl}/metricas`, title: 'Métricas',       description: 'Visitas, valoraciones y analítica web del pueblo', iconKey: 'metrics', tone: 'indigo', disabled: !puebloId },
       ],

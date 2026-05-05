@@ -12,7 +12,7 @@ export default async function PuntosRecursosPage() {
     <main className="mx-auto max-w-6xl p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground">
-          Puntos por recurso (El Club)
+          Puntos por recurso (Club de Amigos)
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Por defecto, cada elemento usa el valor de su regla genérica de

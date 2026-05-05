@@ -149,7 +149,7 @@ export default async function NotasPrensaNewsletterPage() {
             </div>
           </article>
 
-          {/* El Club */}
+          {/* Club de Amigos */}
           <article className="group relative overflow-hidden rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-50/70 via-white to-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-lg dark:border-rose-800/50 dark:from-rose-950/40 dark:to-card">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-rose-200/40 blur-3xl transition-opacity group-hover:opacity-80 dark:bg-rose-800/20" aria-hidden />
             <div className="relative flex items-start gap-3">
@@ -162,7 +162,7 @@ export default async function NotasPrensaNewsletterPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-bold text-foreground">El Club de Los Pueblos más Bonitos</h2>
+                  <h2 className="text-lg font-bold text-foreground">Club de Amigos</h2>
                   <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-700 ring-1 ring-rose-200 dark:bg-rose-950 dark:text-rose-200 dark:ring-rose-800">
                     Socios
                   </span>
@@ -250,7 +250,7 @@ export default async function NotasPrensaNewsletterPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" aria-hidden />
-                  En el <strong className="font-semibold text-foreground">El Club de Los Pueblos más Bonitos</strong>, los emails transaccionales (caducidad, sorteos, recordatorios) se envían siempre; el resto solo a quienes hayan aceptado marketing.
+                  En el <strong className="font-semibold text-foreground">Club de Amigos</strong>, los emails transaccionales (caducidad, sorteos, recordatorios) se envían siempre; el resto solo a quienes hayan aceptado marketing.
                 </li>
               </ul>
             </div>

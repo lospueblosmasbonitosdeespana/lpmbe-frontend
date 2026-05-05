@@ -204,10 +204,10 @@ export default function NuevoEventoPage() {
             />
             <div className="flex-1">
               <div className="font-semibold text-fuchsia-900 dark:text-fuchsia-200">
-                Incluir en el Club
+                Incluir en el Club de Amigos
               </div>
               <p className="mt-1 text-xs text-fuchsia-900/80 dark:text-fuchsia-300/80">
-                Si activas esta casilla, el evento se promocionará dentro del Club
+                Si activas esta casilla, el evento se promocionará dentro del Club de Amigos
                 y los socios ganarán puntos por asistir.
               </p>
               <p className="mt-1 text-xs text-fuchsia-900/70 dark:text-fuchsia-300/70">

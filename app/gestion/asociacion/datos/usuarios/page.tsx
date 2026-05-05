@@ -211,7 +211,7 @@ export default function DatosUsuariosPage() {
           value={clubStatus}
           onChange={(e) => setClubStatus(e.target.value)}
           className="rounded-lg border border-border px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          title="Filtrar por estado en el Club"
+          title="Filtrar por estado en el Club de Amigos"
         >
           <option value="">Cualquier estado de Club</option>
           <option value="ACTIVE">Solo socios del Club</option>

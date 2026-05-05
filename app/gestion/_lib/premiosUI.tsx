@@ -154,7 +154,7 @@ export const PREMIOS_UI: Record<number, PremioUI> = {
   },
   4: {
     titulo: 'Más Activo del Club',
-    descripcion: 'Mayor número de canjes de QR del Club.',
+    descripcion: 'Mayor número de canjes de QR del Club de Amigos.',
     unidad: 'canjes',
     implementado: true,
     Icon: Ticket,

@@ -219,7 +219,7 @@ export default function DatosClubPage() {
         >
           ← Volver a Datos
         </Link>
-        <h1 className="text-3xl font-bold">El Club de Los Pueblos más Bonitos</h1>
+        <h1 className="text-3xl font-bold">Club de Amigos</h1>
         <p className="mt-2 text-muted-foreground">
           Suscriptores, KPIs, conversión de lanzamiento y exportación segmentada.
         </p>

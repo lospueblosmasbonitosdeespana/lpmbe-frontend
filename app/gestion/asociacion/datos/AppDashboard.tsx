@@ -753,7 +753,7 @@ export default function AppDashboard() {
 
       {/* ── 6. CLUB + TIENDA ─────────────────────────────────────── */}
       <section className="space-y-4">
-        <SectionTitle>🃏 El Club de Los Pueblos más Bonitos &amp; Tienda</SectionTitle>
+        <SectionTitle>🃏 Club de Amigos &amp; Tienda</SectionTitle>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KpiCard label="Suscripciones Club activas" value={club.activas} icon="🎖️" />
           <KpiCard label="Nuevas en período" value={club.nuevasPeriodo} sub={`últimos ${days}d`} highlight />

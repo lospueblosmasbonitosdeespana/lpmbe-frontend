@@ -2235,7 +2235,7 @@ function InfoPublicaEditor({
         </h4>
       </div>
       <p className="text-xs text-sky-800">
-        Datos visibles para los socios del Club en la ficha del recurso
+        Datos visibles para los socios del Club de Amigos en la ficha del recurso
         (web y app): foto, descripción, horario, contacto y enlace de reserva.
       </p>
 

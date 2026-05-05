@@ -467,7 +467,7 @@ export default function NegociosPuebloClient({
               <span className="text-amber-600">🎁</span> Ofertas para socios del Club
             </h4>
             <p className="text-xs text-muted-foreground mb-2">
-              Crea ofertas estructuradas para los miembros del Club. Usa las plantillas para empezar r&aacute;pidamente.
+              Crea ofertas estructuradas para los miembros del Club de Amigos. Usa las plantillas para empezar r&aacute;pidamente.
             </p>
             {negocioEditando && (
               <NegocioOfertas

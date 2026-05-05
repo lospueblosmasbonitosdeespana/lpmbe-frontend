@@ -33,7 +33,7 @@ const CLUB_SLOTS: ClubSlot[] = [
   },
   {
     key: 'clubLogoCard',
-    label: 'Logo del Club (tarjeta "El Club")',
+    label: 'Logo del Club (tarjeta "Club de Amigos")',
     description:
       'Tarjeta que enlaza al Club. Si está vacío, usa el de cabecera. Recomendado: PNG transparente.',
     previewSize: 132,
@@ -178,7 +178,7 @@ export default function MiCuentaUsuariosClient() {
       )}
 
       <section>
-        <h2 className="text-lg font-semibold">Logo del Club de Los Pueblos más Bonitos</h2>
+        <h2 className="text-lg font-semibold">Logo del Club de Amigos</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
           Hay dos posiciones porque las tarjetas tienen tamaños distintos. Recomendado: PNG con
           fondo transparente real (no PNG con negro detrás).

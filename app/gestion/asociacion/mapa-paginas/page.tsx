@@ -384,7 +384,7 @@ const PAGES: PageRow[] = [
   // ── Club ──
   {
     url: '/club',
-    label: 'El Club de Los Pueblos más Bonitos',
+    label: 'Club de Amigos',
     source: 'Configuración del club + tabla Usuario (socios activos).',
     triggerNew: 'Se configura desde Gestión > Asociación > Club.',
     category: 'club',
