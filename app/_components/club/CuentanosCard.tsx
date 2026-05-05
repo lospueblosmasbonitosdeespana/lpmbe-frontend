@@ -16,6 +16,7 @@ import {
   CircleCheckBig,
   PenLine,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Title, Caption } from '@/app/components/ui/typography';
 
 const PROVINCIAS_ESP = [
@@ -31,17 +32,17 @@ const PROVINCIAS_ESP = [
 
 type LucideIconType = ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
 
-const INTERESES_DISPONIBLES: Array<{ key: string; label: string; Icon: LucideIconType }> = [
-  { key: 'GASTRONOMIA', label: 'Gastronomía', Icon: UtensilsCrossed },
-  { key: 'NATURALEZA', label: 'Naturaleza y senderismo', Icon: Mountain },
-  { key: 'PATRIMONIO', label: 'Patrimonio e historia', Icon: Castle },
-  { key: 'FAMILIA', label: 'Viajar en familia', Icon: UsersIcon },
-  { key: 'PAREJA', label: 'Escapadas en pareja', Icon: HeartHandshake },
-  { key: 'FOTOGRAFIA', label: 'Fotografía', Icon: Camera },
-  { key: 'ENOTURISMO', label: 'Enoturismo', Icon: Wine },
-  { key: 'ARTESANIA', label: 'Artesanía y compras', Icon: Palette },
-  { key: 'FIESTAS', label: 'Fiestas y tradiciones', Icon: PartyPopper },
-  { key: 'BIENESTAR', label: 'Bienestar y desconexión', Icon: Sparkles },
+const INTERESES_DISPONIBLES: Array<{ key: string; tKey: string; Icon: LucideIconType }> = [
+  { key: 'GASTRONOMIA', tKey: 'interestGASTRONOMIA', Icon: UtensilsCrossed },
+  { key: 'NATURALEZA', tKey: 'interestNATURALEZA', Icon: Mountain },
+  { key: 'PATRIMONIO', tKey: 'interestPATRIMONIO', Icon: Castle },
+  { key: 'FAMILIA', tKey: 'interestFAMILIA', Icon: UsersIcon },
+  { key: 'PAREJA', tKey: 'interestPAREJA', Icon: HeartHandshake },
+  { key: 'FOTOGRAFIA', tKey: 'interestFOTOGRAFIA', Icon: Camera },
+  { key: 'ENOTURISMO', tKey: 'interestENOTURISMO', Icon: Wine },
+  { key: 'ARTESANIA', tKey: 'interestARTESANIA', Icon: Palette },
+  { key: 'FIESTAS', tKey: 'interestFIESTAS', Icon: PartyPopper },
+  { key: 'BIENESTAR', tKey: 'interestBIENESTAR', Icon: Sparkles },
 ];
 
 export type CuentanosInitial = {
@@ -58,6 +59,7 @@ type Props = {
 };
 
 export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
+  const t = useTranslations('club');
   const [provincia, setProvincia] = useState(initial.provincia ?? '');
   const [fechaNacimiento, setFechaNacimiento] = useState(initial.fechaNacimiento ?? '');
   const [intereses, setIntereses] = useState<string[]>(initial.intereses ?? []);
@@ -96,7 +98,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j?.message ?? 'Error al guardar');
+        throw new Error(j?.message ?? t('profileErrorSave'));
       }
       setDone(true);
       onSaved?.({ provincia: provincia || null, fechaNacimiento: fechaNacimiento || null, intereses, aceptaMarketing });
@@ -120,22 +122,22 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
             <div className="min-w-0">
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
                 <CircleCheckBig size={14} aria-hidden />
-                Perfil de socio completo
+                {t('profileComplete')}
               </div>
-              <Title size="lg" className="mb-2">Tus datos de socio</Title>
+              <Title size="lg" className="mb-2">{t('profileTitle')}</Title>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs text-gray-700">
-                  <strong>Provincia:</strong> {provincia}
+                  <strong>{t('profileProvinceLabel')}:</strong> {provincia}
                 </span>
                 <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs text-gray-700">
-                  <strong>Cumple:</strong> {fechaNacimiento}
+                  <strong>{t('profileBirthdayLabel')}:</strong> {fechaNacimiento}
                 </span>
                 <span className="rounded-full border border-border bg-white px-2.5 py-1 text-xs text-gray-700">
-                  <strong>Intereses:</strong> {intereses.length}
+                  <strong>{t('profileInterestsLabel')}:</strong> {intereses.length}
                 </span>
                 {aceptaMarketing && (
                   <span className="rounded-full border border-emerald-200 bg-emerald-100/60 px-2.5 py-1 text-xs font-medium text-emerald-800">
-                    Recibe novedades
+                    {t('profileReceivesNews')}
                   </span>
                 )}
               </div>
@@ -146,11 +148,11 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium hover:bg-muted/40"
             >
               <PenLine size={13} aria-hidden />
-              Editar
+              {t('profileEdit')}
             </button>
           </div>
           <Caption className="mt-2 block">
-            Puedes modificar estos datos cuando quieras desde este mismo botón.
+            {t('profileEditHint')}
           </Caption>
         </div>
       </div>
@@ -159,22 +161,21 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
 
   return (
     <div className={baseClass}>
-      <Title size="lg" className="mb-2">Cuéntanos un poco más</Title>
+      <Title size="lg" className="mb-2">{t('profileFormTitle')}</Title>
       <Caption className="mb-5 block">
-        Esto nos ayuda a personalizar la experiencia y que sólo te llegue contenido relevante.
-        Puedes cambiarlo cuando quieras.
+        {t('profileFormDesc')}
       </Caption>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-gray-800">Provincia</span>
+            <span className="mb-1.5 block text-sm font-medium text-gray-800">{t('profileProvinceLabel')}</span>
             <select
               value={provincia}
               onChange={(e) => setProvincia(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
             >
-              <option value="">Selecciona…</option>
+              <option value="">{t('profileProvinceSelect')}</option>
               {PROVINCIAS_ESP.map((p) => (
                 <option key={p} value={p}>
                   {p}
@@ -184,7 +185,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-gray-800">Fecha de nacimiento</span>
+            <span className="mb-1.5 block text-sm font-medium text-gray-800">{t('profileBirthdateLabel')}</span>
             <input
               type="date"
               value={fechaNacimiento}
@@ -193,13 +194,13 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
               max={new Date().toISOString().slice(0, 10)}
             />
             <span className="mt-1 block text-xs text-muted-foreground">
-              Solo se usa para felicitarte y para sorteos por edad.
+              {t('profileBirthdateHint')}
             </span>
           </label>
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium text-gray-800">Tus intereses</legend>
+          <legend className="mb-2 text-sm font-medium text-gray-800">{t('profileInterestsLegend')}</legend>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
             {INTERESES_DISPONIBLES.map((it) => {
               const active = intereses.includes(it.key);
@@ -216,7 +217,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
                   }`}
                 >
                   <Icon size={16} aria-hidden />
-                  <span>{it.label}</span>
+                  <span>{t(it.tKey as Parameters<typeof t>[0])}</span>
                 </button>
               );
             })}
@@ -231,8 +232,9 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
             className="mt-0.5"
           />
           <span>
-            Quiero recibir <strong>ofertas y novedades</strong> de Los Pueblos más Bonitos de España
-            (puedes darte de baja en cualquier momento).
+            {t.rich('profileMarketingLabel', {
+              bold: (chunks) => <strong>{chunks}</strong>,
+            })}
           </span>
         </label>
 
@@ -244,7 +246,7 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
             disabled={saving}
             className="rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? 'Guardando…' : 'Guardar mis datos'}
+            {saving ? t('profileSaving') : t('profileSave')}
           </button>
           {isComplete && (
             <button
@@ -252,12 +254,12 @@ export function CuentanosCard({ initial, onSaved, cardClassName }: Props) {
               onClick={() => setCollapsed(true)}
               className="text-sm text-muted-foreground hover:underline"
             >
-              Cancelar
+              {t('profileCancel')}
             </button>
           )}
           {done && (
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
-              <Confetti size={16} aria-hidden /> ¡Guardado!
+              <Confetti size={16} aria-hidden /> {t('profileSaved')}
             </span>
           )}
         </div>

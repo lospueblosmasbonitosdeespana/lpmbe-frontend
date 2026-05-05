@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Coins, Gift, Sparkles } from 'lucide-react';
 
 type Saldo = {
@@ -13,7 +14,7 @@ type Saldo = {
 };
 
 /**
- * Cabecera del wallet del Club.
+ * Cabecera del monedero del Club.
  *
  * Muestra el saldo disponible (puntos canjeables del socio) y un acceso al
  * catálogo de recompensas y a sus canjes. Usa el ledger inmutable detrás:
@@ -30,6 +31,7 @@ export function WalletHeader({
   className?: string;
   compact?: boolean;
 }) {
+  const t = useTranslations('club');
   const [saldo, setSaldo] = useState<Saldo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -91,17 +93,17 @@ export function WalletHeader({
         </div>
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-wide text-amber-800/80 dark:text-amber-200/70">
-            Mi wallet del Club
+            {t('walletTitle')}
           </p>
           <p className="mt-0.5 text-2xl font-bold text-amber-900 dark:text-amber-100">
             {formatNum(saldo.disponibles)}{' '}
             <span className="text-base font-medium text-amber-800/80 dark:text-amber-200/70">
-              pts disponibles
+              {t('walletAvailable')}
             </span>
           </p>
           <p className="mt-1 text-xs text-amber-900/70 dark:text-amber-100/70">
-            {formatNum(saldo.ganados)} ganados · {formatNum(saldo.gastados)} gastados
-            {saldo.canjesActivos > 0 && ` · ${saldo.canjesActivos} cupones activos`}
+            {formatNum(saldo.ganados)} {t('walletEarned')} · {formatNum(saldo.gastados)} {t('walletSpent')}
+            {saldo.canjesActivos > 0 && ` · ${t('walletActiveCoupons', { n: saldo.canjesActivos })}`}
           </p>
         </div>
       </div>
@@ -112,14 +114,14 @@ export function WalletHeader({
           className="inline-flex items-center gap-1.5 rounded-full bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-amber-700"
         >
           <Gift size={14} aria-hidden />
-          Canjear premios
+          {t('walletRedeem')}
         </Link>
         {saldo.canjesActivos > 0 && (
           <Link
             href="/mi-cuenta/club/mis-canjes"
             className="inline-flex items-center gap-1.5 rounded-full border border-amber-600 bg-white px-3 py-1.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-50 dark:bg-zinc-900 dark:text-amber-100 dark:hover:bg-amber-950/40"
           >
-            Mis cupones
+            {t('walletMyCoupons')}
           </Link>
         )}
       </div>
