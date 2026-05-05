@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
-import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon, Camera, Phone, MessageCircle, Globe, Mail, Clock, Ticket, FileText, Sparkles, Lock } from 'lucide-react';
+import { Gift, Layers, Euro, Plus, Trash2, Upload, Image as ImageIcon, Camera, Phone, MessageCircle, Globe, Mail, Clock, Ticket, FileText, Sparkles, Lock, Printer } from 'lucide-react';
 import { uploadImageToR2 } from '@/src/lib/uploadHelper';
+import { QrCartelModal } from '@/app/_components/club/QrCartelModal';
 
 type RecursoPrecio = {
   id?: number;
@@ -121,6 +122,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [qrCartelRecurso, setQrCartelRecurso] = useState<Recurso | null>(null);
 
   // Editor inline de puntos del Club (solo admin)
   const [editandoPuntosId, setEditandoPuntosId] = useState<number | null>(null);
@@ -1618,6 +1620,15 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                         Ver en web ↗
                       </a>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => setQrCartelRecurso(r)}
+                      className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-50"
+                      title="Descargar / imprimir cartel QR para ponerlo en el recurso"
+                    >
+                      <Printer className="h-3 w-3" aria-hidden />
+                      QR
+                    </button>
                     <a href={`/gestion/asociacion/club/metricas/${puebloId}`} className="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">
                       Métricas
                     </a>
@@ -1660,6 +1671,17 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
           ))
         )}
       </div>
+
+      {qrCartelRecurso && (
+        <QrCartelModal
+          open={true}
+          onClose={() => setQrCartelRecurso(null)}
+          codigoQr={qrCartelRecurso.codigoQr}
+          nombre={qrCartelRecurso.nombre}
+          puebloNombre={null}
+          tipo={qrCartelRecurso.tipo}
+        />
+      )}
     </>
   );
 }

@@ -6,6 +6,7 @@ import NegocioOfertas from './NegocioOfertas';
 import NegocioStats from './NegocioStats';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS, getPlanFeatures, type PlanNegocio } from '@/lib/plan-features';
+import { QrCartelModal } from '@/app/_components/club/QrCartelModal';
 
 const TIPOS_NEGOCIO = [
   'HOTEL',
@@ -145,6 +146,7 @@ export default function NegociosPuebloClient({
   const [puebloLng, setPuebloLng] = useState<number | null>(null);
   const [puebloProvincia, setPuebloProvincia] = useState<string>('');
   const [puebloComunidad, setPuebloComunidad] = useState<string>('');
+  const [qrCartelNegocio, setQrCartelNegocio] = useState<Negocio | null>(null);
 
   useEffect(() => {
     if (isAsociacion) return;
@@ -912,6 +914,13 @@ export default function NegociosPuebloClient({
                     Editar
                   </button>
                   <button
+                    onClick={() => setQrCartelNegocio(n)}
+                    className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-50"
+                    title="Descargar / imprimir cartel QR para ponerlo en el local"
+                  >
+                    QR del local
+                  </button>
+                  <button
                     onClick={() => handleDelete(n.id, n.nombre)}
                     className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
                   >
@@ -996,6 +1005,17 @@ export default function NegociosPuebloClient({
             </div>
           ))}
         </div>
+      )}
+
+      {qrCartelNegocio && (
+        <QrCartelModal
+          open={true}
+          onClose={() => setQrCartelNegocio(null)}
+          codigoQr={qrCartelNegocio.codigoQr}
+          nombre={qrCartelNegocio.nombre}
+          puebloNombre={qrCartelNegocio.pueblo?.nombre ?? puebloNombre ?? null}
+          tipo={TIPO_LABELS[qrCartelNegocio.tipo] ?? qrCartelNegocio.tipo}
+        />
       )}
     </div>
   );

@@ -29,6 +29,7 @@ import { Headline, Title, Caption } from '@/app/components/ui/typography';
 import { ClubShield, getMemberYear, useClubLogoFromSettings } from '@/app/_components/club/ClubShield';
 import { CuentanosCard } from '@/app/_components/club/CuentanosCard';
 import { WalletHeader } from '@/app/_components/club/WalletHeader';
+import { QrScannerCard } from '@/app/_components/club/QrScannerCard';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -873,6 +874,13 @@ export default function ClubPage() {
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Escanear QR de un recurso o negocio */}
+          {clubMe?.isMember && (
+            <div className={`${cardClass} border-amber-200 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20`}>
+              <QrScannerCard onSuccess={() => loadData()} />
             </div>
           )}
 
