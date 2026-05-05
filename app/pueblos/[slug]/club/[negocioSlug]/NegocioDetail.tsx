@@ -43,6 +43,7 @@ type Recurso = {
   lng?: number | null;
   localidad?: string | null;
   planNegocio?: PlanNegocio;
+  puntosClub?: number | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imagenes?: Imagen[];
   horariosSemana?: Array<{
@@ -428,12 +429,34 @@ export default function NegocioDetail({
           </div>
           <div className="flex items-start gap-3 flex-wrap justify-end">
             {pctNum != null && (
-              <div className="shrink-0 rounded-xl bg-primary px-5 py-3 text-center">
-                <span className="block text-2xl font-bold text-primary-foreground">
-                  {pctNum}%
+              <div className="shrink-0 flex flex-col items-center gap-1.5">
+                <div className="rounded-xl bg-primary px-5 py-3 text-center">
+                  <span className="block text-2xl font-bold text-primary-foreground">
+                    {pctNum}%
+                  </span>
+                  <span className="block text-xs font-medium text-primary-foreground/80">
+                    descuento Club
+                  </span>
+                </div>
+                {recurso.puntosClub != null && (
+                  <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-center">
+                    <span className="block text-xl font-bold text-amber-800">
+                      +{recurso.puntosClub}
+                    </span>
+                    <span className="block text-[11px] font-medium text-amber-700/80">
+                      pts al validar
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            {pctNum == null && recurso.puntosClub != null && (
+              <div className="shrink-0 rounded-lg border border-amber-300 bg-amber-50 px-5 py-3 text-center">
+                <span className="block text-2xl font-bold text-amber-800">
+                  +{recurso.puntosClub}
                 </span>
-                <span className="block text-xs font-medium text-primary-foreground/80">
-                  descuento Club
+                <span className="block text-xs font-medium text-amber-700/80">
+                  pts al validar
                 </span>
               </div>
             )}

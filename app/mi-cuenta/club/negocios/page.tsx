@@ -42,6 +42,7 @@ type Negocio = {
   descripcion: string | null;
   fotoUrl: string | null;
   planNegocio: string;
+  puntosClub: number | null;
   esSelection: boolean;
   pueblo: { id: number; nombre: string; slug: string } | null;
   provincia: string | null;
@@ -349,6 +350,13 @@ function NegocioCard({ negocio: n, t }: { negocio: Negocio; t: ReturnType<typeof
         </div>
         {n.descripcion && (
           <p className="line-clamp-2 text-sm text-muted-foreground">{n.descripcion}</p>
+        )}
+
+        {/* Puntos Club */}
+        {n.puntosClub != null && (
+          <div className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800">
+            +{n.puntosClub} pts al validar
+          </div>
         )}
 
         {/* Beneficios destacados */}

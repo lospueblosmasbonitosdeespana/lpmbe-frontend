@@ -40,6 +40,7 @@ type Negocio = {
   codigoQr: string;
   scope: string;
   planNegocio?: string;
+  puntosClub?: number | null;
   descuentoPorcentaje?: number | null;
   descripcion?: string | null;
   contacto?: string | null;
@@ -851,6 +852,16 @@ export default function NegociosPuebloClient({
 
                   {n.descripcion && (
                     <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{n.descripcion}</p>
+                  )}
+
+                  {n.puntosClub != null && (
+                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                      <span className="text-lg font-bold text-amber-800">+{n.puntosClub}</span>
+                      <div>
+                        <p className="text-xs font-semibold text-amber-800">puntos por validación</p>
+                        <p className="text-[11px] text-amber-700/70">que este negocio aporta a los socios del Club</p>
+                      </div>
+                    </div>
                   )}
 
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">

@@ -61,6 +61,7 @@ type Recurso = {
   activo?: boolean;
   lat?: number | null;
   lng?: number | null;
+  puntosClub?: number | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imagenes?: Array<{ id: number; url: string; alt: string | null; orden: number }>;
   horariosSemana?: Array<{
