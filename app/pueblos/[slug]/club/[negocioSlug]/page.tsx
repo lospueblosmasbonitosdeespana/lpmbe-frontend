@@ -102,7 +102,7 @@ export default async function NegocioDetailPage({
             href={pueblo ? `/pueblos/${pueblo.slug}/club` : "/pueblos"}
             className="mt-4 inline-block text-primary hover:underline"
           >
-            Volver al Club de Amigos
+            Volver al Club
           </Link>
         </div>
       </main>
@@ -115,7 +115,7 @@ export default async function NegocioDetailPage({
     ...(pueblo
       ? [
           { label: pueblo.nombre, href: `/pueblos/${pueblo.slug}` },
-          { label: "Club de Amigos", href: `/pueblos/${pueblo.slug}/club` },
+          { label: "El Club", href: `/pueblos/${pueblo.slug}/club` },
         ]
       : []),
     { label: recurso.nombre, href: `/pueblos/${slug}/club/${negocioSlug}` },

@@ -37,9 +37,9 @@ export default function ClubInteresadosPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [idiomaEnvio, setIdiomaEnvio] = useState('all');
-  const [subject, setSubject] = useState('Ya puedes unirte al Club de Amigos');
+  const [subject, setSubject] = useState('Ya puedes unirte a El Club de los más Bonitos');
   const [mensaje, setMensaje] = useState(
-    '¡Hola!\n\nYa hemos abierto el Club de Amigos de Los Pueblos Más Bonitos de España.\n\nPuedes entrar ahora y activar tu membresía para acceder a premios, cupones, sorteos y ventajas exclusivas.\n\n👉 https://lospueblosmasbonitosdeespana.org/mi-cuenta/club',
+    '¡Hola!\n\nYa hemos abierto El Club de los más Bonitos.\n\nPuedes entrar ahora y activar tu membresía para acceder a premios, cupones, sorteos y ventajas exclusivas.\n\n👉 https://lospueblosmasbonitosdeespana.org/mi-cuenta/club',
   );
   const [sending, setSending] = useState(false);
   const [sendInfo, setSendInfo] = useState<string | null>(null);

@@ -660,7 +660,7 @@ export default function PerfilPage() {
             </div>
           </div>
 
-          {/* ── Club de Amigos ── (al final, antes de cerrar sesión) */}
+          {/* ── El Club ── (al final, antes de cerrar sesión) */}
           {(() => {
             const esMiembro = getClubEsMiembro(usuario.club, clubMe);
             const validUntil = getClubValidUntil(usuario.club, clubMe);
@@ -798,10 +798,10 @@ export default function PerfilPage() {
                 {!esMiembro && (
                   <div className="mt-4 flex flex-col gap-2">
                     <p className="text-sm text-muted-foreground">
-                      Únete al Club de Amigos para acceder a descuentos exclusivos en recursos turísticos.
+                      Únete al Club para acceder a descuentos exclusivos en recursos turísticos.
                     </p>
                     <Link href="/mi-cuenta/club" className="inline-block w-fit rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90">
-                      Ver Club de Amigos
+                      Ver El Club
                     </Link>
                   </div>
                 )}

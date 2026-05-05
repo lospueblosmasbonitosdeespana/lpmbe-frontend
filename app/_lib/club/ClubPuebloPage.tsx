@@ -138,14 +138,14 @@ export async function ClubPuebloPage({ slug, puebloSlug, locale }: ClubPageProps
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {locale === "es"
-                  ? "¿Eres propietario? Únete al Club de Amigos."
-                  : "Are you an owner? Join the Friends Club."}
+                  ? "¿Eres propietario? Únete al Club."
+                  : "Are you an owner? Join the Club."}
               </p>
               <Link
                 href="/club"
                 className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                {locale === "es" ? "Ver el Club de Amigos" : "See the Friends Club"}
+                {locale === "es" ? "Ver El Club" : "See the Club"}
               </Link>
             </div>
           )}

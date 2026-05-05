@@ -69,13 +69,13 @@ const TIPO_LABELS_PLURAL: Record<string, string> = {
 const TIPO_DESCRIPTIONS: Record<string, string> = {
   HOTEL: "Alojamientos con ventajas exclusivas para socios del Club.",
   CASA_RURAL: "Casas rurales con encanto y descuentos para socios.",
-  RESTAURANTE: "Donde comer bien con ventajas del Club de Amigos.",
+  RESTAURANTE: "Donde comer bien con ventajas del Club.",
   BAR: "Bares y cafeterías con ofertas para socios.",
   COMERCIO: "Comercios locales con descuentos para el Club.",
   TIENDA_ARTESANIA: "Artesanía local con precios especiales.",
   BODEGA: "Bodegas y enoturismo con ventajas para socios.",
   EXPERIENCIA: "Experiencias únicas con descuentos del Club.",
-  OTRO: "Otros negocios colaboradores del Club de Amigos.",
+  OTRO: "Otros negocios colaboradores del Club.",
 };
 
 const TIPO_ICONS: Record<string, string> = {
@@ -291,7 +291,7 @@ export default async function ClubPuebloPage({
     return (
       <main className="min-h-screen bg-background">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h1 className="text-2xl font-bold">Club de Amigos</h1>
+          <h1 className="text-2xl font-bold">El Club</h1>
           <p className="mt-2 text-muted-foreground">
             No se ha podido cargar la información del pueblo.
           </p>
@@ -349,7 +349,7 @@ export default async function ClubPuebloPage({
     { label: "Inicio", href: "/" },
     { label: "Pueblos", href: "/pueblos" },
     { label: pueblo.nombre, href: `/pueblos/${pueblo.slug}` },
-    { label: "Club de Amigos", href: `/pueblos/${pueblo.slug}/club` },
+    { label: "El Club", href: `/pueblos/${pueblo.slug}/club` },
   ];
 
   return (
@@ -368,16 +368,16 @@ export default async function ClubPuebloPage({
             ))}
           </nav>
           <h1 className="text-2xl font-bold sm:text-3xl">
-            Club de Amigos · {pueblo.nombre}
+            El Club · {pueblo.nombre}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Todo lo que {pueblo.nombre} ofrece a los socios del Club de Amigos:
+            Todo lo que {pueblo.nombre} ofrece a los socios del Club:
             descuentos, experiencias exclusivas, restaurantes, alojamientos y más.
           </p>
           <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50/70 px-4 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-amber-900">
-                <strong>Las ventajas de esta página son para miembros del Club de Amigos.</strong>{" "}
+                <strong>Las ventajas de esta página son para miembros del Club.</strong>{" "}
                 Hazte socio para activarlas en tus visitas.
               </p>
               <Link
@@ -453,7 +453,7 @@ export default async function ClubPuebloPage({
         {recursosPueblo.length === 0 && negocios.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center">
             <p className="text-lg text-muted-foreground">
-              Todavía no hay ofertas del Club de Amigos disponibles en {pueblo.nombre}.
+              Todavía no hay ofertas del Club disponibles en {pueblo.nombre}.
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
               Vuelve pronto — estamos incorporando negocios y experiencias continuamente.
@@ -492,7 +492,7 @@ export default async function ClubPuebloPage({
                 </h2>
                 <p className="text-sm text-muted-foreground mb-6">
                   {negocios.length} negocio{negocios.length !== 1 ? "s" : ""} de {pueblo.nombre}{" "}
-                  ofrecen ventajas exclusivas a los socios del Club de Amigos.
+                  ofrecen ventajas exclusivas a los socios del Club.
                 </p>
 
                 {/* Category summary cards → link to SEO pages */}

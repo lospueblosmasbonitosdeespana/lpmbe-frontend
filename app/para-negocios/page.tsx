@@ -105,7 +105,7 @@ export default async function ParaNegociosPage() {
             Haz crecer tu negocio con nosotros
           </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Más de 100 pueblos, miles de socios del Club de Amigos y una marca
+            Más de 100 pueblos, miles de socios del Club y una marca
             reconocida internacionalmente. Tu negocio merece estar aquí.
           </p>
         </div>
@@ -130,7 +130,7 @@ export default async function ParaNegociosPage() {
                 <span className="text-sm text-muted-foreground">/mes</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Aparece en el Club de Amigos y empieza a recibir socios.
+                Aparece en el Club y empieza a recibir socios.
               </p>
             </div>
             <ul className="flex-1 space-y-3 text-sm">
@@ -328,7 +328,7 @@ export default async function ParaNegociosPage() {
             <div className="rounded-xl border border-border p-5">
               <h3 className="font-semibold text-foreground">Audiencia cualificada</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Nuestros socios del Club de Amigos son viajeros que buscan
+                Nuestros socios del Club son viajeros que buscan
                 activamente experiencias en pueblos bonitos. Clientes listos para comprar.
               </p>
             </div>

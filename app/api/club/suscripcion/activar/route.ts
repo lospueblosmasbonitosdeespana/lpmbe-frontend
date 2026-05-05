@@ -4,7 +4,7 @@ import { getApiUrl } from '@/lib/api';
 
 /**
  * POST /api/club/suscripcion/activar
- * Activa la membresía del Club de Amigos.
+ * Activa la membresía del Club.
  * Body: { tipo: 'ANUAL' | 'MENSUAL', importeCents?: number }
  *
  * Cuando NEXT_PUBLIC_CLUB_ALTA_ABIERTO=true, este endpoint estará disponible

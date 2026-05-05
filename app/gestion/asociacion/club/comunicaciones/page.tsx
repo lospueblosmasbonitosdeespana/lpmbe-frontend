@@ -83,7 +83,7 @@ const PLANTILLAS: Plantilla[] = [
     asunto: '🎁 Nuevo sorteo solo para socios del Club',
     blocks: [
       block('heading', { content: '¡Tenemos un nuevo sorteo!', align: 'center' }),
-      block('text', { content: 'Como socio del <strong>Club de Amigos de los Pueblos más Bonitos de España</strong>, tienes acceso exclusivo a este sorteo.' }),
+      block('text', { content: 'Como socio del <strong>El Club de los más Bonitos</strong>, tienes acceso exclusivo a este sorteo.' }),
       block('button', { label: 'Ver sorteo y apuntarme', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club/sorteos', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
       block('text', { content: '¡Mucha suerte!<br/>El equipo de LPMBE', align: 'center' }),
     ],
@@ -93,11 +93,11 @@ const PLANTILLAS: Plantilla[] = [
     nombre: 'Tu suscripción caduca pronto',
     descripcion: 'Aviso transaccional a socios cuya membresía termina pronto.',
     thumb: '⏳',
-    asunto: 'Tu Club de Amigos está a punto de finalizar',
+    asunto: 'Tu membresía en El Club de los más Bonitos está a punto de finalizar',
     bypassOptIn: true,
     blocks: [
-      block('heading', { content: 'Renueva tu Club de Amigos' }),
-      block('text', { content: 'Te avisamos de que tu pertenencia al <strong>Club de Amigos</strong> caduca pronto. Renueva en un clic desde tu panel.' }),
+      block('heading', { content: 'Renueva El Club de los más Bonitos' }),
+      block('text', { content: 'Te avisamos de que tu pertenencia al <strong>El Club de los más Bonitos</strong> caduca pronto. Renueva en un clic desde tu panel.' }),
       block('button', { label: 'Renovar mi membresía', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
       block('text', { content: 'Gracias por seguir descubriendo España con nosotros.' }),
     ],
@@ -109,7 +109,7 @@ const PLANTILLAS: Plantilla[] = [
     thumb: '🚀',
     asunto: '¡Bienvenido al Club! Estos meses son nuestra invitación',
     blocks: [
-      block('heading', { content: '¡Bienvenido al Club de Amigos!', align: 'center' }),
+      block('heading', { content: '¡Bienvenido a El Club de los más Bonitos!', align: 'center' }),
       block('text', { content: 'Has activado tu membresía en la oferta de lanzamiento. Disfruta de descuentos en RRTT, hoteles, restaurantes, casas rurales y comercios de los pueblos.' }),
       block('button', { label: 'Ver negocios con beneficios', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club/negocios', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
       block('socialLinks', {
@@ -140,8 +140,8 @@ const PLANTILLAS: Plantilla[] = [
     thumb: '💌',
     asunto: 'Te echamos de menos en el Club',
     blocks: [
-      block('heading', { content: 'Vuelve al Club de Amigos', align: 'center' }),
-      block('text', { content: 'Hace tiempo que no te vemos por el <strong>Club de Amigos</strong>. Tu sitio sigue aquí, con descuentos en pueblos, sorteos exclusivos y novedades cada mes.' }),
+      block('heading', { content: 'Vuelve al Club', align: 'center' }),
+      block('text', { content: 'Hace tiempo que no te vemos por el <strong>El Club de los más Bonitos</strong>. Tu sitio sigue aquí, con descuentos en pueblos, sorteos exclusivos y novedades cada mes.' }),
       block('button', { label: 'Reactivar mi membresía', url: 'https://lospueblosmasbonitosdeespana.org/mi-cuenta/club', align: 'center', backgroundColor: '#9c5b3f', textColor: '#ffffff' }),
       block('text', { content: 'Te esperamos.', align: 'center' }),
     ],
@@ -619,7 +619,7 @@ function buildPreviewHtml(asunto: string, body: string) {
   </style></head><body><div class="frame">
     <div class="header"><h1>${subject}</h1></div>
     <div class="body">${body}</div>
-    <div class="footer">Club de Amigos · Los Pueblos más Bonitos de España<br/>
+    <div class="footer">El Club de los más Bonitos · Los Pueblos más Bonitos de España<br/>
     Si no quieres recibir más comunicaciones, escribe a <a href="mailto:info@lospueblosmasbonitosdeespana.org">info@lospueblosmasbonitosdeespana.org</a></div>
   </div></body></html>`;
 }

@@ -69,7 +69,7 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
                 </span>
                 {ev.incluidoEnClub && (
                   <span className="ml-2 inline-flex items-center rounded-full bg-fuchsia-100 px-2 py-0.5 text-[11px] font-medium text-fuchsia-800">
-                    Club de Amigos
+                    El Club
                   </span>
                 )}
               </div>
@@ -87,7 +87,7 @@ export default function EventosListAdminClient({ slug }: { slug: string }) {
             {ev.incluidoEnClub && (
               <div className="rounded-md border border-fuchsia-200 bg-fuchsia-50 p-2 text-xs dark:border-fuchsia-900/50 dark:bg-fuchsia-950/30">
                 <p className="font-medium text-fuchsia-900 dark:text-fuchsia-200">
-                  Validación en el Club de Amigos
+                  Validación en el Club
                 </p>
                 <p className="mt-1 text-fuchsia-900/80 dark:text-fuchsia-300/80">
                   El día del evento, abre la app de LPMBE como alcalde o colaborador

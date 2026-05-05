@@ -235,7 +235,7 @@ function HeroVentajaClubCard({ oferta }: { oferta: OfertaPublic }) {
   const o = oferta;
   const tituloVisible =
     (o.titulo ?? "").toLowerCase().includes("detalle de bienvenida")
-      ? `${o.titulo} Club de Amigos`
+      ? `${o.titulo} Club`
       : o.titulo;
   return (
     <div className="rounded-xl border-2 border-[#c45c48] bg-card p-3 shadow-sm ring-1 ring-[#c45c48]/35">
@@ -456,7 +456,7 @@ export default function NegocioDetail({
       <div className="rounded-xl border border-amber-300 bg-amber-50/70 px-4 py-3 sm:px-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-amber-900">
-            <strong>Estas ventajas son exclusivas para miembros del Club de Amigos.</strong>{" "}
+            <strong>Estas ventajas son exclusivas para miembros del Club.</strong>{" "}
             Hazte socio para disfrutarlas en este y en más establecimientos.
           </p>
           <Link
@@ -685,7 +685,7 @@ export default function NegocioDetail({
           href={backHref ?? `/pueblos/${puebloSlug}/club`}
           className="text-muted-foreground hover:text-foreground hover:underline"
         >
-          &larr; {backLabel ? `Volver a ${backLabel}` : "Volver al Club de Amigos"}
+          &larr; {backLabel ? `Volver a ${backLabel}` : "Volver al Club"}
         </Link>
       </div>
     </div>

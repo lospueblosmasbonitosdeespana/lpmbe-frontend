@@ -24,7 +24,7 @@ interface ClubShieldProps {
 }
 
 /**
- * Muestra el escudo del Club de Amigos LPMBE con el año de membresía
+ * Muestra el escudo del Club LPMBE con el año de membresía
  * superpuesto dinámicamente sobre el medallón de la imagen. Si el admin
  * ha subido un logo personalizado en /gestion/asociacion/mi-cuenta-usuarios
  * (slot clubLogo), se usa ese y no se pinta el overlay del año.
@@ -64,7 +64,7 @@ export function ClubShield({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
-        alt="Escudo Club de Amigos LPMBE"
+        alt="Escudo del Club LPMBE"
         style={imgStyle}
         draggable={false}
       />

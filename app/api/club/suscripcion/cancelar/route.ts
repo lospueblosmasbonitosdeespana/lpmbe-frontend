@@ -4,7 +4,7 @@ import { getApiUrl } from '@/lib/api';
 
 /**
  * POST /api/club/suscripcion/cancelar
- * Cancela la renovación automática de la membresía del Club de Amigos.
+ * Cancela la renovación automática de la membresía del Club.
  * La membresía sigue activa hasta la fecha de expiración actual.
  */
 export async function POST() {

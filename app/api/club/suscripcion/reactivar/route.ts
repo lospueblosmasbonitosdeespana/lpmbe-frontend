@@ -4,7 +4,7 @@ import { getApiUrl } from '@/lib/api';
 
 /**
  * POST /api/club/suscripcion/reactivar
- * Reactiva la renovación automática de la membresía del Club de Amigos
+ * Reactiva la renovación automática de la membresía del Club
  * (deshace una cancelación pendiente antes de que expire el período).
  */
 export async function POST() {

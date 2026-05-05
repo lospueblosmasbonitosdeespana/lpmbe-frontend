@@ -433,7 +433,7 @@ export default function PuebloActions({
             )}
             <ActionButton
               icon={<ClubHeartIcon className="h-4 w-4 sm:h-5 sm:w-5" />}
-              label="Club de Amigos"
+              label="El Club"
               href={`/pueblos/${puebloSlug}/club`}
               highlighted
             />

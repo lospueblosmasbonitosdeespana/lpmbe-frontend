@@ -1,5 +1,5 @@
 /**
- * Helpers para las páginas del Club de Amigos:
+ * Helpers para las páginas del Club:
  * /donde-comer, /donde-dormir, /donde-comprar
  */
 import { getApiUrl } from "@/lib/api";
