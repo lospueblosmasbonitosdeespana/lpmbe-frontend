@@ -698,24 +698,38 @@ export default function ClubPage() {
                 </div>
               )}
               {/* Info de membresía */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Title size="lg" className="mb-4">{t('status')}</Title>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <Caption>{t('member')}</Caption>
-                    <p className="font-medium">{clubMe?.isMember ? t('active') : t('inactive')}</p>
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                  {/* Miembro */}
+                  <div className={`rounded-xl border px-4 py-3 flex flex-col gap-1 ${clubMe?.isMember ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-950/30' : 'border-border bg-muted/30'}`}>
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t('member')}</span>
+                    <span className={`text-sm font-bold ${clubMe?.isMember ? 'text-emerald-700 dark:text-emerald-300' : 'text-foreground'}`}>
+                      {clubMe?.isMember ? t('active') : t('inactive')}
+                    </span>
                   </div>
-                  <div>
-                    <Caption>{t('plan')}</Caption>
-                    <p className="font-medium">{clubMe?.plan ?? '—'}</p>
+                  {/* Plan */}
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-950/30 px-4 py-3 flex flex-col gap-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t('plan')}</span>
+                    <span className="text-sm font-bold text-amber-800 dark:text-amber-200">{clubMe?.plan ?? '—'}</span>
                   </div>
-                  <div>
-                    <Caption>{t('statusLabel')}</Caption>
-                    <p className="font-medium">{clubMe?.status ?? '—'}</p>
+                  {/* Status */}
+                  <div className={`rounded-xl border px-4 py-3 flex flex-col gap-1 ${
+                    clubMe?.status === 'ACTIVA' || clubMe?.status === 'active'
+                      ? 'border-sky-200 bg-sky-50 dark:border-sky-800/40 dark:bg-sky-950/30'
+                      : 'border-border bg-muted/30'
+                  }`}>
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t('statusLabel')}</span>
+                    <span className={`text-sm font-bold ${
+                      clubMe?.status === 'ACTIVA' || clubMe?.status === 'active'
+                        ? 'text-sky-700 dark:text-sky-300'
+                        : 'text-foreground'
+                    }`}>{clubMe?.status ?? '—'}</span>
                   </div>
-                  <div>
-                    <Caption>{t('validUntil')}</Caption>
-                    <p className="font-medium">{formatFecha(clubMe?.validUntil)}</p>
+                  {/* Válido hasta */}
+                  <div className="rounded-xl border border-border bg-muted/20 dark:bg-muted/10 px-4 py-3 flex flex-col gap-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t('validUntil')}</span>
+                    <span className="text-sm font-bold text-foreground">{formatFecha(clubMe?.validUntil)}</span>
                   </div>
                 </div>
               </div>
