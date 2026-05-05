@@ -138,6 +138,13 @@ export default async function CuentaPage() {
                 icon={<IconMapa />}
                 loginText={t('login')}
               />
+              <GridCard
+                href="/gestion/validador-qr"
+                title="Validador QR del Club"
+                description="Pistola lectora o teclado para validar carnets del Club desde el ordenador."
+                icon={<IconMapa />}
+                loginText={t('login')}
+              />
             </div>
           </div>
         ) : null}
@@ -178,6 +185,13 @@ export default async function CuentaPage() {
                   loginText={t('login')}
                 />
               )}
+              <GridCard
+                href="/gestion/validador-qr"
+                title="Validador QR del Club"
+                description="Pistola lectora o teclado para validar carnets del Club desde el ordenador."
+                icon={<IconMapa />}
+                loginText={t('login')}
+              />
             </div>
             {me.rol === 'ALCALDE' && misPueblos.length === 1 && (
               <p className="mt-3 text-sm text-muted-foreground">
