@@ -15,6 +15,7 @@ import {
   PLAN_PRICES_YEARLY,
   PRODUCTOS_RRSS_SUELTOS,
 } from "@/lib/plan-features";
+import PlanCTAButton from "./PlanCTAButton";
 
 export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
@@ -194,12 +195,7 @@ export default async function ParaNegociosPage() {
               ))}
             </ul>
             <div className="mt-6 pt-4 border-t border-border space-y-2">
-              <Link
-                href="/contacto?asunto=plan_recomendado"
-                className="block w-full rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Quiero el plan Recomendado
-              </Link>
+              <PlanCTAButton plan="RECOMENDADO" variant="primary" />
             </div>
           </div>
 
@@ -234,12 +230,7 @@ export default async function ParaNegociosPage() {
               ))}
             </ul>
             <div className="mt-6 pt-4 border-t border-border space-y-2">
-              <Link
-                href="/contacto?asunto=plan_premium"
-                className="block w-full rounded-lg bg-amber-500 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-amber-600 transition-colors"
-              >
-                Quiero el plan Premium
-              </Link>
+              <PlanCTAButton plan="PREMIUM" variant="amber" />
             </div>
           </div>
         </div>

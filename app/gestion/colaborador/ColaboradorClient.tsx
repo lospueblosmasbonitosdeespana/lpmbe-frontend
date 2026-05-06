@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from '@/lib/resource-types';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
+import MejorarPlanModal from '@/app/gestion/asociacion/negocios/[slug]/MejorarPlanModal';
+import { PLAN_LABELS, type PlanNegocio } from '@/lib/plan-features';
 
 const MapLocationPicker = dynamic(
   () => import('@/app/components/MapLocationPicker'),
@@ -29,6 +31,7 @@ type Recurso = {
   activo: boolean;
   cerradoTemporal: boolean;
   scope: string;
+  planNegocio?: string | null;
   maxAdultos: number;
   maxMenores: number;
   edadMaxMenor: number;
@@ -54,6 +57,8 @@ export default function ColaboradorClient() {
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [tab, setTab] = useState<'info' | 'metricas'>('info');
+  const [mejorarPlan, setMejorarPlan] = useState<{ recursoId: number; nombre: string; planActual: string } | null>(null);
+  const [planMsg, setPlanMsg] = useState<string | null>(null);
 
   const loadRecursos = useCallback(async () => {
     setLoading(true);
@@ -76,6 +81,44 @@ export default function ColaboradorClient() {
   }, [selectedId]);
 
   useEffect(() => { loadRecursos(); }, []);
+
+  // Auto-apertura del modal "Mejorar plan" cuando llega desde /para-negocios
+  // con ?upgrade=RECOMENDADO|PREMIUM. También procesa ?plan=ok|cancel tras
+  // volver del checkout de Stripe.
+  useEffect(() => {
+    if (recursos.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const upgrade = params.get('upgrade');
+    const planResult = params.get('plan');
+
+    if (planResult === 'ok') {
+      setPlanMsg('¡Pago confirmado! Tu plan se actualizará en unos segundos.');
+      setTimeout(() => loadRecursos(), 2000);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('plan');
+      window.history.replaceState({}, '', url.toString());
+    } else if (planResult === 'cancel') {
+      setPlanMsg('Has cancelado el pago. Puedes volver a intentarlo cuando quieras.');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('plan');
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    if (upgrade && (upgrade === 'RECOMENDADO' || upgrade === 'PREMIUM')) {
+      const negocio = recursos.find((r) => r.scope === 'NEGOCIO');
+      if (negocio) {
+        setSelectedId(negocio.id);
+        setMejorarPlan({
+          recursoId: negocio.id,
+          nombre: negocio.nombre,
+          planActual: negocio.planNegocio ?? 'FREE',
+        });
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.delete('upgrade');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [recursos, loadRecursos]);
 
   const selected = recursos.find((r) => r.id === selectedId) ?? null;
 
@@ -116,6 +159,26 @@ export default function ColaboradorClient() {
 
       {/* Panel principal */}
       <div className="min-w-0 flex-1">
+        {planMsg && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {planMsg}
+            <button onClick={() => setPlanMsg(null)} className="ml-3 text-amber-900 underline">Cerrar</button>
+          </div>
+        )}
+
+        {selected && selected.scope === 'NEGOCIO' && (
+          <PlanBanner
+            recurso={selected}
+            onMejorar={() =>
+              setMejorarPlan({
+                recursoId: selected.id,
+                nombre: selected.nombre,
+                planActual: selected.planNegocio ?? 'FREE',
+              })
+            }
+          />
+        )}
+
         {selected && (
           <RecursoPanel
             recurso={selected}
@@ -123,6 +186,67 @@ export default function ColaboradorClient() {
             onTabChange={setTab}
             onSaved={loadRecursos}
           />
+        )}
+      </div>
+
+      {mejorarPlan && (
+        <MejorarPlanModal
+          negocioId={mejorarPlan.recursoId}
+          negocioNombre={mejorarPlan.nombre}
+          currentPlan={mejorarPlan.planActual as PlanNegocio}
+          onClose={() => setMejorarPlan(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function PlanBanner({
+  recurso,
+  onMejorar,
+}: {
+  recurso: Recurso;
+  onMejorar: () => void;
+}) {
+  const plan = (recurso.planNegocio ?? 'FREE') as PlanNegocio;
+  const isFree = plan === 'FREE';
+  const isRecomendado = plan === 'RECOMENDADO';
+  const puedeSubir = isFree || isRecomendado;
+
+  const bg = isFree
+    ? 'border-amber-200 bg-amber-50'
+    : isRecomendado
+      ? 'border-primary/30 bg-primary/5'
+      : 'border-amber-300 bg-amber-100';
+  const text = isFree
+    ? 'text-amber-900'
+    : isRecomendado
+      ? 'text-primary'
+      : 'text-amber-900';
+
+  return (
+    <div className={`mb-5 rounded-xl border ${bg} p-4`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className={`text-xs font-semibold uppercase tracking-wide ${text}`}>Plan actual</div>
+          <div className={`mt-1 text-lg font-bold ${text}`}>
+            {PLAN_LABELS[plan] ?? plan}
+          </div>
+          <p className={`mt-1 text-xs ${text} opacity-80`}>
+            {isFree && 'Funciones limitadas. Mejora a Recomendado para galería de fotos, WhatsApp, horarios, badge y stats.'}
+            {isRecomendado && 'Sube a Premium para landing personalizada, IA del Club que te recomienda, posición destacada y placa física.'}
+            {plan === 'PREMIUM' && '¡Disfrutas de todas las ventajas Premium! Posición destacada, IA, placa física y mención editorial mensual.'}
+            {plan === 'SELECTION' && 'Eres parte del Club LPMBE Selection. Lo mejor de lo mejor.'}
+          </p>
+        </div>
+        {puedeSubir && (
+          <button
+            type="button"
+            onClick={onMejorar}
+            className="shrink-0 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600"
+          >
+            {isFree ? 'Mejorar plan' : 'Subir a Premium'}
+          </button>
         )}
       </div>
     </div>
