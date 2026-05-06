@@ -8,7 +8,13 @@ type Pueblo = {
   provincia: string;
   comunidad: string;
   radioGeoMetros: number;
+  visitasGps: number;
+  visitasManual: number;
+  visitasTotal: number;
+  pctGps: number;
 };
+
+type SortKey = 'nombre' | 'gps' | 'pctGps';
 
 type DataResponse = {
   items: Pueblo[];
@@ -37,6 +43,7 @@ export default function DistanciasPueblosClient() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'todos' | 'default' | 'reducido' | 'ampliado'>('todos');
+  const [sortKey, setSortKey] = useState<SortKey>('nombre');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
   const [saving, setSaving] = useState(false);
@@ -73,8 +80,23 @@ export default function DistanciasPueblosClient() {
           p.comunidad.toLowerCase().includes(q),
       );
     }
-    return items;
-  }, [data, search, filter]);
+    const sorted = [...items];
+    if (sortKey === 'gps') {
+      sorted.sort((a, b) => b.visitasGps - a.visitasGps);
+    } else if (sortKey === 'pctGps') {
+      sorted.sort((a, b) => {
+        // Solo tiene sentido comparar % en pueblos con un mínimo de visitas;
+        // los que tienen 0 visitas se van al final.
+        if (b.visitasTotal === 0 && a.visitasTotal === 0) return 0;
+        if (b.visitasTotal === 0) return -1;
+        if (a.visitasTotal === 0) return 1;
+        return b.pctGps - a.pctGps;
+      });
+    } else {
+      sorted.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    }
+    return sorted;
+  }, [data, search, filter, sortKey]);
 
   function startEdit(pueblo: Pueblo) {
     setEditingId(pueblo.id);
@@ -166,6 +188,11 @@ export default function DistanciasPueblosClient() {
           cambios se aplican inmediatamente: la app los lee al cargar la lista de pueblos (cada arranque y
           cada vez que se refresca la geolocalización).
         </p>
+        <p className="mt-2 leading-relaxed text-blue-800">
+          <strong>Pista:</strong> ordena por <em>Visitas GPS</em> o por <em>% GPS</em> (cabecera de la
+          tabla) para detectar pueblos con muchas visitas GPS sospechosas. Un % GPS &ge; 70 % con muchas
+          visitas suele indicar carretera cercana.
+        </p>
       </div>
 
       {/* KPIs */}
@@ -229,17 +256,52 @@ export default function DistanciasPueblosClient() {
           <thead>
             <tr className="border-b border-border bg-muted/50">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">ID</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Pueblo</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setSortKey('nombre')}
+                  className={`hover:text-foreground transition-colors ${
+                    sortKey === 'nombre' ? 'text-foreground font-semibold' : ''
+                  }`}
+                  title="Ordenar alfabéticamente"
+                >
+                  Pueblo {sortKey === 'nombre' && '↓'}
+                </button>
+              </th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Provincia</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Comunidad</th>
               <th className="px-4 py-3 text-right font-medium text-muted-foreground">Radio</th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setSortKey('gps')}
+                  className={`hover:text-foreground transition-colors ${
+                    sortKey === 'gps' ? 'text-foreground font-semibold' : ''
+                  }`}
+                  title="Ordenar por número de visitas GPS (descendente)"
+                >
+                  Visitas GPS {sortKey === 'gps' && '↓'}
+                </button>
+              </th>
+              <th className="px-4 py-3 text-right font-medium text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setSortKey('pctGps')}
+                  className={`hover:text-foreground transition-colors ${
+                    sortKey === 'pctGps' ? 'text-foreground font-semibold' : ''
+                  }`}
+                  title="Ordenar por % de visitas GPS sobre el total (descendente)"
+                >
+                  % GPS {sortKey === 'pctGps' && '↓'}
+                </button>
+              </th>
               <th className="px-4 py-3 text-center font-medium text-muted-foreground w-72"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                   Sin resultados
                 </td>
               </tr>
@@ -249,6 +311,9 @@ export default function DistanciasPueblosClient() {
                 const isDefault = p.radioGeoMetros === data.defaultRadioMetros;
                 const isReducido = p.radioGeoMetros < data.defaultRadioMetros;
                 const isAmpliado = p.radioGeoMetros > data.defaultRadioMetros;
+                // Resaltar % GPS alto (≥ 70 % con un mínimo de 20 visitas) como
+                // candidato a revisar el radio.
+                const pctHigh = p.visitasTotal >= 20 && p.pctGps >= 70;
                 return (
                   <tr
                     key={p.id}
@@ -302,6 +367,30 @@ export default function DistanciasPueblosClient() {
                               {isReducido ? '↓' : '↑'}
                             </span>
                           )}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 text-right tabular-nums">
+                      <span className={p.visitasGps > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}>
+                        {p.visitasGps.toLocaleString('es-ES')}
+                      </span>
+                      {p.visitasManual > 0 && (
+                        <span className="ml-1 text-[11px] text-muted-foreground">
+                          /{p.visitasTotal.toLocaleString('es-ES')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 text-right tabular-nums">
+                      {p.visitasTotal === 0 ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <span
+                          className={`font-medium ${
+                            pctHigh ? 'text-amber-700' : 'text-muted-foreground'
+                          }`}
+                          title={pctHigh ? 'Muchas visitas GPS — revisa si el radio actual es razonable' : ''}
+                        >
+                          {p.pctGps}%
                         </span>
                       )}
                     </td>
