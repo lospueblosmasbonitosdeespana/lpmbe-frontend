@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import NegocioGallery from './NegocioGallery';
 import NegocioOfertas from './NegocioOfertas';
 import NegocioStats from './NegocioStats';
+import NegocioRrssPanel from './NegocioRrssPanel';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS, getPlanFeatures, type PlanNegocio } from '@/lib/plan-features';
 import { QrCartelModal } from '@/app/_components/club/QrCartelModal';
@@ -945,54 +946,12 @@ export default function NegociosPuebloClient({
                 <NegocioStats negocioId={n.id} planNegocio={n.planNegocio ?? 'FREE'} />
               </div>
 
-              {/* RRSS Services */}
+              {/* RRSS de LPMBE — solicitar publicaciones incluidas y extras */}
               <div className="mt-3 border-t border-gray-100 pt-3">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Servicios adicionales
+                  Redes sociales LPMBE
                 </h4>
-                {(() => {
-                  const pk = n.planNegocio ?? 'FREE';
-                  const hasSocial = pk === 'PREMIUM' || pk === 'SELECTION';
-                  const posts = pk === 'SELECTION' ? 4 : pk === 'PREMIUM' ? 1 : 0;
-                  return (
-                    <div className={`rounded-lg border p-4 ${
-                      hasSocial ? (pk === 'SELECTION' ? 'border-slate-500 bg-slate-50' : 'border-amber-200 bg-amber-50') : 'border-border bg-muted/30'
-                    }`}>
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                          <svg className="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                          </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h5 className="text-sm font-semibold text-gray-800">Publicación en RRSS de LPMBE</h5>
-                          {hasSocial ? (
-                            <>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                {posts} publicación{posts > 1 ? 'es' : ''}/mes incluida{posts > 1 ? 's' : ''} en tu plan {pk === 'SELECTION' ? 'Selection' : 'Premium'}. ¿Necesitas publicaciones adicionales?
-                              </p>
-                              <a href="/contacto" target="_blank" className="mt-2 inline-block rounded bg-primary px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-primary/90 transition-colors">
-                                Solicitar publicación adicional
-                              </a>
-                            </>
-                          ) : (
-                            <>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                Disponible con el plan Premium (1 pub./mes) o Selection (4 pub./mes). También puedes contratar publicaciones sueltas.
-                              </p>
-                              <div className="mt-2 flex items-center gap-2">
-                                <a href="/para-negocios" target="_blank" className="rounded bg-primary px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-primary/90 transition-colors">Ver planes</a>
-                                <a href="/contacto" target="_blank" className="rounded border border-border bg-white px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted/30 transition-colors">Contratar publicación suelta</a>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
+                <NegocioRrssPanel negocioId={n.id} planNegocio={n.planNegocio ?? 'FREE'} />
               </div>
 
               {/* Landing personalizada */}

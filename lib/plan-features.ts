@@ -32,7 +32,17 @@ export interface PlanFeatures {
   socialLinksEnabled: boolean;
   customLandingEnabled: boolean;
   featuredOffersEnabled: boolean;
-  monthlySocialPostsIncluded: number;
+  /**
+   * RRSS LPMBE incluidas / mes:
+   * - monthlyEditorialMention: el negocio aparece dentro de un post editorial
+   *   del pueblo (protagonista: el pueblo, no el negocio).
+   * - monthlyStoryIncluded: el negocio sale en stories agrupadas en el
+   *   highlight permanente "Ventajas Club".
+   */
+  monthlyEditorialMention: number;
+  monthlyStoryIncluded: number;
+  /** La IA del Club recomienda activamente este plan a los socios. */
+  iaRecommendationBoost: boolean;
   physicalPlaqueIncluded: boolean;
   selectionPageEnabled: boolean;
   guideIncluded: boolean;
@@ -62,7 +72,9 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     socialLinksEnabled: false,
     customLandingEnabled: false,
     featuredOffersEnabled: false,
-    monthlySocialPostsIncluded: 0,
+    monthlyEditorialMention: 0,
+    monthlyStoryIncluded: 0,
+    iaRecommendationBoost: false,
     physicalPlaqueIncluded: false,
     selectionPageEnabled: false,
     guideIncluded: false,
@@ -90,7 +102,9 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     socialLinksEnabled: false,
     customLandingEnabled: false,
     featuredOffersEnabled: false,
-    monthlySocialPostsIncluded: 0,
+    monthlyEditorialMention: 0,
+    monthlyStoryIncluded: 1,
+    iaRecommendationBoost: false,
     physicalPlaqueIncluded: false,
     selectionPageEnabled: false,
     guideIncluded: false,
@@ -118,7 +132,9 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     socialLinksEnabled: true,
     customLandingEnabled: true,
     featuredOffersEnabled: true,
-    monthlySocialPostsIncluded: 1,
+    monthlyEditorialMention: 1,
+    monthlyStoryIncluded: 1,
+    iaRecommendationBoost: true,
     physicalPlaqueIncluded: true,
     selectionPageEnabled: false,
     guideIncluded: false,
@@ -146,7 +162,9 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     socialLinksEnabled: true,
     customLandingEnabled: true,
     featuredOffersEnabled: true,
-    monthlySocialPostsIncluded: 4,
+    monthlyEditorialMention: 2,
+    monthlyStoryIncluded: 2,
+    iaRecommendationBoost: true,
     physicalPlaqueIncluded: true,
     selectionPageEnabled: true,
     guideIncluded: true,
@@ -172,13 +190,85 @@ export const PLAN_ORDER: PlanNegocio[] = ['FREE', 'RECOMENDADO', 'PREMIUM'];
 /** Todos los planes incluyendo Selection (fuera de la red) */
 export const ALL_PLANS: PlanNegocio[] = ['FREE', 'RECOMENDADO', 'PREMIUM', 'SELECTION'];
 
-/** Precios mensuales en euros — null = por determinar */
-export const PLAN_PRICES: Record<PlanNegocio, number | null> = {
+/** Precios mensuales en euros (null = consultar / por contacto). */
+export const PLAN_PRICES_MONTHLY: Record<PlanNegocio, number | null> = {
   FREE: 0,
-  RECOMENDADO: null,
-  PREMIUM: null,
+  RECOMENDADO: 19,
+  PREMIUM: 49,
   SELECTION: null,
 };
+
+/** Precios anuales con descuento (≈ 2 meses gratis). */
+export const PLAN_PRICES_YEARLY: Record<PlanNegocio, number | null> = {
+  FREE: 0,
+  RECOMENDADO: 199,
+  PREMIUM: 499,
+  SELECTION: 1500,
+};
+
+/** Compatibilidad: alias del precio mensual. */
+export const PLAN_PRICES = PLAN_PRICES_MONTHLY;
+
+// ─────────────────────────────────────────────────────────
+// Productos sueltos de RRSS LPMBE
+// ─────────────────────────────────────────────────────────
+
+export type TipoPublicacionRRSS =
+  | 'STORY_INCLUIDA'
+  | 'MENCION_EDITORIAL'
+  | 'INSTAGRAM_STORY'
+  | 'INSTAGRAM_POST'
+  | 'INSTAGRAM_REEL'
+  | 'FACEBOOK_POST';
+
+export interface ProductoRRSS {
+  tipo: TipoPublicacionRRSS;
+  label: string;
+  descripcion: string;
+  /** Precio mínimo en euros */
+  precio: number;
+  /** Precio máximo en euros si hay rango (Story con/sin link) */
+  precioMax?: number;
+  /** Si añadir link/CTA sube el precio */
+  conLinkExtra?: boolean;
+  /** Requiere aprobación editorial previa antes de cobrar */
+  requiereAprobacion?: boolean;
+}
+
+export const PRODUCTOS_RRSS_SUELTOS: ProductoRRSS[] = [
+  {
+    tipo: 'INSTAGRAM_STORY',
+    label: 'Story de Instagram',
+    descripcion:
+      'Una lámina en Stories de @lospueblosmasbonitosdeespana. Si incluye link directo (a tu reserva, web o promo) el precio sube hasta 350€.',
+    precio: 150,
+    precioMax: 350,
+    conLinkExtra: true,
+  },
+  {
+    tipo: 'INSTAGRAM_POST',
+    label: 'Post de Instagram (imagen o carrusel)',
+    descripcion:
+      'Publicación en feed con imagen o carrusel. Mejor rendimiento orgánico y vida útil larga.',
+    precio: 700,
+    requiereAprobacion: true,
+  },
+  {
+    tipo: 'INSTAGRAM_REEL',
+    label: 'Reel de Instagram',
+    descripcion:
+      'Vídeo corto en Reels. El formato con más alcance orgánico actualmente. Requiere material de vídeo de calidad.',
+    precio: 900,
+    requiereAprobacion: true,
+  },
+  {
+    tipo: 'FACEBOOK_POST',
+    label: 'Post en Facebook',
+    descripcion:
+      'Publicación en la página de Facebook de LPMBE. Útil para llegar a un público de mayor edad o más local.',
+    precio: 200,
+  },
+];
 
 export const SERVICIOS_DISPONIBLES: { key: string; label: string; icon: string }[] = [
   { key: 'WIFI', label: 'WiFi', icon: 'wifi' },

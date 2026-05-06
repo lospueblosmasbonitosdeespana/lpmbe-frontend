@@ -70,6 +70,7 @@ const SECCIONES: Seccion[] = [
       { href: '/gestion/asociacion/notas-prensa-newsletter', title: 'Notas de prensa y Newsletter', description: 'Envíos masivos, segmentación y métricas',           iconKey: 'megaphone',     tone: 'fuchsia' },
       { href: '/gestion/asociacion/prensa-medios',           title: 'Prensa y Medios',              description: 'Comunicados, kit de prensa y medios externos',      iconKey: 'microphone',    tone: 'rose'    },
       { href: '/gestion/asociacion/newsletters',             title: 'Newsletters',                  description: 'Ediciones (PDF, Canva) y suscriptores',             iconKey: 'envelope',      tone: 'sky'     },
+      { href: '/gestion/asociacion/rrss',                    title: 'RRSS — Solicitudes de negocios', description: 'Cola del community manager: stories, posts y reels solicitados por negocios', iconKey: 'cinema', tone: 'rose', badge: 'Nuevo' },
     ],
   },
   {
