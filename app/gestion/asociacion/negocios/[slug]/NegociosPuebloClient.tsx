@@ -5,6 +5,7 @@ import NegocioGallery from './NegocioGallery';
 import NegocioOfertas from './NegocioOfertas';
 import NegocioStats from './NegocioStats';
 import NegocioRrssPanel from './NegocioRrssPanel';
+import MejorarPlanModal from './MejorarPlanModal';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS, getPlanFeatures, type PlanNegocio } from '@/lib/plan-features';
 import { QrCartelModal } from '@/app/_components/club/QrCartelModal';
@@ -148,6 +149,7 @@ export default function NegociosPuebloClient({
   const [puebloProvincia, setPuebloProvincia] = useState<string>('');
   const [puebloComunidad, setPuebloComunidad] = useState<string>('');
   const [qrCartelNegocio, setQrCartelNegocio] = useState<Negocio | null>(null);
+  const [mejorarPlanNegocio, setMejorarPlanNegocio] = useState<Negocio | null>(null);
 
   useEffect(() => {
     if (isAsociacion) return;
@@ -191,6 +193,22 @@ export default function NegociosPuebloClient({
   }, [apiBase, puebloNombre]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get('plan');
+    if (planParam === 'ok') {
+      setMsg({ ok: true, text: '¡Pago completado! El plan se actualizará en unos segundos.' });
+      const t = setTimeout(() => load(), 3000);
+      window.history.replaceState({}, '', window.location.pathname);
+      return () => clearTimeout(t);
+    }
+    if (planParam === 'cancel') {
+      setMsg({ ok: false, text: 'Pago cancelado. No se ha realizado ningún cargo.' });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [load]);
 
   const mapCenter: [number, number] =
     puebloLat != null && puebloLng != null
@@ -820,12 +838,29 @@ export default function NegociosPuebloClient({
                 return isFree ? (
                   <div className="mb-3 flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2">
                     <span className="text-xs text-muted-foreground">Plan Gratuito — Funcionalidades limitadas en la web pública</span>
-                    <a href="/para-negocios" target="_blank" className="rounded bg-primary px-3 py-1 text-[11px] font-semibold text-white hover:bg-primary/90">Mejorar plan</a>
+                    <button
+                      type="button"
+                      onClick={() => setMejorarPlanNegocio(n)}
+                      className="rounded bg-primary px-3 py-1 text-[11px] font-semibold text-white hover:bg-primary/90"
+                    >
+                      Mejorar plan
+                    </button>
                   </div>
                 ) : (
-                  <div className={`mb-3 flex items-center gap-2 rounded-lg px-3 py-2 ${bannerBg}`}>
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${pl.color}`}>{pl.label}</span>
-                    <span className={`text-xs ${isSelection ? 'text-slate-300' : 'text-muted-foreground'}`}>Plan activo</span>
+                  <div className={`mb-3 flex items-center justify-between gap-2 rounded-lg px-3 py-2 ${bannerBg}`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${pl.color}`}>{pl.label}</span>
+                      <span className={`text-xs ${isSelection ? 'text-slate-300' : 'text-muted-foreground'}`}>Plan activo</span>
+                    </div>
+                    {planKey === 'RECOMENDADO' && (
+                      <button
+                        type="button"
+                        onClick={() => setMejorarPlanNegocio(n)}
+                        className="rounded bg-amber-500 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-600"
+                      >
+                        Subir a Premium
+                      </button>
+                    )}
                   </div>
                 );
               })()}
@@ -974,6 +1009,15 @@ export default function NegociosPuebloClient({
           nombre={qrCartelNegocio.nombre}
           puebloNombre={qrCartelNegocio.pueblo?.nombre ?? puebloNombre ?? null}
           tipo={TIPO_LABELS[qrCartelNegocio.tipo] ?? qrCartelNegocio.tipo}
+        />
+      )}
+
+      {mejorarPlanNegocio && (
+        <MejorarPlanModal
+          negocioId={mejorarPlanNegocio.id}
+          negocioNombre={mejorarPlanNegocio.nombre}
+          currentPlan={(mejorarPlanNegocio.planNegocio ?? 'FREE') as PlanNegocio}
+          onClose={() => setMejorarPlanNegocio(null)}
         />
       )}
     </div>
