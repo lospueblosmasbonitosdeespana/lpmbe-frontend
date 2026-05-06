@@ -13,6 +13,7 @@ const AppDashboard = dynamic(() => import('./AppDashboard'), { ssr: false });
 const InternoDashboard = lazy(() => import('./InternoDashboard'));
 const PuntosPueblosClient = lazy(() => import('./puntos-pueblos/PuntosPueblosClient'));
 const PuntosRecursosClient = lazy(() => import('./puntos-recursos/PuntosRecursosClient'));
+const DistanciasPueblosClient = lazy(() => import('./distancias-pueblos/DistanciasPueblosClient'));
 const NewsletterDashboard = lazy(() => import('./NewsletterDashboard'));
 const HttpErroresDashboard = lazy(() => import('./HttpErroresDashboard'));
 const SeoAuditoriaDashboard = lazy(() => import('./SeoAuditoriaDashboard'));
@@ -27,6 +28,7 @@ const TABS = [
   { key: 'web' as const, labelKey: 'tabWeb' as const },
   { key: 'puntos' as const, labelKey: 'tabPuntosPueblos' as const },
   { key: 'puntos-recursos' as const, label: 'Puntos recursos' as const },
+  { key: 'distancias-pueblos' as const, label: 'Distancias pueblos' as const },
   { key: 'errores' as const, label: 'Errores' as const },
   { key: 'seo' as const, label: 'SEO' as const },
 ] as const;
@@ -50,11 +52,13 @@ export default function DatosTabs({
   canViewNewsletter = false,
   canViewErrores = false,
   canViewSeo = false,
+  canViewDistancias = false,
 }: {
   defaultTab: TabKey;
   canViewNewsletter?: boolean;
   canViewErrores?: boolean;
   canViewSeo?: boolean;
+  canViewDistancias?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,7 +78,8 @@ export default function DatosTabs({
         {TABS.filter((tab) =>
           (canViewNewsletter || tab.key !== 'newsletter') &&
           (canViewErrores || tab.key !== 'errores') &&
-          (canViewSeo || tab.key !== 'seo'),
+          (canViewSeo || tab.key !== 'seo') &&
+          (canViewDistancias || tab.key !== 'distancias-pueblos'),
         ).map((tab) => (
           <button
             key={tab.key}
@@ -129,6 +134,11 @@ export default function DatosTabs({
       {active === 'puntos-recursos' && (
         <Suspense fallback={<Spinner label={t('loading')} />}>
           <PuntosRecursosClient />
+        </Suspense>
+      )}
+      {active === 'distancias-pueblos' && canViewDistancias && (
+        <Suspense fallback={<Spinner label={t('loading')} />}>
+          <DistanciasPueblosClient />
         </Suspense>
       )}
       {active === 'errores' && canViewErrores && (
