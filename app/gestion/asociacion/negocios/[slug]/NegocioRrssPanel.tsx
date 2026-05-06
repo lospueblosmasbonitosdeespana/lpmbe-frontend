@@ -15,8 +15,16 @@ type Solicitud = {
   importeCents?: number | null;
   conLinkExtra?: boolean;
   mesImputacion?: string | null;
+  pagadaAt?: string | null;
   createdAt: string;
 };
+
+const TIPOS_DE_PAGO = [
+  'INSTAGRAM_STORY',
+  'INSTAGRAM_POST',
+  'INSTAGRAM_REEL',
+  'FACEBOOK_POST',
+];
 
 type Cupo = {
   mes: string;
@@ -152,6 +160,23 @@ export default function NegocioRrssPanel({
     if (!confirm('¿Cancelar esta solicitud?')) return;
     const res = await fetch(`/api/club/rrss/${id}/cancelar`, { method: 'PATCH' });
     if (res.ok) load();
+  };
+
+  const pagar = async (id: number) => {
+    setMsg(null);
+    const successUrl = `${window.location.origin}${window.location.pathname}?pago=ok#rrss-${id}`;
+    const cancelUrl = `${window.location.origin}${window.location.pathname}?pago=cancel#rrss-${id}`;
+    const res = await fetch(`/api/club/rrss/${id}/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ successUrl, cancelUrl }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (res.ok && d.sessionUrl) {
+      window.location.href = d.sessionUrl;
+    } else {
+      setMsg(d?.message || 'No se pudo iniciar el pago');
+    }
   };
 
   const cupo = data?.cupoMes;
@@ -364,6 +389,11 @@ export default function NegocioRrssPanel({
                         {(s.importeCents / 100).toFixed(0)}€
                       </span>
                     )}
+                    {s.pagadaAt && (
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-800">
+                        Pagada
+                      </span>
+                    )}
                   </div>
                   {s.briefNegocio && (
                     <p className="mt-1 text-[10px] text-muted-foreground line-clamp-2">
@@ -389,7 +419,20 @@ export default function NegocioRrssPanel({
                     {new Date(s.createdAt).toLocaleDateString('es-ES')}
                   </p>
                 </div>
-                {!['PUBLICADA', 'CANCELADA', 'RECHAZADA'].includes(s.estado) && (
+                {/* Botón "Pagar" si la suelta está aprobada y no pagada */}
+                {TIPOS_DE_PAGO.includes(s.tipo) &&
+                  s.estado === 'APROBADA' &&
+                  !s.pagadaAt &&
+                  s.importeCents != null && (
+                    <button
+                      type="button"
+                      onClick={() => pagar(s.id)}
+                      className="rounded bg-amber-500 px-2 py-1 text-[10px] font-semibold text-white hover:bg-amber-600 shrink-0"
+                    >
+                      Pagar {(s.importeCents / 100).toFixed(0)}€
+                    </button>
+                )}
+                {!['PUBLICADA', 'CANCELADA', 'RECHAZADA'].includes(s.estado) && !s.pagadaAt && (
                   <button
                     type="button"
                     onClick={() => cancelar(s.id)}

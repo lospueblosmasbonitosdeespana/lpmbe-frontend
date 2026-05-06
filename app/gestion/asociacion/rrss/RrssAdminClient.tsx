@@ -209,6 +209,9 @@ function SolicitudRow({
   );
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [generandoIa, setGenerandoIa] = useState(false);
+  const [calidadAlta, setCalidadAlta] = useState(false);
+  const [iaMsg, setIaMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setEstado(solicitud.estado);
@@ -242,6 +245,37 @@ function SolicitudRow({
       }
     } finally {
       setSaving(false);
+    }
+  };
+
+  const generarBorradorIa = async () => {
+    if (
+      borradorCopy &&
+      !confirm(
+        '¿Sobrescribir el borrador actual con uno nuevo generado por IA?',
+      )
+    ) {
+      return;
+    }
+    setGenerandoIa(true);
+    setIaMsg(null);
+    try {
+      const res = await fetch(`/api/club/rrss/${solicitud.id}/generar-borrador`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calidadAlta }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.borrador) {
+        setBorradorCopy(data.borrador);
+        setIaMsg(`Borrador generado con ${data.modelo || 'IA'}. Revísalo y guárdalo.`);
+      } else {
+        setIaMsg(data?.message || 'No se pudo generar el borrador');
+      }
+    } catch (err) {
+      setIaMsg('Error de red al generar el borrador');
+    } finally {
+      setGenerandoIa(false);
     }
   };
 
@@ -361,16 +395,41 @@ function SolicitudRow({
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
-              Borrador del copy (visible para el negocio)
-            </label>
+            <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+              <label className="block text-[11px] font-semibold text-foreground">
+                Borrador del copy (visible para el negocio)
+              </label>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1 text-[10px] text-muted-foreground select-none">
+                  <input
+                    type="checkbox"
+                    checked={calidadAlta}
+                    onChange={(e) => setCalidadAlta(e.target.checked)}
+                    className="h-3 w-3"
+                  />
+                  Calidad alta
+                </label>
+                <button
+                  type="button"
+                  onClick={generarBorradorIa}
+                  disabled={generandoIa}
+                  className="rounded bg-purple-600 px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+                  title="Genera un borrador a partir del brief del negocio usando IA"
+                >
+                  {generandoIa ? 'Generando…' : '✨ Generar con IA'}
+                </button>
+              </div>
+            </div>
             <textarea
               value={borradorCopy}
               onChange={(e) => setBorradorCopy(e.target.value)}
               className="w-full rounded border border-border bg-white px-2 py-1.5 text-xs"
-              rows={3}
-              placeholder="Texto que se publicará. Pégalo aquí cuando lo tengas listo."
+              rows={6}
+              placeholder="Texto que se publicará. Pégalo aquí o genéralo con IA desde el brief del negocio."
             />
+            {iaMsg && (
+              <p className="mt-1 text-[10px] text-muted-foreground">{iaMsg}</p>
+            )}
           </div>
 
           <div>
