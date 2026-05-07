@@ -462,8 +462,21 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
     .filter((b) => b.id);
 }
 
-function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
+/**
+ * Renderiza los bloques de la newsletter a HTML.
+ *
+ * Si se pasa `previewOpts.selectedId`, envuelve cada bloque con un wrapper
+ * `<div data-nb-id="…">` y resalta visualmente el bloque seleccionado
+ * con un outline + scroll-margin (para que `scrollIntoView` deje espacio).
+ * Estos wrappers solo deben usarse en la VISTA PREVIA del editor — para el
+ * envío del email se llama sin opciones, dejando el HTML "limpio".
+ */
+function renderNewsletterBlocksToHtml(
+  blocks: NewsletterBlock[],
+  previewOpts?: { selectedId?: string | null },
+): string {
   if (!blocks.length) return '';
+  const selectedId = previewOpts?.selectedId || null;
   const body = blocks
     .map((block) => {
       const align = block.align || 'left';
@@ -643,6 +656,20 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         return `<div style="${boxStyle}background:#1a1a2e;color:#fff;padding:28px 14px;border-radius:${borderRadius}px;text-align:center;">${lbl}<div style="display:inline-block;"><span style="${cellStyle}"><span style="${numStyle}">${pad(days)}</span><br/><span style="${lblStyle}">Días</span></span><span style="font-size:36px;font-weight:300;opacity:0.5;vertical-align:top;line-height:1.2;">:</span><span style="${cellStyle}"><span style="${numStyle}">${pad(hours)}</span><br/><span style="${lblStyle}">Horas</span></span><span style="font-size:36px;font-weight:300;opacity:0.5;vertical-align:top;line-height:1.2;">:</span><span style="${cellStyle}"><span style="${numStyle}">${pad(minutes)}</span><br/><span style="${lblStyle}">Minutos</span></span><span style="font-size:36px;font-weight:300;opacity:0.5;vertical-align:top;line-height:1.2;">:</span><span style="${cellStyle}"><span style="${numStyle}">${pad(seconds)}</span><br/><span style="${lblStyle}">Segundos</span></span></div></div>`;
       }
       return `<hr style="margin:20px 0;border:none;border-top:1px solid #ddd;" />`;
+    })
+    // Si estamos en modo preview con un bloque seleccionado, envolvemos cada
+    // bloque con un wrapper data-nb-id para poder localizarlo desde el cliente
+    // y resaltarlo con outline. Sin selectedId NO se añade nada (el HTML del
+    // email final permanece idéntico al actual).
+    .map((html, idx) => {
+      if (!html || !selectedId) return html;
+      const id = blocks[idx]?.id;
+      if (!id) return html;
+      const isSel = id === selectedId;
+      const selStyle = isSel
+        ? 'outline:3px solid #c0392b;outline-offset:2px;border-radius:10px;scroll-margin-top:80px;'
+        : '';
+      return `<div data-nb-id="${escapeHtml(String(id))}" style="${selStyle}">${html}</div>`;
     })
     .filter(Boolean)
     .join('\n');
@@ -1023,6 +1050,13 @@ export default function NotasPrensaNewsletterClient({
   const [templatePreviewHtml, setTemplatePreviewHtml] = useState<string | null>(null);
   const [newsletterBlocks, setNewsletterBlocks] = useState<NewsletterBlock[]>([]);
   const [selectedNewsletterBlockId, setSelectedNewsletterBlockId] = useState<string | null>(null);
+  /**
+   * Contenedor de la "Vista previa newsletter". Lo usamos para localizar el
+   * wrapper del bloque seleccionado (data-nb-id) y desplazarlo a la vista,
+   * de forma que al pulsar un bloque en el lienzo de la izquierda se vea
+   * inmediatamente a qué corresponde en la maqueta de la derecha.
+   */
+  const newsletterPreviewRef = useRef<HTMLDivElement | null>(null);
   const [reorderPickSourceId, setReorderPickSourceId] = useState<string | null>(null);
   const [draggingPaletteType, setDraggingPaletteType] = useState<NewsletterBlockType | null>(null);
   const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
@@ -2603,6 +2637,25 @@ export default function NotasPrensaNewsletterClient({
 
   const selectedNewsletterBlock =
     newsletterBlocks.find((b) => b.id === selectedNewsletterBlockId) || null;
+
+  // Cuando cambia el bloque seleccionado en el lienzo, hacemos scroll en la
+  // vista previa hasta el wrapper data-nb-id correspondiente. El render ya
+  // añade `scroll-margin-top` para dejar un pequeño hueco visible.
+  useEffect(() => {
+    if (!selectedNewsletterBlockId) return;
+    const root = newsletterPreviewRef.current;
+    if (!root) return;
+    // Esperamos un frame para que el HTML nuevo (con outline) esté pintado.
+    const raf = requestAnimationFrame(() => {
+      const target = root.querySelector(
+        `[data-nb-id="${CSS.escape(selectedNewsletterBlockId)}"]`,
+      ) as HTMLElement | null;
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [selectedNewsletterBlockId, newsletterBlocks]);
 
   // ------- Borradores + Programación (DraftsAndScheduler) -------
   const getSharedSnapshot = useCallback(async (): Promise<SharedDraftSnapshot> => {
@@ -4588,15 +4641,22 @@ export default function NotasPrensaNewsletterClient({
                         </div>
 
                         <div className="rounded-md border border-border bg-background p-3">
-                          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                          <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
                             Vista previa newsletter
+                            {selectedNewsletterBlockId ? (
+                              <span className="rounded bg-[#c0392b]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#c0392b] normal-case tracking-normal">
+                                Bloque seleccionado resaltado en rojo
+                              </span>
+                            ) : null}
                           </p>
                           <div
-                            className="mx-auto max-w-[700px] rounded-md border border-border bg-white p-4 shadow-sm"
+                            ref={newsletterPreviewRef}
+                            className="mx-auto max-h-[80vh] max-w-[700px] overflow-y-auto rounded-md border border-border bg-white p-4 shadow-sm"
                             dangerouslySetInnerHTML={{
                               __html:
-                                renderNewsletterBlocksToHtml(newsletterBlocks) ||
-                                '<p>Sin bloques todavía.</p>',
+                                renderNewsletterBlocksToHtml(newsletterBlocks, {
+                                  selectedId: selectedNewsletterBlockId,
+                                }) || '<p>Sin bloques todavía.</p>',
                             }}
                           />
                         </div>
