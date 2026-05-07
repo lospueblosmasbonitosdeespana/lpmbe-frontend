@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { Info, AlertTriangle, AlertCircle, Power, Trash2, Send } from 'lucide-react';
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
 
 const IMPORTANCIAS = [
-  { value: 'info', label: 'Información', emoji: 'ℹ️', color: 'sky' },
-  { value: 'warning', label: 'Aviso importante', emoji: '⚠️', color: 'amber' },
-  { value: 'critical', label: 'Urgente', emoji: '🚨', color: 'red' },
+  { value: 'info', label: 'Información', Icon: Info },
+  { value: 'warning', label: 'Aviso importante', Icon: AlertTriangle },
+  { value: 'critical', label: 'Urgente', Icon: AlertCircle },
 ] as const;
 
 export default function TabAvisos({
@@ -59,31 +60,35 @@ export default function TabAvisos({
           required
         />
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          {IMPORTANCIAS.map((imp) => (
-            <button
-              key={imp.value}
-              type="button"
-              onClick={() => setImportancia(imp.value)}
-              className={`rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
-                importancia === imp.value
-                  ? imp.value === 'critical'
-                    ? 'bg-red-600 text-white shadow-md'
-                    : imp.value === 'warning'
-                    ? 'bg-amber-500 text-white shadow-md'
-                    : 'bg-sky-600 text-white shadow-md'
-                  : 'border border-stone-300 bg-white text-stone-700'
-              }`}
-            >
-              {imp.emoji} {imp.label}
-            </button>
-          ))}
+          {IMPORTANCIAS.map((imp) => {
+            const Icon = imp.Icon;
+            return (
+              <button
+                key={imp.value}
+                type="button"
+                onClick={() => setImportancia(imp.value)}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-semibold transition ${
+                  importancia === imp.value
+                    ? imp.value === 'critical'
+                      ? 'bg-red-600 text-white shadow-md'
+                      : imp.value === 'warning'
+                      ? 'bg-amber-500 text-white shadow-md'
+                      : 'bg-sky-600 text-white shadow-md'
+                    : 'border border-stone-300 bg-white text-stone-700'
+                }`}
+              >
+                <Icon className="h-4 w-4" /> {imp.label}
+              </button>
+            );
+          })}
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button
             type="submit"
             disabled={posting || !texto.trim()}
-            className="rounded-xl bg-amber-700 px-5 py-2 text-sm font-semibold text-white shadow transition hover:bg-amber-800 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-amber-700 px-5 py-2 text-sm font-semibold text-white shadow transition hover:bg-amber-800 disabled:opacity-50"
           >
+            <Send className="h-4 w-4" />
             {posting ? 'Publicando…' : 'Publicar aviso'}
           </button>
           {err ? <span className="text-sm text-red-600">{err}</span> : null}
@@ -167,11 +172,11 @@ function AvisoRow({
       </div>
       <p className="mt-2 whitespace-pre-line text-sm text-stone-800">{aviso.texto_es}</p>
       <div className="mt-3 flex gap-2">
-        <button onClick={toggleActivo} disabled={busy} className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-stone-50">
-          {aviso.activo ? 'Desactivar' : 'Reactivar'}
+        <button onClick={toggleActivo} disabled={busy} className="inline-flex items-center gap-1 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-stone-50">
+          <Power className="h-3 w-3" /> {aviso.activo ? 'Desactivar' : 'Reactivar'}
         </button>
-        <button onClick={remove} disabled={busy} className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">
-          Eliminar
+        <button onClick={remove} disabled={busy} className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">
+          <Trash2 className="h-3 w-3" /> Eliminar
         </button>
       </div>
     </li>

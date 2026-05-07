@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
+import FileUploader from './_FileUploader';
 
 type Form = {
   nombre: string;
@@ -105,6 +106,8 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
       const payload: Record<string, unknown> = { ...form };
       payload.fechaInicio = form.fechaInicio || null;
       payload.fechaFin = form.fechaFin || null;
+      delete payload.logoUrl;
+      delete payload.pdfUrl;
       await adminFetch(`/${evento.id}`, { method: 'PATCH', json: payload });
       await reload();
       setMsg('Guardado. Las traducciones a 7 idiomas se generaron automáticamente.');
@@ -162,13 +165,44 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
               className={input}
             />
           </Field>
-          <Field label="URL del logo">
-            <input value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} className={input} />
-          </Field>
-          <Field label="URL del PDF del programa">
-            <input value={form.pdfUrl} onChange={(e) => setForm({ ...form, pdfUrl: e.target.value })} className={input} />
-          </Field>
         </FieldGrid>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FileUploader
+            label="Logo del evento"
+            hint="Imagen PNG, JPG, WebP o SVG (máx. 10 MB). Se sube a R2."
+            value={form.logoUrl || null}
+            uploadUrl={`/api/admin/grandes-eventos/${evento.id}/logo/upload`}
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            preview="image"
+            onUploaded={async (url) => {
+              setForm({ ...form, logoUrl: url });
+              await reload();
+            }}
+            onClear={async () => {
+              setForm({ ...form, logoUrl: '' });
+              await adminFetch(`/${evento.id}`, { method: 'PATCH', json: { logoUrl: null } });
+              await reload();
+            }}
+          />
+          <FileUploader
+            label="PDF del programa"
+            hint="Archivo PDF (máx. 12 MB). Se sube a R2 y aparece en el botón Descargar."
+            value={form.pdfUrl || null}
+            uploadUrl={`/api/admin/grandes-eventos/${evento.id}/pdf/upload`}
+            accept="application/pdf"
+            preview="pdf"
+            onUploaded={async (url) => {
+              setForm({ ...form, pdfUrl: url });
+              await reload();
+            }}
+            onClear={async () => {
+              setForm({ ...form, pdfUrl: '' });
+              await adminFetch(`/${evento.id}`, { method: 'PATCH', json: { pdfUrl: null } });
+              await reload();
+            }}
+          />
+        </div>
       </Section>
 
       <Section title="Hero (portada de la página)" hint="Todos estos textos se traducen automáticamente al guardar.">

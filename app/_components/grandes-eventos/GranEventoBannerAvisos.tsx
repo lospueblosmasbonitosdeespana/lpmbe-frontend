@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 import type { GranEventoAviso } from '@/lib/grandes-eventos';
 import { pickI18n } from '@/lib/grandes-eventos';
 import { getApiUrl } from '@/lib/api';
@@ -91,7 +92,7 @@ export default function GranEventoBannerAvisos({
               aria-live={aviso.importancia === 'critical' ? 'assertive' : 'polite'}
             >
               <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colors.iconBg}`}>
-                <span className={`block h-6 w-6 ${colors.iconColor}`} aria-hidden>
+                <span className={colors.iconColor} aria-hidden>
                   {iconForImportancia(aviso.importancia)}
                 </span>
               </div>
@@ -119,6 +120,7 @@ export default function GranEventoBannerAvisos({
                     onClick={() => dismiss(aviso.id)}
                     className="inline-flex items-center gap-1.5 rounded-full border border-stone-300 bg-white/80 px-3 py-2 text-xs font-medium text-stone-600 transition hover:border-stone-400 hover:text-stone-900"
                   >
+                    <X className="h-3.5 w-3.5" />
                     {t('dismiss')}
                   </button>
                 </div>
@@ -165,23 +167,7 @@ function importanciaStyles(importancia: 'info' | 'warning' | 'critical') {
 }
 
 function iconForImportancia(importancia: 'info' | 'warning' | 'critical') {
-  if (importancia === 'critical') {
-    return (
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-      </svg>
-    );
-  }
-  if (importancia === 'warning') {
-    return (
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-    </svg>
-  );
+  if (importancia === 'critical') return <AlertCircle className="h-6 w-6" />;
+  if (importancia === 'warning') return <AlertTriangle className="h-6 w-6" />;
+  return <Info className="h-6 w-6" />;
 }

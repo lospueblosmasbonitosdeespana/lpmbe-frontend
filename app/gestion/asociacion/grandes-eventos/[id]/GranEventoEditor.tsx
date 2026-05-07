@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ClipboardList, CalendarDays, Map, Bell, ImageIcon, Trash2 } from 'lucide-react';
 import TabDatos from './_tabs/TabDatos';
 import TabPrograma from './_tabs/TabPrograma';
-import TabPueblos from './_tabs/TabPueblos';
+import TabRuta from './_tabs/TabRuta';
 import TabAvisos from './_tabs/TabAvisos';
 import TabFotos from './_tabs/TabFotos';
 
@@ -49,7 +50,25 @@ export type EventoEditDetail = {
     orden: number;
     tagline_es: string | null;
     fotoUrl: string | null;
-    pueblo: { id: number; slug: string; nombre: string; provincia: string; foto_destacada: string | null };
+    pueblo: {
+      id: number;
+      slug: string;
+      nombre: string;
+      provincia: string;
+      foto_destacada: string | null;
+      lat: number;
+      lng: number;
+    };
+  }>;
+  paradas: Array<{
+    id: number;
+    orden: number;
+    nombre_es: string;
+    descripcion_es: string | null;
+    lat: number;
+    lng: number;
+    tipoIcono: string;
+    fotoUrl: string | null;
   }>;
   avisos: Array<{
     id: number;
@@ -69,7 +88,7 @@ export type EventoEditDetail = {
   }>;
 };
 
-type Tab = 'datos' | 'programa' | 'pueblos' | 'avisos' | 'fotos';
+type Tab = 'datos' | 'programa' | 'ruta' | 'avisos' | 'fotos';
 
 export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
   const router = useRouter();
@@ -121,12 +140,12 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
     }
   };
 
-  const TABS: Array<{ id: Tab; label: string; count?: number; emoji: string }> = [
-    { id: 'datos', label: 'Datos', emoji: '📋' },
-    { id: 'programa', label: 'Programa', count: evento.dias.length, emoji: '🗓️' },
-    { id: 'pueblos', label: 'Pueblos', count: evento.pueblos.length, emoji: '🏘️' },
-    { id: 'avisos', label: 'Avisos', count: evento.avisos.filter((a) => a.activo).length, emoji: '🔔' },
-    { id: 'fotos', label: 'Fotos', count: evento.fotos.length, emoji: '📷' },
+  const TABS: Array<{ id: Tab; label: string; count?: number; Icon: typeof ClipboardList }> = [
+    { id: 'datos', label: 'Datos', Icon: ClipboardList },
+    { id: 'programa', label: 'Programa', count: evento.dias.length, Icon: CalendarDays },
+    { id: 'ruta', label: 'Ruta', count: evento.pueblos.length + (evento.paradas?.length ?? 0), Icon: Map },
+    { id: 'avisos', label: 'Avisos', count: evento.avisos.filter((a) => a.activo).length, Icon: Bell },
+    { id: 'fotos', label: 'Fotos', count: evento.fotos.length, Icon: ImageIcon },
   ];
 
   const publicUrl = evento.slug === 'rencontres-internationales-des-plus-beaux-villages-de-la-terre-2026'
@@ -159,8 +178,9 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50"
             >
+              <Trash2 className="h-3.5 w-3.5" />
               {deleting ? 'Eliminando…' : 'Eliminar evento'}
             </button>
           </div>
@@ -169,35 +189,38 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
 
       {/* Tabs */}
       <div className="-mx-1 flex gap-1 overflow-x-auto pb-1">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`shrink-0 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              tab === t.id
-                ? 'bg-amber-700 text-white shadow-md'
-                : 'bg-white text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50'
-            }`}
-          >
-            <span className="mr-1.5">{t.emoji}</span>
-            {t.label}
-            {typeof t.count === 'number' ? (
-              <span
-                className={`ml-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                  tab === t.id ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600'
-                }`}
-              >
-                {t.count}
-              </span>
-            ) : null}
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const Icon = t.Icon;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                tab === t.id
+                  ? 'bg-amber-700 text-white shadow-md'
+                  : 'bg-white text-stone-700 ring-1 ring-stone-200 hover:bg-stone-50'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {t.label}
+              {typeof t.count === 'number' ? (
+                <span
+                  className={`ml-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    tab === t.id ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600'
+                  }`}
+                >
+                  {t.count}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
       </div>
 
       <div>
         {tab === 'datos' && <TabDatos evento={evento} reload={reload} />}
         {tab === 'programa' && <TabPrograma evento={evento} reload={reload} />}
-        {tab === 'pueblos' && <TabPueblos evento={evento} reload={reload} />}
+        {tab === 'ruta' && <TabRuta evento={evento} reload={reload} />}
         {tab === 'avisos' && <TabAvisos evento={evento} reload={reload} />}
         {tab === 'fotos' && <TabFotos evento={evento} reload={reload} />}
       </div>

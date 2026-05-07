@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Image from 'next/image';
+import { Camera, ImageIcon, Eye, EyeOff, Trash2, CheckCircle2 } from 'lucide-react';
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
 
@@ -79,9 +80,7 @@ export default function TabFotos({
             disabled={uploading}
             className="flex items-center justify-center gap-2 rounded-2xl bg-amber-700 px-4 py-4 text-base font-semibold text-white shadow-md transition hover:bg-amber-800 disabled:opacity-50"
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M9.4 10.5l4.77-8.26C13.47 2.09 12.75 2 12 2c-2.4 0-4.6.85-6.32 2.25l3.66 6.35.06-.1zM21.54 9c-.92-2.92-3.15-5.26-6-6.34L11.88 9h9.66zm.26 1h-7.49l.29.5 4.76 8.25C21 16.97 22 14.61 22 12c0-.69-.07-1.35-.2-2zM8.54 12l-3.9-6.75C3.01 7.03 2 9.39 2 12c0 .69.07 1.35.2 2h7.49l-1.15-2zm-6.08 3c.92 2.92 3.15 5.26 6 6.34L12.12 15H2.46zm11.27 0l-3.9 6.76c.7.15 1.42.24 2.17.24 2.4 0 4.6-.85 6.32-2.25l-3.66-6.35-.93 1.6z" />
-            </svg>
+            <Camera className="h-5 w-5" />
             Hacer foto / vídeo
           </button>
           <button
@@ -90,9 +89,7 @@ export default function TabFotos({
             disabled={uploading}
             className="flex items-center justify-center gap-2 rounded-2xl border-2 border-amber-300 bg-white px-4 py-4 text-base font-semibold text-amber-800 shadow-sm transition hover:border-amber-500 hover:bg-amber-50 disabled:opacity-50"
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-            </svg>
+            <ImageIcon className="h-5 w-5" />
             Elegir de la galería
           </button>
         </div>
@@ -115,8 +112,22 @@ export default function TabFotos({
         />
 
         {progress ? (
-          <p className="mt-3 text-sm font-medium text-amber-800">
-            Subiendo {progress.done}/{progress.total}…
+          <div className="mt-4">
+            <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-amber-800">
+              <span>Subiendo {progress.done} de {progress.total}…</span>
+              <span>{Math.round((progress.done / Math.max(progress.total, 1)) * 100)}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-amber-100">
+              <div
+                className="h-full bg-amber-700 transition-all"
+                style={{ width: `${(progress.done / Math.max(progress.total, 1)) * 100}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
+        {!progress && !error && !uploading && evento.fotos.length > 0 ? (
+          <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-emerald-700">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Última subida correcta
           </p>
         ) : null}
         {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
@@ -185,11 +196,12 @@ function FotoCard({
       </div>
       {foto.pieFoto_es ? <p className="line-clamp-2 px-2 py-2 text-xs text-stone-600">{foto.pieFoto_es}</p> : null}
       <div className="flex border-t border-stone-100">
-        <button onClick={toggleVisible} disabled={busy} className="flex-1 px-2 py-2 text-[11px] font-semibold text-stone-700 hover:bg-stone-50">
+        <button onClick={toggleVisible} disabled={busy} className="inline-flex flex-1 items-center justify-center gap-1 px-2 py-2 text-[11px] font-semibold text-stone-700 hover:bg-stone-50">
+          {foto.visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
           {foto.visible ? 'Ocultar' : 'Mostrar'}
         </button>
-        <button onClick={remove} disabled={busy} className="flex-1 border-l border-stone-100 px-2 py-2 text-[11px] font-semibold text-red-600 hover:bg-red-50">
-          Eliminar
+        <button onClick={remove} disabled={busy} className="inline-flex flex-1 items-center justify-center gap-1 border-l border-stone-100 px-2 py-2 text-[11px] font-semibold text-red-600 hover:bg-red-50">
+          <Trash2 className="h-3 w-3" /> Eliminar
         </button>
       </div>
     </div>

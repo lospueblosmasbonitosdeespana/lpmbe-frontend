@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { Calendar, FileDown, Plane, Hotel, Languages, Phone } from 'lucide-react';
 import { getGranEventoBySlug, getGranEventoFotos, pickI18n } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
@@ -38,10 +39,10 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
   const fotosIniciales = await getGranEventoFotos(slug);
 
   const logoUrl = evento.logoUrl || '/rencontres/logo-federation.png';
+  const totalParadasMapa = evento.pueblos.length + (evento.paradas?.length ?? 0);
 
   return (
     <main className="relative min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50">
-      {/* Banner de avisos en la parte superior */}
       <GranEventoBannerAvisos slug={evento.slug} eventoTitulo={heroTitulo || evento.nombre} />
 
       <div
@@ -109,13 +110,7 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
                 href="#programa"
                 className="inline-flex items-center gap-2 rounded-full bg-amber-800 px-6 py-3 text-sm font-semibold text-white shadow-md ring-1 ring-amber-900/10 transition hover:bg-amber-900 hover:shadow-lg"
               >
-                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                  <path
-                    fillRule="evenodd"
-                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Calendar className="h-4 w-4" />
                 {t('actions.viewProgram')}
               </a>
             ) : null}
@@ -126,13 +121,7 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
                 rel="noopener"
                 className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
               >
-                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                  <path
-                    fillRule="evenodd"
-                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <FileDown className="h-4 w-4" />
                 {t('actions.downloadPdf')}
               </a>
             ) : null}
@@ -191,7 +180,7 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
       ) : null}
 
       {/* MAPA */}
-      {evento.pueblos.length >= 2 ? (
+      {totalParadasMapa >= 2 ? (
         <section className="border-t border-stone-100 px-6 py-16 sm:py-20">
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 max-w-2xl">
@@ -203,7 +192,7 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
                 <p className="text-[15px] leading-relaxed text-stone-600 sm:text-base">{mapIntro}</p>
               ) : null}
             </div>
-            <GranEventoMapa pueblos={evento.pueblos} />
+            <GranEventoMapa pueblos={evento.pueblos} paradas={evento.paradas ?? []} />
           </div>
         </section>
       ) : null}
@@ -299,16 +288,16 @@ function LogisticaSection({
   return (
     <section className="border-t border-stone-100 bg-stone-50/50 px-6 py-16 sm:py-20">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
-            {/* No translation key for label here – use heading directly */}
-          </p>
-        </div>
-
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {airportTitle ? <InfoCard icon="airport" title={airportTitle} text={airportText} /> : null}
-          {hotelTitle ? <InfoCard icon="hotel" title={hotelTitle} text={hotelText} /> : null}
-          {idiomasTitle ? <InfoCard icon="languages" title={idiomasTitle} text={idiomasText} /> : null}
+          {airportTitle ? (
+            <InfoCard icon={<Plane className="h-5 w-5" />} title={airportTitle} text={airportText} />
+          ) : null}
+          {hotelTitle ? (
+            <InfoCard icon={<Hotel className="h-5 w-5" />} title={hotelTitle} text={hotelText} />
+          ) : null}
+          {idiomasTitle ? (
+            <InfoCard icon={<Languages className="h-5 w-5" />} title={idiomasTitle} text={idiomasText} />
+          ) : null}
           {evento.contactoTelefono ? (
             <ContactCard
               title={contactTitle}
@@ -323,36 +312,11 @@ function LogisticaSection({
   );
 }
 
-function InfoCard({
-  icon,
-  title,
-  text,
-}: {
-  icon: 'airport' | 'hotel' | 'languages';
-  title: string;
-  text: string;
-}) {
-  const icons: Record<typeof icon, React.ReactNode> = {
-    airport: (
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-      </svg>
-    ),
-    hotel: (
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z" />
-      </svg>
-    ),
-    languages: (
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
-      </svg>
-    ),
-  };
+function InfoCard({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition hover:border-amber-200 hover:shadow-md">
       <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-700/10 text-amber-800">
-        <div className="h-5 w-5">{icons[icon]}</div>
+        {icon}
       </div>
       <h3 className="text-base font-semibold text-stone-900">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{text}</p>
@@ -374,11 +338,7 @@ function ContactCard({
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-6 shadow-sm transition hover:border-amber-300 hover:shadow-md">
       <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-700/10 text-amber-800">
-        <div className="h-5 w-5">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.21 2.2z" />
-          </svg>
-        </div>
+        <Phone className="h-5 w-5" />
       </div>
       <h3 className="text-base font-semibold text-stone-900">{title}</h3>
       {text ? <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{text}</p> : null}
