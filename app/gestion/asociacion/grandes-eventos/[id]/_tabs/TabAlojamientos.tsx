@@ -387,8 +387,9 @@ function AlojamientoForm({
   const [fechaCheckOut, setFechaCheckOut] = useState(initial?.fechaCheckOut?.substring(0, 10) ?? '');
   const [ciudad, setCiudad] = useState(initial?.ciudad ?? '');
   const [direccion, setDireccion] = useState(initial?.direccion ?? '');
-  const [lat, setLat] = useState(initial?.lat?.toString() ?? '');
-  const [lng, setLng] = useState(initial?.lng?.toString() ?? '');
+  const [coords, setCoords] = useState(
+    initial?.lat != null && initial?.lng != null ? `${initial.lat}, ${initial.lng}` : '',
+  );
   const [telefono, setTelefono] = useState(initial?.telefono ?? '');
   const [web, setWeb] = useState(initial?.web ?? '');
   const [paraTodos, setParaTodos] = useState(initial?.paraTodos ?? false);
@@ -397,9 +398,16 @@ function AlojamientoForm({
   const [fotoUrl, setFotoUrl] = useState<string | null>(initial?.fotoUrl ?? null);
   const [busy, setBusy] = useState(false);
 
+  const parsedCoords = parseCoords(coords);
+  const coordsError = coords.trim() && !parsedCoords ? 'Formato no válido. Usa "36.2539, -5.9622"' : null;
+
   const save = async () => {
     if (!nombre.trim() || !fechaCheckIn || !fechaCheckOut) {
       alert('Nombre, fecha entrada y fecha salida son obligatorios');
+      return;
+    }
+    if (coordsError) {
+      alert(coordsError);
       return;
     }
     setBusy(true);
@@ -410,8 +418,8 @@ function AlojamientoForm({
         fechaCheckOut,
         ciudad: ciudad || null,
         direccion: direccion || null,
-        lat: lat ? parseFloat(lat) : null,
-        lng: lng ? parseFloat(lng) : null,
+        lat: parsedCoords?.lat ?? null,
+        lng: parsedCoords?.lng ?? null,
         telefono: telefono || null,
         web: web || null,
         paraTodos,
@@ -448,16 +456,23 @@ function AlojamientoForm({
         <Field label="Dirección (opcional)">
           <input value={direccion} onChange={(e) => setDireccion(e.target.value)} className={input} />
         </Field>
-        <div className="grid grid-cols-2 gap-2">
-          <Field label="Latitud">
-            <input value={lat} onChange={(e) => setLat(e.target.value)} className={input} placeholder="36.252" />
-          </Field>
-          <Field label="Longitud">
-            <input value={lng} onChange={(e) => setLng(e.target.value)} className={input} placeholder="-5.965" />
-          </Field>
-        </div>
+        <Field label="Coordenadas (latitud, longitud)">
+          <input
+            value={coords}
+            onChange={(e) => setCoords(e.target.value)}
+            className={input}
+            placeholder="36.25398851147167, -5.962280031342549"
+            inputMode="text"
+          />
+        </Field>
         <p className="text-[11px] text-stone-500">
-          Tip: en Google Maps, clic derecho en el sitio → copia las coordenadas.
+          Tip: en Google Maps, clic derecho sobre el hotel → toca las coordenadas para copiarlas y pégalas aquí.
+          {parsedCoords ? (
+            <span className="ml-1 font-medium text-emerald-700">
+              ✓ {parsedCoords.lat.toFixed(5)}, {parsedCoords.lng.toFixed(5)}
+            </span>
+          ) : null}
+          {coordsError ? <span className="ml-1 font-medium text-red-600">{coordsError}</span> : null}
         </p>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Teléfono">
@@ -671,6 +686,26 @@ function groupByDelegacion(asignaciones: Asignacion[]): Array<readonly [string, 
     m.set(a.delegacion, arr);
   }
   return Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b));
+}
+
+/**
+ * Acepta los formatos típicos que se pueden copiar de Google/Apple Maps:
+ *   "36.25398851147167, -5.962280031342549"   ← Google (clic derecho)
+ *   "36.253989,-5.962280"                     ← sin espacio
+ *   "36.253989 -5.962280"                     ← separado por espacio
+ *   "36.253989; -5.962280"                    ← punto y coma
+ * Devuelve null si no se reconoce.
+ */
+function parseCoords(input: string): { lat: number; lng: number } | null {
+  const cleaned = input.trim();
+  if (!cleaned) return null;
+  const match = cleaned.match(/^\s*(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)\s*$/);
+  if (!match) return null;
+  const lat = parseFloat(match[1].replace(',', '.'));
+  const lng = parseFloat(match[2].replace(',', '.'));
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
 }
 
 function fmt(iso: string): string {
