@@ -314,7 +314,10 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       const btn1 = url1 ? `<a href="${escHtml(url1)}" style="${btnStyle}">${label1}</a>` : '';
       const btn2 = url2 ? `<a href="${escHtml(url2)}" style="${btnStyle}">${label2}</a>` : '';
       if (btn1 || btn2) {
-        parts.push(`<div style="${wrapStyle}text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="margin:${align === 'center' ? '0 auto' : align === 'right' ? '0 0 0 auto' : '0'};"><tr>${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}</tr></table></div>`);
+        // text-align en el contenedor + display:inline-table en la tabla
+        // garantiza el centrado en todos los clientes (margin:0 auto solo no
+        // basta para tablas sin width explícito).
+        parts.push(`<div style="${wrapStyle}text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}</tr></table></div>`);
       }
     } else if (b.type === 'iconButton') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
@@ -385,7 +388,9 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
 
       const buildSocialCell = (url: string, title: string, iconSlug: string) =>
         `<td align="center" valign="middle" style="padding:0 7px;">` +
-          `<a href="${escHtml(url)}" style="text-decoration:none;display:block;" title="${escHtml(title)}">` +
+          // display:inline-block (no block) para que en webMode, donde quitamos
+          // el <td> envolvente, los iconos no se apilen verticalmente.
+          `<a href="${escHtml(url)}" style="text-decoration:none;display:inline-block;line-height:0;margin:0 7px;" title="${escHtml(title)}">` +
             `<img src="${ICONS_BASE}/${iconSlug}.svg" width="${iconSize}" height="${iconSize}" style="display:block;border-radius:8px;" alt="${escHtml(title)}" />` +
           `</a>` +
         `</td>`;

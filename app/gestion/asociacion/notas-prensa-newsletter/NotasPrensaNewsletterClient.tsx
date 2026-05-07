@@ -516,7 +516,10 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         const b1 = url1 ? `<a href="${escapeHtml(url1)}" target="_blank" rel="noopener noreferrer" style="${btnStyle}">${label1}</a>` : '';
         const b2 = url2 ? `<a href="${escapeHtml(url2)}" target="_blank" rel="noopener noreferrer" style="${btnStyle}">${label2}</a>` : '';
         if (b1 || b2) {
-          return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" style="margin:${align === 'center' ? '0 auto' : align === 'right' ? '0 0 0 auto' : '0'};"><tr>${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}</tr></table></div>`;
+          // Para que el centrado funcione en todos los clientes (web, Gmail, Apple Mail
+          // y Outlook) usamos `text-align` en el contenedor + `display:inline-table`
+          // en la tabla. `margin:0 auto` por sí solo no centra una <table> sin width.
+          return `<div style="${boxStyle}text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}</tr></table></div>`;
         }
         return '';
       }
@@ -602,26 +605,27 @@ function renderNewsletterBlocksToHtml(blocks: NewsletterBlock[]): string {
         return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;"><tr><td width="40%" valign="top" style="padding:0 12px 0 0;"><img src="${escapeHtml(url)}" alt="Imagen del bloque" style="width:100%;height:auto;border-radius:8px;display:block;" /></td><td width="60%" valign="top" style="font-size:15px;line-height:1.6;color:${textColor};">${text}</td></tr></table></div>`;
       }
       if (block.type === 'socialLinks') {
-        const iconSize = 40;
-        const iconInner = 20;
-        const iconMargin = Math.round((iconSize - iconInner) / 2);
+        // Iconos auto-contenidos (fondo + logo en blanco) alojados en nuestro
+        // dominio. Sin filter:invert ni dependencias externas (jsDelivr antes
+        // generaba un resultado pobre en clientes de email).
+        const ICONS_BASE = 'https://lospueblosmasbonitosdeespana.org/icons/social';
+        const iconSize = 44;
         const tdAlign = align === 'right' ? 'right' : align === 'left' ? 'left' : 'center';
-        const makeIconCell = (url: string, bgColor: string, iconSlug: string, label: string) =>
-          `<td align="center" valign="middle" style="padding:0 6px;">` +
-          `<a href="${escapeHtml(sanitizeTemplateUrl(url))}" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;" title="${label}">` +
-          `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>` +
-          `<td align="center" valign="middle" style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;padding:0;">` +
-          `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="${iconInner}" height="${iconInner}" style="filter:invert(1);display:block;margin:${iconMargin}px auto;" alt="${label}" />` +
-          `</td></tr></table></a></td>`;
+        const makeIconCell = (url: string, iconSlug: string, label: string) =>
+          `<td align="center" valign="middle" style="padding:0 7px;">` +
+          `<a href="${escapeHtml(sanitizeTemplateUrl(url))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;line-height:0;" title="${label}">` +
+          `<img src="${ICONS_BASE}/${iconSlug}.svg" width="${iconSize}" height="${iconSize}" style="display:block;border-radius:8px;" alt="${label}" />` +
+          `</a></td>`;
         const cells: string[] = [];
-        if (block.socialFacebook) cells.push(makeIconCell(block.socialFacebook, '#1877F2', 'facebook', 'Facebook'));
-        if (block.socialTwitter) cells.push(makeIconCell(block.socialTwitter, '#000000', 'x', 'X'));
-        // En emails evitamos gradientes por compatibilidad entre clientes.
-        if (block.socialInstagram) cells.push(makeIconCell(block.socialInstagram, '#E1306C', 'instagram', 'Instagram'));
-        if (block.socialLinkedin) cells.push(makeIconCell(block.socialLinkedin, '#0077B5', 'linkedin', 'LinkedIn'));
-        if (block.socialYoutube) cells.push(makeIconCell(block.socialYoutube, '#FF0000', 'youtube', 'YouTube'));
+        if (block.socialFacebook) cells.push(makeIconCell(block.socialFacebook, 'facebook', 'Facebook'));
+        if (block.socialTwitter) cells.push(makeIconCell(block.socialTwitter, 'x', 'X'));
+        if (block.socialInstagram) cells.push(makeIconCell(block.socialInstagram, 'instagram', 'Instagram'));
+        if (block.socialLinkedin) cells.push(makeIconCell(block.socialLinkedin, 'linkedin', 'LinkedIn'));
+        if (block.socialYoutube) cells.push(makeIconCell(block.socialYoutube, 'youtube', 'YouTube'));
         if (!cells.length) return '';
-        return `<div style="${boxStyle}"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="${tdAlign}" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${tdAlign === 'right' ? '0 0 0 auto' : tdAlign === 'left' ? '0' : '0 auto'};"><tr>${cells.join('')}</tr></table></td></tr></table></div>`;
+        // text-align en el contenedor + display:inline-table en la tabla =
+        // centrado fiable en navegador y email.
+        return `<div style="${boxStyle}text-align:${tdAlign};"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;display:inline-table;"><tr>${cells.join('')}</tr></table></div>`;
       }
       if (block.type === 'countdown') {
         const target = block.countdownDate ? new Date(block.countdownDate) : new Date();
