@@ -222,6 +222,9 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
         return;
       }
 
+      if (typeof window !== 'undefined') {
+        try { localStorage.removeItem(getBuilderDraftKey()); } catch { /* noop */ }
+      }
       router.replace(`/gestion/pueblo/contenidos?puebloId=${puebloId}&puebloNombre=${encodeURIComponent(puebloNombre)}`);
       router.refresh();
     } finally {
@@ -238,6 +241,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     setTitulo('');
     setResumen('');
     setContenido('');
+    setBlocksJson(null);
     setCoverFile(null);
     setCoverUrl(null);
     setGalleryFiles([null, null, null]);
@@ -250,7 +254,17 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
     setEditorMode('builder');
     setError(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(getBuilderDraftKey());
+      // Limpiamos también drafts huérfanos de otros tipos en este pueblo,
+      // que de otra forma podrían reaparecer al cambiar el selector "Tipo".
+      try {
+        const prefix = `lpmbe-contenido-pueblo-${puebloId}-`;
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith(prefix) && k.endsWith('-draft')) {
+            localStorage.removeItem(k);
+          }
+        }
+      } catch { /* cuota / SSR */ }
     }
     setBuilderResetKey((k) => k + 1);
   }
@@ -593,7 +607,7 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
             <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
               <ContentBlockBuilder
                 key={`pueblo-nuevo-builder-${puebloId}-${tipo}-${builderResetKey}`}
-                draftKey={`lpmbe-contenido-pueblo-${puebloId}-${tipo}-draft`}
+                draftKey={getBuilderDraftKey()}
                 initialHtml={contenido}
                 onChange={(html) => setContenido(html)}
                 onBlocksChange={(blocks) => setBlocksJson(blocks)}
@@ -602,6 +616,9 @@ export default function NuevoContenidoPuebloClient({ puebloId, puebloNombre, tip
                 puebloId={puebloId}
                 puebloNombre={puebloNombre}
                 webMode={true}
+                // Siempre arrancamos en blanco al crear: ningún borrador
+                // de otra creación previa debe contaminar el formulario.
+                clearDraftOnMount={true}
               />
             </div>
 

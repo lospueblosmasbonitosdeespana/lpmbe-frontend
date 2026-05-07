@@ -171,8 +171,12 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
     }
   }
 
+  // Clave de borrador en localStorage: única por tipo (NOTICIA / EVENTO /
+  // ARTICULO / PAGINA) y por categoría temática. Antes solo se segmentaba por
+  // categoría → todos los tipos sin categoría compartían el mismo bucket
+  // ("nuevo") y arrastraban contenido de creaciones anteriores.
   function getBuilderDraftKey() {
-    return `lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`;
+    return `lpmbe-contenido-asoc-${tipo}-${categoria || 'nuevo'}-draft`;
   }
 
   function handleClearAll() {
@@ -180,6 +184,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
     setTitulo('');
     setResumen('');
     setContenido('');
+    setBlocksJson(null);
     builderHtmlRef.current = '';
     setCoverUrl(null);
     setCoverFile(null);
@@ -192,7 +197,16 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
     setEditorMode('builder');
     setError(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(getBuilderDraftKey());
+      // Borramos tanto la clave actual como las posibles "huérfanas" de otros
+      // tipos/categorías que pudieran haber quedado de sesiones anteriores.
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('lpmbe-contenido-asoc-') && k.endsWith('-draft')) {
+            localStorage.removeItem(k);
+          }
+        }
+      } catch { /* cuota / SSR */ }
     }
     setBuilderResetKey((k) => k + 1);
   }
@@ -311,6 +325,9 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
           return;
         }
 
+        if (typeof window !== 'undefined') {
+          try { localStorage.removeItem(getBuilderDraftKey()); } catch { /* noop */ }
+        }
         alert('Página temática de Asociación guardada correctamente');
         router.replace('/gestion/asociacion/contenidos');
         router.refresh();
@@ -351,6 +368,9 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
         return;
       }
 
+      if (typeof window !== 'undefined') {
+        try { localStorage.removeItem(getBuilderDraftKey()); } catch { /* noop */ }
+      }
       router.replace('/gestion/asociacion/contenidos');
       router.refresh();
     } finally {
@@ -627,8 +647,7 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
                 type="button"
                 onClick={() => {
                   if (existingPageId) {
-                    const draftKey = `lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`;
-                    localStorage.removeItem(draftKey);
+                    localStorage.removeItem(getBuilderDraftKey());
                     builderHtmlRef.current = '';
                   }
                   setEditorMode('builder');
@@ -723,15 +742,19 @@ export default function NuevoContenidoClient({ tipoInicial, categoriaInicial }: 
 
             <div style={{ display: editorMode === 'builder' ? undefined : 'none' }}>
               <ContentBlockBuilder
-                key={`asoc-nuevo-builder-${builderResetKey}-${categoria || 'nuevo'}`}
-                draftKey={`lpmbe-contenido-asoc-PAGINA-${categoria || 'nuevo'}-draft`}
+                key={`asoc-nuevo-builder-${builderResetKey}-${tipo}-${categoria || 'nuevo'}`}
+                draftKey={getBuilderDraftKey()}
                 initialHtml={contenido}
                 initialBlocks={Array.isArray(blocksJson) ? (blocksJson as any[]) : undefined}
                 onChange={handleBuilderChange}
                 onBlocksChange={(blocks) => setBlocksJson(blocks)}
                 onClearAll={handleClearAll}
                 webMode={true}
-                clearDraftOnMount={!!existingPageId}
+                // Siempre arrancamos en blanco al crear: nunca queremos que un
+                // borrador de localStorage de una creación anterior contamine
+                // la pantalla actual (ese fue el bug del "evento de Santa Gadea
+                // mostraba contenido de la noticia anterior").
+                clearDraftOnMount={true}
               />
             </div>
 
