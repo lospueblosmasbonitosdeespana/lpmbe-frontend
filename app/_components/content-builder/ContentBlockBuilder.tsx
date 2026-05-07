@@ -345,18 +345,28 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
           `<div style="${wrapStyle}">` +
             `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">` +
               `<tr>` +
-                `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;">${btn1}</td>` +
-                `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;">${btn2}</td>` +
+                `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;text-align:${a1};">${btn1}</td>` +
+                `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;text-align:${a2};">${btn2}</td>` +
               `</tr>` +
             `</table>` +
           `</div>`,
         );
       } else if (btn1 || btn2) {
-        // Misma alineación (o solo un botón): los dos juntos en línea.
+        // Misma alineación (o solo un botón). Para máxima compatibilidad
+        // combinamos:
+        //   1) text-align en el contenedor (centra inline/inline-block)
+        //   2) `align="…"` HTML legacy en la <table> (Outlook, iOS Mail)
+        //   3) margin:auto cuando es centro (refuerza en navegador moderno)
         const commonAlign = btn1 ? a1 : a2;
+        const tblMargin =
+          commonAlign === 'center'
+            ? '0 auto'
+            : commonAlign === 'right'
+              ? '0 0 0 auto'
+              : '0';
         parts.push(
           `<div style="${wrapStyle}text-align:${commonAlign};">` +
-            `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;">` +
+            `<table align="${commonAlign}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${tblMargin};">` +
               `<tr>` +
                 `${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}` +
                 `${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}` +
@@ -1882,10 +1892,44 @@ export default function ContentBlockBuilder({
                         </label>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center gap-3 rounded-md border border-dashed border-border bg-white/50 p-2">
-                      <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">{selectedBlock.label || 'Botón 1'}</span>
-                      <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">{selectedBlock.btn2Label || 'Botón 2'}</span>
-                    </div>
+                    {/* Mini preview que reproduce la misma lógica del render:
+                        misma alineación → juntos; distinta → reparto 50/50. */}
+                    {(() => {
+                      const a1 = selectedBlock.alignBtn1 || 'center';
+                      const a2 = selectedBlock.alignBtn2 || 'center';
+                      const justifyMap: Record<string, string> = {
+                        left: 'flex-start',
+                        center: 'center',
+                        right: 'flex-end',
+                      };
+                      const Btn = ({ label }: { label: string }) => (
+                        <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">
+                          {label}
+                        </span>
+                      );
+                      return (
+                        <div className="rounded-md border border-dashed border-border bg-white/50 p-2">
+                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Vista previa (en el email/web se verá así)
+                          </p>
+                          {a1 === a2 ? (
+                            <div className="flex items-center gap-2" style={{ justifyContent: justifyMap[a1] }}>
+                              <Btn label={selectedBlock.label || 'Botón 1'} />
+                              <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="flex" style={{ justifyContent: justifyMap[a1] }}>
+                                <Btn label={selectedBlock.label || 'Botón 1'} />
+                              </div>
+                              <div className="flex" style={{ justifyContent: justifyMap[a2] }}>
+                                <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 

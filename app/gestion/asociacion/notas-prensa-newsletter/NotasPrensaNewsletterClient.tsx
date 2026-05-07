@@ -562,16 +562,35 @@ function renderNewsletterBlocksToHtml(
             `<div style="${boxStyle}">` +
               `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">` +
                 `<tr>` +
-                  `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;">${b1}</td>` +
-                  `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;">${b2}</td>` +
+                  `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;text-align:${a1};">${b1}</td>` +
+                  `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;text-align:${a2};">${b2}</td>` +
                 `</tr>` +
               `</table>` +
             `</div>`
           );
         }
         // Misma alineación (o solo un botón): los dos juntos en línea.
+        // Para máxima compatibilidad combinamos:
+        //   1) text-align en el contenedor (centra inline/inline-block)
+        //   2) `align="…"` HTML legacy en la <table> (Outlook, iOS Mail)
+        //   3) margin:auto cuando es centro (refuerza en navegador)
         const commonAlign = b1 ? a1 : a2;
-        return `<div style="${boxStyle}text-align:${commonAlign};"><table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}</tr></table></div>`;
+        const tblMargin =
+          commonAlign === 'center'
+            ? '0 auto'
+            : commonAlign === 'right'
+              ? '0 0 0 auto'
+              : '0';
+        return (
+          `<div style="${boxStyle}text-align:${commonAlign};">` +
+            `<table align="${commonAlign}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${tblMargin};">` +
+              `<tr>` +
+                `${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}` +
+                `${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}` +
+              `</tr>` +
+            `</table>` +
+          `</div>`
+        );
       }
       if (block.type === 'iconButton') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
@@ -2678,21 +2697,27 @@ export default function NotasPrensaNewsletterClient({
   // Cuando cambia el bloque seleccionado en el lienzo, hacemos scroll en la
   // vista previa hasta el wrapper data-nb-id correspondiente. El render ya
   // añade `scroll-margin-top` para dejar un pequeño hueco visible.
+  //
+  // ⚠️ Solo dependemos de `selectedNewsletterBlockId` — no de `newsletterBlocks`.
+  // Si dependiéramos también de la lista, cualquier edición del bloque
+  // (cambiar alineación, texto, color…) re-dispararía el scroll y la página
+  // saltaría sola al editar.
   useEffect(() => {
     if (!selectedNewsletterBlockId) return;
     const root = newsletterPreviewRef.current;
     if (!root) return;
-    // Esperamos un frame para que el HTML nuevo (con outline) esté pintado.
     const raf = requestAnimationFrame(() => {
       const target = root.querySelector(
         `[data-nb-id="${CSS.escape(selectedNewsletterBlockId)}"]`,
       ) as HTMLElement | null;
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // `nearest` evita centrar la página completa en la vista previa: solo
+        // hace scroll si el bloque queda fuera de la zona visible.
+        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     });
     return () => cancelAnimationFrame(raf);
-  }, [selectedNewsletterBlockId, newsletterBlocks]);
+  }, [selectedNewsletterBlockId]);
 
   // ------- Borradores + Programación (DraftsAndScheduler) -------
   const getSharedSnapshot = useCallback(async (): Promise<SharedDraftSnapshot> => {
@@ -4627,10 +4652,45 @@ export default function NotasPrensaNewsletterClient({
                                       </label>
                                     </div>
                                   </div>
-                                  <div className="flex items-center justify-center gap-3 rounded-md border border-dashed border-border bg-white/50 p-2">
-                                    <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">{selectedNewsletterBlock.label || 'Botón 1'}</span>
-                                    <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">{selectedNewsletterBlock.btn2Label || 'Botón 2'}</span>
-                                  </div>
+                                  {/* Mini preview que reproduce exactamente la lógica del render:
+                                      misma alineación → ambos juntos en línea con esa alineación;
+                                      alineaciones distintas → tabla 50/50, cada botón en su mitad. */}
+                                  {(() => {
+                                    const a1 = selectedNewsletterBlock.alignBtn1 || 'center';
+                                    const a2 = selectedNewsletterBlock.alignBtn2 || 'center';
+                                    const justifyMap: Record<string, string> = {
+                                      left: 'flex-start',
+                                      center: 'center',
+                                      right: 'flex-end',
+                                    };
+                                    const Btn = ({ label }: { label: string }) => (
+                                      <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">
+                                        {label}
+                                      </span>
+                                    );
+                                    return (
+                                      <div className="rounded-md border border-dashed border-border bg-white/50 p-2">
+                                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                          Vista previa (en el email se verá así)
+                                        </p>
+                                        {a1 === a2 ? (
+                                          <div className="flex items-center gap-2" style={{ justifyContent: justifyMap[a1] }}>
+                                            <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
+                                            <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
+                                          </div>
+                                        ) : (
+                                          <div className="grid grid-cols-2 gap-2">
+                                            <div className="flex" style={{ justifyContent: justifyMap[a1] }}>
+                                              <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
+                                            </div>
+                                            <div className="flex" style={{ justifyContent: justifyMap[a2] }}>
+                                              <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
                               )}
 
