@@ -38,7 +38,7 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
 
   const fotosIniciales = await getGranEventoFotos(slug);
 
-  const logoUrl = evento.logoUrl || '/rencontres/logo-federation.png';
+  const logoUrl = evento.logoUrl && evento.logoUrl.trim() ? evento.logoUrl : null;
   const totalParadasMapa = evento.pueblos.length + (evento.paradas?.length ?? 0);
 
   return (
@@ -62,18 +62,20 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
       {/* HERO */}
       <header className="relative px-6 pt-16 pb-10 sm:pt-20 sm:pb-14">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-8 flex justify-center">
-            <div className="relative h-28 w-28 sm:h-32 sm:w-32">
-              <Image
-                src={logoUrl}
-                alt={heroFederacion || evento.nombre}
-                fill
-                priority
-                sizes="(max-width: 640px) 112px, 128px"
-                style={{ objectFit: 'contain' }}
-              />
+          {logoUrl ? (
+            <div className="mb-8 flex justify-center">
+              <div className="relative h-28 w-28 sm:h-32 sm:w-32">
+                <Image
+                  src={logoUrl}
+                  alt={heroFederacion || evento.nombre}
+                  fill
+                  priority
+                  sizes="(max-width: 640px) 112px, 128px"
+                  style={{ objectFit: 'contain' }}
+                />
+              </div>
             </div>
-          </div>
+          ) : null}
 
           {heroKicker ? (
             <p className="text-center text-[11px] font-semibold uppercase tracking-[0.32em] text-amber-700">
@@ -201,19 +203,23 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
       <LogisticaSection evento={evento} locale={locale} />
 
       {/* FOOTER */}
-      <footer className="border-t border-stone-100 px-6 py-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mx-auto mb-5 h-16 w-16 opacity-80">
-            <Image src={logoUrl} alt="" width={64} height={64} style={{ objectFit: 'contain' }} />
+      {logoUrl || heroFederacion || heroKicker ? (
+        <footer className="border-t border-stone-100 px-6 py-12">
+          <div className="mx-auto max-w-4xl text-center">
+            {logoUrl ? (
+              <div className="mx-auto mb-5 h-16 w-16 opacity-80">
+                <Image src={logoUrl} alt="" width={64} height={64} style={{ objectFit: 'contain' }} />
+              </div>
+            ) : null}
+            {heroFederacion ? (
+              <p className="text-sm font-semibold text-stone-700">{heroFederacion}</p>
+            ) : null}
+            {heroKicker ? (
+              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-stone-400">{heroKicker}</p>
+            ) : null}
           </div>
-          {heroFederacion ? (
-            <p className="text-sm font-semibold text-stone-700">{heroFederacion}</p>
-          ) : null}
-          {heroKicker ? (
-            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-stone-400">{heroKicker}</p>
-          ) : null}
-        </div>
-      </footer>
+        </footer>
+      ) : null}
     </main>
   );
 }
