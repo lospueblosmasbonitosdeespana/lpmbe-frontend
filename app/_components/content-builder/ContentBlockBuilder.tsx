@@ -337,18 +337,27 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       // caemos en `align` (alineación general del bloque) para retrocompatibilidad.
       const a1 = (b.alignBtn1 || (align === 'full' ? 'center' : align)) as 'left' | 'center' | 'right';
       const a2 = (b.alignBtn2 || (align === 'full' ? 'center' : align)) as 'left' | 'center' | 'right';
+      // Helper para envolver un solo botón con su alineación email-safe.
+      const renderSingleButtonWrapper = (
+        btn: string,
+        alg: 'left' | 'center' | 'right',
+      ): string => {
+        const m =
+          alg === 'center' ? '0 auto' : alg === 'right' ? '0 0 0 auto' : '0';
+        return (
+          `<table align="${alg}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${m};">` +
+            `<tr><td>${btn}</td></tr>` +
+          `</table>`
+        );
+      };
       if (btn1 && btn2 && a1 !== a2) {
-        // Alineaciones distintas → tabla 50/50, cada celda con su propio align.
-        // Es la forma email-safe de conseguir "uno a la izquierda y otro a la
-        // derecha" o cualquier otra combinación.
+        // Alineaciones distintas → cada botón en su propia línea con su
+        // alineación, totalmente independiente del otro. Cambiar la
+        // alineación de uno NO mueve al otro.
         parts.push(
           `<div style="${wrapStyle}">` +
-            `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">` +
-              `<tr>` +
-                `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;text-align:${a1};">${btn1}</td>` +
-                `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;text-align:${a2};">${btn2}</td>` +
-              `</tr>` +
-            `</table>` +
+            `<div style="text-align:${a1};margin-bottom:8px;">${renderSingleButtonWrapper(btn1, a1)}</div>` +
+            `<div style="text-align:${a2};">${renderSingleButtonWrapper(btn2, a2)}</div>` +
           `</div>`,
         );
       } else if (btn1 || btn2) {
@@ -1285,6 +1294,533 @@ export default function ContentBlockBuilder({
 
   // ─── Render ───────────────────────────────────────────────────────────────────
 
+  // Renderiza el cuerpo del inspector. Lo usamos en dos sitios:
+  //   1) Inline (tipo persiana) DEBAJO del bloque seleccionado en el
+  //      lienzo, así el usuario edita justo al lado del bloque sin scroll.
+  //   2) Como fallback en la columna principal cuando todavía no hay
+  //      ningún bloque seleccionado.
+  const renderInspectorBody = (): React.ReactNode => {
+    return (
+    selectedBlock ? (
+      <div className="grid gap-2 md:grid-cols-2">
+        <label className="text-xs text-muted-foreground">
+          Tipo
+          <input value={selectedBlock.type} readOnly className="mt-1 w-full rounded-md border border-border bg-muted px-2 py-1 text-sm" />
+        </label>
+        <label className="text-xs text-muted-foreground">
+          Alineación
+          <select value={selectedBlock.align || 'left'} onChange={(e) => updateSelected({ align: (e.target.value as 'left' | 'center' | 'right' | 'full') })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
+            <option value="left">Izquierda</option>
+            <option value="center">Centro</option>
+            <option value="right">Derecha</option>
+            <option value="full">Ancho completo</option>
+          </select>
+        </label>
+
+        {/* Rich text for heading / text / imgText */}
+        {(selectedBlock.type === 'heading' || selectedBlock.type === 'text' || selectedBlock.type === 'imgText') && (
+          <div className="md:col-span-2">
+            <p className="mb-1 text-xs text-muted-foreground">{selectedBlock.type === 'heading' ? 'Contenido del titular' : 'Contenido del bloque'}</p>
+            <BlockRichEditor content={selectedBlock.content || ''} onChange={(html) => updateSelected({ content: html })} placeholder={selectedBlock.type === 'heading' ? 'Escribe el titular...' : 'Escribe el contenido...'} />
+          </div>
+        )}
+
+        {/* imgText position & ratio */}
+        {selectedBlock.type === 'imgText' && (
+          <>
+            <label className="text-xs text-muted-foreground">
+              Posición imagen
+              <select value={selectedBlock.imgPosition || 'left'} onChange={(e) => updateSelected({ imgPosition: e.target.value as 'left' | 'right' })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
+                <option value="left">Izquierda</option>
+                <option value="right">Derecha</option>
+              </select>
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Proporciones
+              <select value={selectedBlock.imgTextRatio || '40-60'} onChange={(e) => updateSelected({ imgTextRatio: e.target.value as ContentBlock['imgTextRatio'] })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
+                <option value="30-70">30% img / 70% texto</option>
+                <option value="40-60">40% img / 60% texto</option>
+                <option value="50-50">50% / 50%</option>
+                <option value="60-40">60% img / 40% texto</option>
+                <option value="70-30">70% img / 30% texto</option>
+              </select>
+            </label>
+          </>
+        )}
+
+        {/* Image alt text */}
+        {selectedBlock.type === 'image' && (
+          <label className="text-xs text-muted-foreground md:col-span-2">
+            Texto alt
+            <input value={selectedBlock.content || ''} onChange={(e) => updateSelected({ content: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
+          </label>
+        )}
+
+        {/* URL field */}
+        {['image', 'button', 'iconButton', 'figure', 'imgText'].includes(selectedBlock.type) && (
+          <label className="text-xs text-muted-foreground md:col-span-2">
+            URL{selectedBlock.type === 'figure' || selectedBlock.type === 'imgText' ? ' imagen' : ''}
+            <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+          </label>
+        )}
+
+        {/* Selector rápido de ancho (solo bloque image, equivale al del newsletter) */}
+        {selectedBlock.type === 'image' && (
+          <div className="md:col-span-2">
+            <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Ancho de imagen</p>
+            <div className="flex flex-wrap gap-1.5">
+              {['80px', '120px', '160px', '200px', '250px', '300px', '50%', '75%', '100%'].map((w) => {
+                const current = selectedBlock.imageWidth
+                  || (selectedBlock.imgWidth ? `${selectedBlock.imgWidth}px` : '100%');
+                const active = current === w;
+                return (
+                  <button
+                    key={w}
+                    type="button"
+                    onClick={() => {
+                      const patch: Partial<ContentBlock> = { imageWidth: w };
+                      // Si elige un valor en px sincroniza también imgWidth numérico
+                      // para que el editor de recorte y el render mantengan coherencia.
+                      if (w.endsWith('px')) {
+                        patch.imgWidth = parseInt(w, 10);
+                      } else {
+                        patch.imgWidth = undefined;
+                      }
+                      updateSelected(patch);
+                    }}
+                    className={`rounded border px-2 py-1 text-[11px] font-medium transition ${active ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                  >
+                    {w}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Image upload for image/figure/imgText */}
+        {['image', 'figure', 'imgText'].includes(selectedBlock.type) && (
+          <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
+            <p className="text-sm font-semibold">Subir imagen del bloque</p>
+            <div className="mt-3 flex gap-2">
+              <button type="button" onClick={() => imgInputRef.current?.click()} disabled={uploading}
+                className="flex-1 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                {uploading ? 'Subiendo...' : 'Subir imagen'}
+              </button>
+              {selectedBlock.url && (
+                <button
+                  type="button"
+                  onClick={() => setImageEditorBlock({ blockId: selectedBlock.id, field: 'url' })}
+                  className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  title="Recortar y editar imagen"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
+                  </svg>
+                  Editar
+                </button>
+              )}
+            </div>
+            <input ref={imgInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
+              onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id); e.currentTarget.value = ''; }} />
+          </div>
+        )}
+
+        {/* iconButton icon URL + upload */}
+        {selectedBlock.type === 'iconButton' && (
+          <>
+            <label className="text-xs text-muted-foreground md:col-span-2">
+              URL icono
+              <input value={selectedBlock.iconUrl || ''} onChange={(e) => updateSelected({ iconUrl: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+            </label>
+            <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
+              <div className="flex gap-2">
+                <button type="button" onClick={() => iconInputRef.current?.click()} disabled={uploading}
+                  className="flex-1 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+                  {uploading ? 'Subiendo icono...' : 'Subir icono'}
+                </button>
+                {selectedBlock.iconUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setImageEditorBlock({ blockId: selectedBlock.id, field: 'iconUrl' })}
+                    className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
+                    </svg>
+                    Editar
+                  </button>
+                )}
+              </div>
+              <input ref={iconInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
+                onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id, 'iconUrl'); e.currentTarget.value = ''; }} />
+            </div>
+          </>
+        )}
+
+        {/* Button label */}
+        {['button', 'iconButton'].includes(selectedBlock.type) && (
+          <label className="text-xs text-muted-foreground md:col-span-2">
+            {selectedBlock.type === 'iconButton' ? 'Etiqueta icono' : 'Texto del botón'}
+            <input value={selectedBlock.label || ''} onChange={(e) => updateSelected({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
+          </label>
+        )}
+
+        {/* Button Row (2 buttons side by side) */}
+        {selectedBlock.type === 'buttonRow' && (
+          <div className="md:col-span-2 space-y-3">
+            <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+              Cada botón tiene su propia alineación. Si los dos coinciden se ponen juntos en una línea; si difieren se apilan en dos líneas, cada una con su alineación (cambiar uno NO mueve al otro).
+            </p>
+            <div className="flex gap-3">
+              <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
+                <label className="block text-xs text-muted-foreground">
+                  Texto
+                  <input value={selectedBlock.label || ''} onChange={(e) => updateSelected({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Leer más" />
+                </label>
+                <label className="block text-xs text-muted-foreground">
+                  URL
+                  <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                </label>
+                <label className="block text-xs text-muted-foreground">
+                  Alineación
+                  <select
+                    value={selectedBlock.alignBtn1 || 'center'}
+                    onChange={(e) => updateSelected({ alignBtn1: e.target.value as 'left' | 'center' | 'right' })}
+                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centro</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </label>
+              </div>
+              <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                <p className="text-xs font-semibold text-foreground">Botón derecho</p>
+                <label className="block text-xs text-muted-foreground">
+                  Texto
+                  <input value={selectedBlock.btn2Label || ''} onChange={(e) => updateSelected({ btn2Label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Conoce más" />
+                </label>
+                <label className="block text-xs text-muted-foreground">
+                  URL
+                  <input value={selectedBlock.btn2Url || ''} onChange={(e) => updateSelected({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                </label>
+                <label className="block text-xs text-muted-foreground">
+                  Alineación
+                  <select
+                    value={selectedBlock.alignBtn2 || 'center'}
+                    onChange={(e) => updateSelected({ alignBtn2: e.target.value as 'left' | 'center' | 'right' })}
+                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centro</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            {/* Mini preview que reproduce EXACTAMENTE la lógica del render:
+                - Misma alineación → ambos juntos en una línea.
+                - Distinta → DOS líneas verticales independientes. */}
+            {(() => {
+              const a1 = selectedBlock.alignBtn1 || 'center';
+              const a2 = selectedBlock.alignBtn2 || 'center';
+              const textAlignMap: Record<string, 'left' | 'center' | 'right'> = {
+                left: 'left',
+                center: 'center',
+                right: 'right',
+              };
+              const Btn = ({ label }: { label: string }) => (
+                <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">
+                  {label}
+                </span>
+              );
+              return (
+                <div className="rounded-md border border-dashed border-border bg-white/50 p-3">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Vista previa (así se verá en el email/web)
+                  </p>
+                  {a1 === a2 ? (
+                    <div style={{ textAlign: textAlignMap[a1], width: '100%' }}>
+                      <Btn label={selectedBlock.label || 'Botón 1'} />
+                      <span className="inline-block w-2" />
+                      <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ textAlign: textAlignMap[a1], width: '100%', marginBottom: 8 }}>
+                        <Btn label={selectedBlock.label || 'Botón 1'} />
+                      </div>
+                      <div style={{ textAlign: textAlignMap[a2], width: '100%' }}>
+                        <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Columns 2 */}
+        {(selectedBlock.type === 'columns2' || selectedBlock.type === 'columns3') && (
+          <>
+            {(selectedBlock.type === 'columns2'
+              ? (['colLeftImg', 'colRightImg'] as const)
+              : (['colLeftImg', 'colCenterImg', 'colRightImg'] as const)
+            ).map((imgField, idx) => {
+              const textField = selectedBlock.type === 'columns3'
+                ? (idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight')
+                : (idx === 0 ? 'colLeft' : 'colRight');
+              const labels = selectedBlock.type === 'columns3'
+                ? ['Columna izquierda', 'Columna central', 'Columna derecha']
+                : ['Columna izquierda', 'Columna derecha'];
+              const label = labels[idx];
+              const imgUrl = selectedBlock[imgField] || '';
+              return (
+                <div key={imgField} className="md:col-span-2 space-y-2 rounded-lg border border-border/60 bg-muted/5 p-3">
+                  <p className="text-xs font-semibold text-foreground">{label}</p>
+                  <div className="rounded-md border border-dashed border-border bg-white p-2">
+                    <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Imagen (opcional)</p>
+                    {imgUrl ? (
+                      <div className="relative mb-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imgUrl} alt="" className="h-28 w-full rounded-md object-cover" />
+                        <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow hover:bg-red-700">✕</button>
+                      </div>
+                    ) : (
+                      <div className="mb-2 space-y-1.5">
+                        <button
+                          type="button"
+                          disabled={uploading}
+                          onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
+                          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                          {uploading && colImgUploadField === imgField ? 'Subiendo...' : 'Subir foto'}
+                        </button>
+                        <input
+                          type="text"
+                          placeholder="o pega URL de imagen..."
+                          className="w-full rounded-md border border-border px-2 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50"
+                          onBlur={(e) => {
+                            const v = e.target.value.trim();
+                            if (v) { updateSelected({ [imgField]: v }); e.target.value = ''; }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const v = (e.target as HTMLInputElement).value.trim();
+                              if (v) { updateSelected({ [imgField]: v }); (e.target as HTMLInputElement).value = ''; }
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
+                    <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* Figure caption */}
+        {selectedBlock.type === 'figure' && (
+          <label className="text-xs text-muted-foreground md:col-span-2">
+            Pie de imagen
+            <input value={selectedBlock.caption || ''} onChange={(e) => updateSelected({ caption: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Descripción bajo la imagen" />
+          </label>
+        )}
+
+        {/* Gallery */}
+        {selectedBlock.type === 'gallery' && (
+          <div className="space-y-3 md:col-span-2">
+            <p className="text-xs font-semibold text-muted-foreground">Imágenes de la galería (hasta 4)</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[0, 1, 2, 3].map((slot) => {
+                const url = (selectedBlock.imageUrls || [])[slot] || '';
+                return (
+                  <div key={slot} className="relative rounded-md border-2 border-dashed border-border bg-muted/20 overflow-hidden" style={{ aspectRatio: '4/3' }}>
+                    {url ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`Imagen ${slot + 1}`} className="h-full w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const urls = [...(selectedBlock.imageUrls || [])];
+                            urls[slot] = '';
+                            updateSelected({ imageUrls: urls.filter(Boolean) });
+                          }}
+                          className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow"
+                        >✕</button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={uploading}
+                        onClick={() => {
+                          setGalleryUploadSlot(slot);
+                          galleryInputRef.current?.click();
+                        }}
+                        className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-muted/40 disabled:opacity-50 transition-colors"
+                      >
+                        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/>
+                          <rect x="3" y="3" width="18" height="18" rx="3"/>
+                        </svg>
+                        <span className="text-[10px]">{uploading ? 'Subiendo…' : `Foto ${slot + 1}`}</span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <input ref={galleryInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                // Subir imagen y colocarla en el slot correspondiente
+                setUploading(true);
+                try {
+                  const fd = new FormData();
+                  fd.append('file', f);
+                  fd.append('folder', 'contenidos/gallery');
+                  if (uploadFileNameBase) fd.append('fileNameBase', uploadFileNameBase);
+                  const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+                  const data = await res.json().catch(() => ({})) as Record<string, unknown>;
+                  if (!res.ok || !data.url) throw new Error(String(data.error || 'Error subiendo'));
+                  const url = String(data.url);
+                  setBlocks((prev) => prev.map((b) => {
+                    if (b.id !== selectedId) return b;
+                    const urls = [...(b.imageUrls || [])];
+                    // Insertar en el slot activo
+                    while (urls.length <= galleryUploadSlot) urls.push('');
+                    urls[galleryUploadSlot] = url;
+                    return { ...b, imageUrls: urls.filter(Boolean) };
+                  }));
+                } catch (uploadErr) {
+                  setErr(uploadErr instanceof Error ? uploadErr.message : 'Error subiendo imagen');
+                } finally {
+                  setUploading(false);
+                  e.currentTarget.value = '';
+                }
+              }} />
+          </div>
+        )}
+
+        {/* Hidden input for column image upload */}
+        <input ref={colImgInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
+          onChange={async (e) => {
+            const f = e.target.files?.[0];
+            if (!f || !colImgUploadField || !selectedId) return;
+            await uploadImageForBlock(f, selectedId, colImgUploadField);
+            setColImgUploadField(null);
+            e.currentTarget.value = '';
+          }} />
+
+        {/* Social links */}
+        {selectedBlock.type === 'socialLinks' && (
+          <div className="space-y-2 md:col-span-2">
+            {/* Botón para cargar las RRSS del pueblo automáticamente */}
+            {puebloRrss && (
+              <button
+                type="button"
+                onClick={() => updateSelected({
+                  socialFacebook: puebloRrss.rrssFacebook || '',
+                  socialTwitter: puebloRrss.rrssTwitter || '',
+                  socialInstagram: puebloRrss.rrssInstagram || '',
+                  socialYoutube: puebloRrss.rrssYoutube || '',
+                })}
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/60 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 12v-1a8 8 0 0116 0v1"/><path d="M18 18a8 8 0 01-12 0"/><path d="M12 21v-3"/>
+                </svg>
+                Cargar redes del pueblo
+              </button>
+            )}
+            {(['socialFacebook', 'socialTwitter', 'socialInstagram', 'socialLinkedin', 'socialYoutube'] as const).map((field) => {
+              const labels: Record<string, string> = { socialFacebook: 'Facebook', socialTwitter: 'X/Twitter', socialInstagram: 'Instagram', socialLinkedin: 'LinkedIn', socialYoutube: 'YouTube' };
+              return (
+                <label key={field} className="text-xs text-muted-foreground">
+                  {labels[field]}
+                  <input value={selectedBlock[field] || ''} onChange={(e) => updateSelected({ [field]: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                </label>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Countdown */}
+        {selectedBlock.type === 'countdown' && (
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-xs text-muted-foreground">
+              Fecha y hora objetivo
+              <input type="datetime-local" value={selectedBlock.countdownDate || ''} onChange={(e) => updateSelected({ countdownDate: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
+            </label>
+            <label className="text-xs text-muted-foreground">
+              Texto superior
+              <input value={selectedBlock.countdownLabel || ''} onChange={(e) => updateSelected({ countdownLabel: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="No te lo pierdas" />
+            </label>
+            <p className="text-[11px] text-muted-foreground">Al sincronizar HTML se calcula la cuenta atrás respecto al momento actual.</p>
+          </div>
+        )}
+
+        {/* Style controls */}
+        <label className="text-xs text-muted-foreground">
+          Fondo
+          <input type="color" value={selectedBlock.backgroundColor || '#ffffff'} onChange={(e) => updateSelected({ backgroundColor: e.target.value })} className="mt-1 h-9 w-full rounded-md border border-border p-1" />
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {COLOR_SWATCHES.map((c) => (
+              <button
+                key={`bg-${c}`}
+                type="button"
+                onClick={() => updateSelected({ backgroundColor: c })}
+                className="h-5 w-5 rounded border border-border"
+                style={{ backgroundColor: c }}
+                title={`Fondo ${c}`}
+                aria-label={`Fondo ${c}`}
+              />
+            ))}
+          </div>
+        </label>
+        <label className="text-xs text-muted-foreground">
+          Color texto
+          <input type="color" value={selectedBlock.textColor || '#111111'} onChange={(e) => updateSelected({ textColor: e.target.value })} className="mt-1 h-9 w-full rounded-md border border-border p-1" />
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {COLOR_SWATCHES.map((c) => (
+              <button
+                key={`tx-${c}`}
+                type="button"
+                onClick={() => updateSelected({ textColor: c })}
+                className="h-5 w-5 rounded border border-border"
+                style={{ backgroundColor: c }}
+                title={`Texto ${c}`}
+                aria-label={`Texto ${c}`}
+              />
+            ))}
+          </div>
+        </label>
+        <label className="text-xs text-muted-foreground">
+          Padding vertical
+          <input type="number" min={0} max={40} value={selectedBlock.paddingY ?? 10} onChange={(e) => updateSelected({ paddingY: Math.max(0, Math.min(40, Number(e.target.value || 0))) })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
+        </label>
+        <label className="text-xs text-muted-foreground">
+          Radio borde
+          <input type="number" min={0} max={30} value={selectedBlock.borderRadius ?? 8} onChange={(e) => updateSelected({ borderRadius: Math.max(0, Math.min(30, Number(e.target.value || 0))) })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
+        </label>
+      </div>
+    ) : (
+      <p className="text-xs text-muted-foreground">Selecciona un bloque en el lienzo para editar sus propiedades.</p>
+    )
+    );
+  };
+
   return (
     <div className="space-y-3 rounded-md border border-dashed border-border p-3">
       {/* Messages */}
@@ -1664,531 +2200,42 @@ export default function ContentBlockBuilder({
                         : block.type === 'socialLinks' ? `Social: ${[block.socialFacebook && 'FB', block.socialTwitter && 'X', block.socialInstagram && 'IG'].filter(Boolean).join(', ') || 'sin redes'}`
                         : (block.content || block.url || 'Bloque sin contenido').slice(0, 60)}
                     </div>
+                    {selectedId === block.id ? (
+                      <div
+                        className="mt-2 rounded-md border-2 border-primary/40 bg-background p-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <p className="mb-2 flex items-center justify-between gap-2 text-xs font-semibold uppercase text-primary">
+                          <span>Inspector de bloque (persiana)</span>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setSelectedId(null); }}
+                            className="rounded border border-border bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted"
+                          >
+                            Cerrar
+                          </button>
+                        </p>
+                        {renderInspectorBody()}
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Inspector */}
-          <div className="rounded-md border border-border bg-background p-3">
-            <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Inspector de bloque</p>
-            {selectedBlock ? (
-              <div className="grid gap-2 md:grid-cols-2">
-                <label className="text-xs text-muted-foreground">
-                  Tipo
-                  <input value={selectedBlock.type} readOnly className="mt-1 w-full rounded-md border border-border bg-muted px-2 py-1 text-sm" />
-                </label>
-                <label className="text-xs text-muted-foreground">
-                  Alineación
-                  <select value={selectedBlock.align || 'left'} onChange={(e) => updateSelected({ align: (e.target.value as 'left' | 'center' | 'right' | 'full') })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
-                    <option value="left">Izquierda</option>
-                    <option value="center">Centro</option>
-                    <option value="right">Derecha</option>
-                    <option value="full">Ancho completo</option>
-                  </select>
-                </label>
-
-                {/* Rich text for heading / text / imgText */}
-                {(selectedBlock.type === 'heading' || selectedBlock.type === 'text' || selectedBlock.type === 'imgText') && (
-                  <div className="md:col-span-2">
-                    <p className="mb-1 text-xs text-muted-foreground">{selectedBlock.type === 'heading' ? 'Contenido del titular' : 'Contenido del bloque'}</p>
-                    <BlockRichEditor content={selectedBlock.content || ''} onChange={(html) => updateSelected({ content: html })} placeholder={selectedBlock.type === 'heading' ? 'Escribe el titular...' : 'Escribe el contenido...'} />
-                  </div>
-                )}
-
-                {/* imgText position & ratio */}
-                {selectedBlock.type === 'imgText' && (
-                  <>
-                    <label className="text-xs text-muted-foreground">
-                      Posición imagen
-                      <select value={selectedBlock.imgPosition || 'left'} onChange={(e) => updateSelected({ imgPosition: e.target.value as 'left' | 'right' })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
-                        <option value="left">Izquierda</option>
-                        <option value="right">Derecha</option>
-                      </select>
-                    </label>
-                    <label className="text-xs text-muted-foreground">
-                      Proporciones
-                      <select value={selectedBlock.imgTextRatio || '40-60'} onChange={(e) => updateSelected({ imgTextRatio: e.target.value as ContentBlock['imgTextRatio'] })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm">
-                        <option value="30-70">30% img / 70% texto</option>
-                        <option value="40-60">40% img / 60% texto</option>
-                        <option value="50-50">50% / 50%</option>
-                        <option value="60-40">60% img / 40% texto</option>
-                        <option value="70-30">70% img / 30% texto</option>
-                      </select>
-                    </label>
-                  </>
-                )}
-
-                {/* Image alt text */}
-                {selectedBlock.type === 'image' && (
-                  <label className="text-xs text-muted-foreground md:col-span-2">
-                    Texto alt
-                    <input value={selectedBlock.content || ''} onChange={(e) => updateSelected({ content: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
-                  </label>
-                )}
-
-                {/* URL field */}
-                {['image', 'button', 'iconButton', 'figure', 'imgText'].includes(selectedBlock.type) && (
-                  <label className="text-xs text-muted-foreground md:col-span-2">
-                    URL{selectedBlock.type === 'figure' || selectedBlock.type === 'imgText' ? ' imagen' : ''}
-                    <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                  </label>
-                )}
-
-                {/* Selector rápido de ancho (solo bloque image, equivale al del newsletter) */}
-                {selectedBlock.type === 'image' && (
-                  <div className="md:col-span-2">
-                    <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Ancho de imagen</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {['80px', '120px', '160px', '200px', '250px', '300px', '50%', '75%', '100%'].map((w) => {
-                        const current = selectedBlock.imageWidth
-                          || (selectedBlock.imgWidth ? `${selectedBlock.imgWidth}px` : '100%');
-                        const active = current === w;
-                        return (
-                          <button
-                            key={w}
-                            type="button"
-                            onClick={() => {
-                              const patch: Partial<ContentBlock> = { imageWidth: w };
-                              // Si elige un valor en px sincroniza también imgWidth numérico
-                              // para que el editor de recorte y el render mantengan coherencia.
-                              if (w.endsWith('px')) {
-                                patch.imgWidth = parseInt(w, 10);
-                              } else {
-                                patch.imgWidth = undefined;
-                              }
-                              updateSelected(patch);
-                            }}
-                            className={`rounded border px-2 py-1 text-[11px] font-medium transition ${active ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
-                          >
-                            {w}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Image upload for image/figure/imgText */}
-                {['image', 'figure', 'imgText'].includes(selectedBlock.type) && (
-                  <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
-                    <p className="text-sm font-semibold">Subir imagen del bloque</p>
-                    <div className="mt-3 flex gap-2">
-                      <button type="button" onClick={() => imgInputRef.current?.click()} disabled={uploading}
-                        className="flex-1 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                        {uploading ? 'Subiendo...' : 'Subir imagen'}
-                      </button>
-                      {selectedBlock.url && (
-                        <button
-                          type="button"
-                          onClick={() => setImageEditorBlock({ blockId: selectedBlock.id, field: 'url' })}
-                          className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                          title="Recortar y editar imagen"
-                        >
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
-                          </svg>
-                          Editar
-                        </button>
-                      )}
-                    </div>
-                    <input ref={imgInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
-                      onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id); e.currentTarget.value = ''; }} />
-                  </div>
-                )}
-
-                {/* iconButton icon URL + upload */}
-                {selectedBlock.type === 'iconButton' && (
-                  <>
-                    <label className="text-xs text-muted-foreground md:col-span-2">
-                      URL icono
-                      <input value={selectedBlock.iconUrl || ''} onChange={(e) => updateSelected({ iconUrl: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                    </label>
-                    <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => iconInputRef.current?.click()} disabled={uploading}
-                          className="flex-1 rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
-                          {uploading ? 'Subiendo icono...' : 'Subir icono'}
-                        </button>
-                        {selectedBlock.iconUrl && (
-                          <button
-                            type="button"
-                            onClick={() => setImageEditorBlock({ blockId: selectedBlock.id, field: 'iconUrl' })}
-                            className="flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                          >
-                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M6 2v14a2 2 0 002 2h14"/><path d="M18 22V8a2 2 0 00-2-2H2"/>
-                            </svg>
-                            Editar
-                          </button>
-                        )}
-                      </div>
-                      <input ref={iconInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
-                        onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; await uploadImageForBlock(f, selectedBlock.id, 'iconUrl'); e.currentTarget.value = ''; }} />
-                    </div>
-                  </>
-                )}
-
-                {/* Button label */}
-                {['button', 'iconButton'].includes(selectedBlock.type) && (
-                  <label className="text-xs text-muted-foreground md:col-span-2">
-                    {selectedBlock.type === 'iconButton' ? 'Etiqueta icono' : 'Texto del botón'}
-                    <input value={selectedBlock.label || ''} onChange={(e) => updateSelected({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
-                  </label>
-                )}
-
-                {/* Button Row (2 buttons side by side) */}
-                {selectedBlock.type === 'buttonRow' && (
-                  <div className="md:col-span-2 space-y-3">
-                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
-                      Cada botón tiene su propia alineación. Si los dos coinciden se renderizan juntos en línea; si difieren se reparten en dos mitades (útil para “uno a la izquierda y otro a la derecha”).
-                    </p>
-                    <div className="flex gap-3">
-                      <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
-                        <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
-                        <label className="block text-xs text-muted-foreground">
-                          Texto
-                          <input value={selectedBlock.label || ''} onChange={(e) => updateSelected({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Leer más" />
-                        </label>
-                        <label className="block text-xs text-muted-foreground">
-                          URL
-                          <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                        </label>
-                        <label className="block text-xs text-muted-foreground">
-                          Alineación
-                          <select
-                            value={selectedBlock.alignBtn1 || 'center'}
-                            onChange={(e) => updateSelected({ alignBtn1: e.target.value as 'left' | 'center' | 'right' })}
-                            className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                          >
-                            <option value="left">Izquierda</option>
-                            <option value="center">Centro</option>
-                            <option value="right">Derecha</option>
-                          </select>
-                        </label>
-                      </div>
-                      <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
-                        <p className="text-xs font-semibold text-foreground">Botón derecho</p>
-                        <label className="block text-xs text-muted-foreground">
-                          Texto
-                          <input value={selectedBlock.btn2Label || ''} onChange={(e) => updateSelected({ btn2Label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Conoce más" />
-                        </label>
-                        <label className="block text-xs text-muted-foreground">
-                          URL
-                          <input value={selectedBlock.btn2Url || ''} onChange={(e) => updateSelected({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                        </label>
-                        <label className="block text-xs text-muted-foreground">
-                          Alineación
-                          <select
-                            value={selectedBlock.alignBtn2 || 'center'}
-                            onChange={(e) => updateSelected({ alignBtn2: e.target.value as 'left' | 'center' | 'right' })}
-                            className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                          >
-                            <option value="left">Izquierda</option>
-                            <option value="center">Centro</option>
-                            <option value="right">Derecha</option>
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                    {/* Mini preview que reproduce la misma lógica del render:
-                        misma alineación → juntos; distinta → reparto 50/50. */}
-                    {(() => {
-                      const a1 = selectedBlock.alignBtn1 || 'center';
-                      const a2 = selectedBlock.alignBtn2 || 'center';
-                      const justifyMap: Record<string, string> = {
-                        left: 'flex-start',
-                        center: 'center',
-                        right: 'flex-end',
-                      };
-                      const Btn = ({ label }: { label: string }) => (
-                        <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">
-                          {label}
-                        </span>
-                      );
-                      return (
-                        <div className="rounded-md border border-dashed border-border bg-white/50 p-2">
-                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                            Vista previa (en el email/web se verá así)
-                          </p>
-                          {a1 === a2 ? (
-                            <div className="flex items-center gap-2" style={{ justifyContent: justifyMap[a1] }}>
-                              <Btn label={selectedBlock.label || 'Botón 1'} />
-                              <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="flex" style={{ justifyContent: justifyMap[a1] }}>
-                                <Btn label={selectedBlock.label || 'Botón 1'} />
-                              </div>
-                              <div className="flex" style={{ justifyContent: justifyMap[a2] }}>
-                                <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-
-                {/* Columns 2 */}
-                {(selectedBlock.type === 'columns2' || selectedBlock.type === 'columns3') && (
-                  <>
-                    {(selectedBlock.type === 'columns2'
-                      ? (['colLeftImg', 'colRightImg'] as const)
-                      : (['colLeftImg', 'colCenterImg', 'colRightImg'] as const)
-                    ).map((imgField, idx) => {
-                      const textField = selectedBlock.type === 'columns3'
-                        ? (idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight')
-                        : (idx === 0 ? 'colLeft' : 'colRight');
-                      const labels = selectedBlock.type === 'columns3'
-                        ? ['Columna izquierda', 'Columna central', 'Columna derecha']
-                        : ['Columna izquierda', 'Columna derecha'];
-                      const label = labels[idx];
-                      const imgUrl = selectedBlock[imgField] || '';
-                      return (
-                        <div key={imgField} className="md:col-span-2 space-y-2 rounded-lg border border-border/60 bg-muted/5 p-3">
-                          <p className="text-xs font-semibold text-foreground">{label}</p>
-                          <div className="rounded-md border border-dashed border-border bg-white p-2">
-                            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Imagen (opcional)</p>
-                            {imgUrl ? (
-                              <div className="relative mb-2">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={imgUrl} alt="" className="h-28 w-full rounded-md object-cover" />
-                                <button type="button" onClick={() => updateSelected({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow hover:bg-red-700">✕</button>
-                              </div>
-                            ) : (
-                              <div className="mb-2 space-y-1.5">
-                                <button
-                                  type="button"
-                                  disabled={uploading}
-                                  onClick={() => { setColImgUploadField(imgField); setTimeout(() => colImgInputRef.current?.click(), 50); }}
-                                  className="flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
-                                >
-                                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-                                  {uploading && colImgUploadField === imgField ? 'Subiendo...' : 'Subir foto'}
-                                </button>
-                                <input
-                                  type="text"
-                                  placeholder="o pega URL de imagen..."
-                                  className="w-full rounded-md border border-border px-2 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50"
-                                  onBlur={(e) => {
-                                    const v = e.target.value.trim();
-                                    if (v) { updateSelected({ [imgField]: v }); e.target.value = ''; }
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      const v = (e.target as HTMLInputElement).value.trim();
-                                      if (v) { updateSelected({ [imgField]: v }); (e.target as HTMLInputElement).value = ''; }
-                                    }
-                                  }}
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
-                            <BlockRichEditor content={selectedBlock[textField] || ''} onChange={(html) => updateSelected({ [textField]: html })} placeholder={`${label}...`} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-
-                {/* Figure caption */}
-                {selectedBlock.type === 'figure' && (
-                  <label className="text-xs text-muted-foreground md:col-span-2">
-                    Pie de imagen
-                    <input value={selectedBlock.caption || ''} onChange={(e) => updateSelected({ caption: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Descripción bajo la imagen" />
-                  </label>
-                )}
-
-                {/* Gallery */}
-                {selectedBlock.type === 'gallery' && (
-                  <div className="space-y-3 md:col-span-2">
-                    <p className="text-xs font-semibold text-muted-foreground">Imágenes de la galería (hasta 4)</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[0, 1, 2, 3].map((slot) => {
-                        const url = (selectedBlock.imageUrls || [])[slot] || '';
-                        return (
-                          <div key={slot} className="relative rounded-md border-2 border-dashed border-border bg-muted/20 overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                            {url ? (
-                              <>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={url} alt={`Imagen ${slot + 1}`} className="h-full w-full object-cover" />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const urls = [...(selectedBlock.imageUrls || [])];
-                                    urls[slot] = '';
-                                    updateSelected({ imageUrls: urls.filter(Boolean) });
-                                  }}
-                                  className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow"
-                                >✕</button>
-                              </>
-                            ) : (
-                              <button
-                                type="button"
-                                disabled={uploading}
-                                onClick={() => {
-                                  setGalleryUploadSlot(slot);
-                                  galleryInputRef.current?.click();
-                                }}
-                                className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-muted/40 disabled:opacity-50 transition-colors"
-                              >
-                                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                  <path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/>
-                                  <rect x="3" y="3" width="18" height="18" rx="3"/>
-                                </svg>
-                                <span className="text-[10px]">{uploading ? 'Subiendo…' : `Foto ${slot + 1}`}</span>
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <input ref={galleryInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
-                      onChange={async (e) => {
-                        const f = e.target.files?.[0];
-                        if (!f) return;
-                        // Subir imagen y colocarla en el slot correspondiente
-                        setUploading(true);
-                        try {
-                          const fd = new FormData();
-                          fd.append('file', f);
-                          fd.append('folder', 'contenidos/gallery');
-                          if (uploadFileNameBase) fd.append('fileNameBase', uploadFileNameBase);
-                          const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
-                          const data = await res.json().catch(() => ({})) as Record<string, unknown>;
-                          if (!res.ok || !data.url) throw new Error(String(data.error || 'Error subiendo'));
-                          const url = String(data.url);
-                          setBlocks((prev) => prev.map((b) => {
-                            if (b.id !== selectedId) return b;
-                            const urls = [...(b.imageUrls || [])];
-                            // Insertar en el slot activo
-                            while (urls.length <= galleryUploadSlot) urls.push('');
-                            urls[galleryUploadSlot] = url;
-                            return { ...b, imageUrls: urls.filter(Boolean) };
-                          }));
-                        } catch (uploadErr) {
-                          setErr(uploadErr instanceof Error ? uploadErr.message : 'Error subiendo imagen');
-                        } finally {
-                          setUploading(false);
-                          e.currentTarget.value = '';
-                        }
-                      }} />
-                  </div>
-                )}
-
-                {/* Hidden input for column image upload */}
-                <input ref={colImgInputRef} type="file" accept="image/*" disabled={uploading} className="sr-only"
-                  onChange={async (e) => {
-                    const f = e.target.files?.[0];
-                    if (!f || !colImgUploadField || !selectedId) return;
-                    await uploadImageForBlock(f, selectedId, colImgUploadField);
-                    setColImgUploadField(null);
-                    e.currentTarget.value = '';
-                  }} />
-
-                {/* Social links */}
-                {selectedBlock.type === 'socialLinks' && (
-                  <div className="space-y-2 md:col-span-2">
-                    {/* Botón para cargar las RRSS del pueblo automáticamente */}
-                    {puebloRrss && (
-                      <button
-                        type="button"
-                        onClick={() => updateSelected({
-                          socialFacebook: puebloRrss.rrssFacebook || '',
-                          socialTwitter: puebloRrss.rrssTwitter || '',
-                          socialInstagram: puebloRrss.rrssInstagram || '',
-                          socialYoutube: puebloRrss.rrssYoutube || '',
-                        })}
-                        className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/60 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/20 transition-colors"
-                      >
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M4 12v-1a8 8 0 0116 0v1"/><path d="M18 18a8 8 0 01-12 0"/><path d="M12 21v-3"/>
-                        </svg>
-                        Cargar redes del pueblo
-                      </button>
-                    )}
-                    {(['socialFacebook', 'socialTwitter', 'socialInstagram', 'socialLinkedin', 'socialYoutube'] as const).map((field) => {
-                      const labels: Record<string, string> = { socialFacebook: 'Facebook', socialTwitter: 'X/Twitter', socialInstagram: 'Instagram', socialLinkedin: 'LinkedIn', socialYoutube: 'YouTube' };
-                      return (
-                        <label key={field} className="text-xs text-muted-foreground">
-                          {labels[field]}
-                          <input value={selectedBlock[field] || ''} onChange={(e) => updateSelected({ [field]: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Countdown */}
-                {selectedBlock.type === 'countdown' && (
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="text-xs text-muted-foreground">
-                      Fecha y hora objetivo
-                      <input type="datetime-local" value={selectedBlock.countdownDate || ''} onChange={(e) => updateSelected({ countdownDate: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
-                    </label>
-                    <label className="text-xs text-muted-foreground">
-                      Texto superior
-                      <input value={selectedBlock.countdownLabel || ''} onChange={(e) => updateSelected({ countdownLabel: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="No te lo pierdas" />
-                    </label>
-                    <p className="text-[11px] text-muted-foreground">Al sincronizar HTML se calcula la cuenta atrás respecto al momento actual.</p>
-                  </div>
-                )}
-
-                {/* Style controls */}
-                <label className="text-xs text-muted-foreground">
-                  Fondo
-                  <input type="color" value={selectedBlock.backgroundColor || '#ffffff'} onChange={(e) => updateSelected({ backgroundColor: e.target.value })} className="mt-1 h-9 w-full rounded-md border border-border p-1" />
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {COLOR_SWATCHES.map((c) => (
-                      <button
-                        key={`bg-${c}`}
-                        type="button"
-                        onClick={() => updateSelected({ backgroundColor: c })}
-                        className="h-5 w-5 rounded border border-border"
-                        style={{ backgroundColor: c }}
-                        title={`Fondo ${c}`}
-                        aria-label={`Fondo ${c}`}
-                      />
-                    ))}
-                  </div>
-                </label>
-                <label className="text-xs text-muted-foreground">
-                  Color texto
-                  <input type="color" value={selectedBlock.textColor || '#111111'} onChange={(e) => updateSelected({ textColor: e.target.value })} className="mt-1 h-9 w-full rounded-md border border-border p-1" />
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {COLOR_SWATCHES.map((c) => (
-                      <button
-                        key={`tx-${c}`}
-                        type="button"
-                        onClick={() => updateSelected({ textColor: c })}
-                        className="h-5 w-5 rounded border border-border"
-                        style={{ backgroundColor: c }}
-                        title={`Texto ${c}`}
-                        aria-label={`Texto ${c}`}
-                      />
-                    ))}
-                  </div>
-                </label>
-                <label className="text-xs text-muted-foreground">
-                  Padding vertical
-                  <input type="number" min={0} max={40} value={selectedBlock.paddingY ?? 10} onChange={(e) => updateSelected({ paddingY: Math.max(0, Math.min(40, Number(e.target.value || 0))) })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
-                </label>
-                <label className="text-xs text-muted-foreground">
-                  Radio borde
-                  <input type="number" min={0} max={30} value={selectedBlock.borderRadius ?? 8} onChange={(e) => updateSelected({ borderRadius: Math.max(0, Math.min(30, Number(e.target.value || 0))) })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" />
-                </label>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">Selecciona un bloque en el lienzo para editar sus propiedades.</p>
-            )}
-          </div>
+          {/* Inspector ahora se despliega INLINE (persiana) debajo del bloque
+              seleccionado en el lienzo. Si no hay nada seleccionado, mostramos
+              un texto de ayuda en su lugar. */}
+          {!selectedBlock ? (
+            <div className="rounded-md border border-dashed border-border bg-muted/10 p-3 text-center">
+              <p className="text-xs text-muted-foreground">
+                Pulsa cualquier bloque del lienzo para abrir su inspector justo
+                debajo (estilo persiana). Para cerrarlo, pulsa{' '}
+                <strong>Cerrar</strong> en la cabecera del inspector.
+              </p>
+            </div>
+          ) : null}
 
           {/* Preview */}
           <div className="rounded-md border border-border bg-background p-3">

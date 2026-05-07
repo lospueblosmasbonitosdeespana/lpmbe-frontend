@@ -554,18 +554,29 @@ function renderNewsletterBlocksToHtml(
           align === 'right' ? 'right' : align === 'left' ? 'left' : 'center';
         const a1 = (block.alignBtn1 || fallback) as 'left' | 'center' | 'right';
         const a2 = (block.alignBtn2 || fallback) as 'left' | 'center' | 'right';
+        // Helper para construir un wrapper individual de un solo botón con
+        // su propia alineación, usando el patrón email-safe canónico.
+        const renderSingleButtonWrapper = (
+          btn: string,
+          alg: 'left' | 'center' | 'right',
+        ): string => {
+          const m =
+            alg === 'center' ? '0 auto' : alg === 'right' ? '0 0 0 auto' : '0';
+          return (
+            `<table align="${alg}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${m};">` +
+              `<tr><td>${btn}</td></tr>` +
+            `</table>`
+          );
+        };
         if (b1 && b2 && a1 !== a2) {
-          // Alineaciones distintas → tabla 50/50, cada celda con su align.
-          // Es la forma email-safe de conseguir “uno a la izquierda y otro a
-          // la derecha” o cualquier otra combinación.
+          // Alineaciones distintas → cada botón en su propia línea con su
+          // alineación, totalmente independiente del otro. Cambiar la
+          // alineación de uno NO mueve al otro. La forma más fiable y
+          // predecible para el usuario.
           return (
             `<div style="${boxStyle}">` +
-              `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">` +
-                `<tr>` +
-                  `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;text-align:${a1};">${b1}</td>` +
-                  `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;text-align:${a2};">${b2}</td>` +
-                `</tr>` +
-              `</table>` +
+              `<div style="text-align:${a1};margin-bottom:8px;">${renderSingleButtonWrapper(b1, a1)}</div>` +
+              `<div style="text-align:${a2};">${renderSingleButtonWrapper(b2, a2)}</div>` +
             `</div>`
           );
         }
@@ -2694,30 +2705,12 @@ export default function NotasPrensaNewsletterClient({
   const selectedNewsletterBlock =
     newsletterBlocks.find((b) => b.id === selectedNewsletterBlockId) || null;
 
-  // Cuando cambia el bloque seleccionado en el lienzo, hacemos scroll en la
-  // vista previa hasta el wrapper data-nb-id correspondiente. El render ya
-  // añade `scroll-margin-top` para dejar un pequeño hueco visible.
-  //
-  // ⚠️ Solo dependemos de `selectedNewsletterBlockId` — no de `newsletterBlocks`.
-  // Si dependiéramos también de la lista, cualquier edición del bloque
-  // (cambiar alineación, texto, color…) re-dispararía el scroll y la página
-  // saltaría sola al editar.
-  useEffect(() => {
-    if (!selectedNewsletterBlockId) return;
-    const root = newsletterPreviewRef.current;
-    if (!root) return;
-    const raf = requestAnimationFrame(() => {
-      const target = root.querySelector(
-        `[data-nb-id="${CSS.escape(selectedNewsletterBlockId)}"]`,
-      ) as HTMLElement | null;
-      if (target) {
-        // `nearest` evita centrar la página completa en la vista previa: solo
-        // hace scroll si el bloque queda fuera de la zona visible.
-        target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [selectedNewsletterBlockId]);
+  // Auto-scroll deshabilitado: el inspector ahora se despliega inline debajo
+  // del bloque seleccionado en el propio lienzo (ver más abajo en el JSX),
+  // así que ya no hace falta llevar al usuario hasta la vista previa de la
+  // newsletter para localizar el bloque. El resaltado en rojo en el preview
+  // sigue activo (ver `previewOpts.selectedId` en `renderNewsletterBlocksToHtml`)
+  // para quien quiera mirar el preview sin moverse.
 
   // ------- Borradores + Programación (DraftsAndScheduler) -------
   const getSharedSnapshot = useCallback(async (): Promise<SharedDraftSnapshot> => {
@@ -2833,6 +2826,638 @@ export default function NotasPrensaNewsletterClient({
     },
     [applyDraftPayload, setCampaignForm],
   );
+
+  // Renderiza el cuerpo del inspector de bloque. Lo usamos en dos sitios:
+  //   1) Inline (tipo persiana) DEBAJO del bloque seleccionado en el
+  //      lienzo, así el usuario edita junto al bloque sin scroll.
+  //   2) Como fallback en la columna principal cuando todavía no hay
+  //      ningún bloque seleccionado.
+  const renderInspectorBody = (): React.ReactNode => {
+    return selectedNewsletterBlock ? (
+      <div className="grid gap-2 md:grid-cols-2">
+          <label className="text-xs text-muted-foreground">
+            Tipo
+            <input
+              value={selectedNewsletterBlock.type}
+              readOnly
+              className="mt-1 w-full rounded-md border border-border bg-muted px-2 py-1 text-sm"
+            />
+          </label>
+
+          <label className="text-xs text-muted-foreground">
+            Alineación
+            <select
+              value={selectedNewsletterBlock.align || 'left'}
+              onChange={(e) =>
+                updateSelectedNewsletterBlock({
+                  align:
+                    (e.target.value as 'left' | 'center' | 'right') || 'left',
+                })
+              }
+              className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+            >
+              <option value="left">Izquierda</option>
+              <option value="center">Centro</option>
+              <option value="right">Derecha</option>
+            </select>
+          </label>
+
+          {selectedNewsletterBlock.type === 'image' && (
+            <>
+              <label className="text-xs text-muted-foreground md:col-span-2">
+                Texto alt
+                <input
+                  value={selectedNewsletterBlock.content || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({
+                      content: e.target.value,
+                    })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="Texto alternativo de la imagen"
+                />
+              </label>
+              <div className="md:col-span-2">
+                <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Ancho de imagen</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {['80px', '120px', '160px', '200px', '250px', '300px', '50%', '75%', '100%'].map((w) => (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => updateSelectedNewsletterBlock({ imageWidth: w })}
+                      className={`rounded border px-2 py-1 text-[11px] font-medium transition ${(selectedNewsletterBlock.imageWidth || '100%') === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
+                    >
+                      {w}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {(selectedNewsletterBlock.type === 'heading' ||
+            selectedNewsletterBlock.type === 'text' ||
+            selectedNewsletterBlock.type === 'imgText') && (
+            <div className="md:col-span-2">
+              <p className="mb-1 text-xs text-muted-foreground">
+                {selectedNewsletterBlock.type === 'heading'
+                  ? 'Contenido del titular'
+                  : selectedNewsletterBlock.type === 'imgText'
+                    ? 'Texto junto a la imagen'
+                    : 'Contenido del bloque'}
+              </p>
+              <BlockRichEditor
+                content={selectedNewsletterBlock.content || ''}
+                onChange={(html) =>
+                  updateSelectedNewsletterBlock({ content: html })
+                }
+                placeholder={
+                  selectedNewsletterBlock.type === 'heading'
+                    ? 'Escribe el titular...'
+                    : 'Escribe el contenido...'
+                }
+              />
+            </div>
+          )}
+
+          {(selectedNewsletterBlock.type === 'columns2' || selectedNewsletterBlock.type === 'columns3') && (
+            <>
+              {(selectedNewsletterBlock.type === 'columns2'
+                ? (['colLeftImg', 'colRightImg'] as const)
+                : (['colLeftImg', 'colCenterImg', 'colRightImg'] as const)
+              ).map((imgField, idx) => {
+                const textField = selectedNewsletterBlock.type === 'columns3'
+                  ? (idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight')
+                  : (idx === 0 ? 'colLeft' : 'colRight');
+                const labels = selectedNewsletterBlock.type === 'columns3'
+                  ? ['Columna izquierda', 'Columna central', 'Columna derecha']
+                  : ['Columna izquierda', 'Columna derecha'];
+                const label = labels[idx];
+                const imgUrl = selectedNewsletterBlock[imgField] || '';
+                return (
+                  <div key={imgField} className="md:col-span-2 space-y-2 rounded-lg border border-border/60 bg-muted/5 p-3">
+                    <p className="text-xs font-semibold text-foreground">{label}</p>
+                    <div className="rounded-md border border-dashed border-border bg-white p-2">
+                      <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Imagen (opcional)</p>
+                      {imgUrl ? (
+                        <div className="relative mb-2">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={imgUrl} alt="" className="h-28 w-full rounded-md object-cover" />
+                          <button type="button" onClick={() => updateSelectedNewsletterBlock({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow hover:bg-red-700">✕</button>
+                        </div>
+                      ) : (
+                        <div className="mb-2 space-y-1.5">
+                          <button
+                            type="button"
+                            disabled={uploadingNewsletterImage}
+                            onClick={() => { setNlColImgUploadField(imgField); setTimeout(() => newsletterColImgInputRef.current?.click(), 50); }}
+                            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
+                          >
+                            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                            {uploadingNewsletterImage && nlColImgUploadField === imgField ? 'Subiendo...' : 'Subir foto'}
+                          </button>
+                          <input
+                            type="text"
+                            placeholder="o pega URL de imagen..."
+                            className="w-full rounded-md border border-border px-2 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50"
+                            onBlur={(e) => { const v = e.target.value.trim(); if (v) { updateSelectedNewsletterBlock({ [imgField]: v }); e.target.value = ''; } }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { const v = (e.target as HTMLInputElement).value.trim(); if (v) { updateSelectedNewsletterBlock({ [imgField]: v }); (e.target as HTMLInputElement).value = ''; } } }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
+                      <BlockRichEditor
+                        content={selectedNewsletterBlock[textField] || ''}
+                        onChange={(html) => updateSelectedNewsletterBlock({ [textField]: html })}
+                        placeholder={`${label}...`}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              <input ref={newsletterColImgInputRef} type="file" accept="image/*" disabled={uploadingNewsletterImage} className="sr-only"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f || !nlColImgUploadField || !selectedNewsletterBlockId) return;
+                  await uploadNewsletterImageForBlock(f, selectedNewsletterBlockId, nlColImgUploadField);
+                  setNlColImgUploadField(null);
+                  e.currentTarget.value = '';
+                }} />
+            </>
+          )}
+
+          {selectedNewsletterBlock.type === 'figure' && (
+            <label className="text-xs text-muted-foreground md:col-span-2">
+              Pie de imagen
+              <input
+                value={selectedNewsletterBlock.caption || ''}
+                onChange={(e) =>
+                  updateSelectedNewsletterBlock({ caption: e.target.value })
+                }
+                className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                placeholder="Descripción bajo la imagen"
+              />
+            </label>
+          )}
+
+          {selectedNewsletterBlock.type === 'gallery' && (
+            <div className="space-y-2 md:col-span-2">
+              <p className="text-xs text-muted-foreground">
+                URLs de imágenes de la galería (una por línea)
+              </p>
+              <textarea
+                rows={5}
+                value={(selectedNewsletterBlock.imageUrls || []).join('\n')}
+                onChange={(e) =>
+                  updateSelectedNewsletterBlock({
+                    imageUrls: e.target.value
+                      .split('\n')
+                      .map((l) => l.trim())
+                      .filter(Boolean),
+                  })
+                }
+                className="w-full rounded-md border border-border px-2 py-1 text-sm"
+                placeholder={'https://imagen1.jpg\nhttps://imagen2.jpg'}
+              />
+              <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3">
+                <p className="text-sm font-semibold text-foreground">
+                  Subir imagen a la galería
+                </p>
+                <button
+                  type="button"
+                  onClick={() => newsletterImageInputRef.current?.click()}
+                  disabled={uploadingNewsletterImage}
+                  className="mt-2 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+                >
+                  {uploadingNewsletterImage
+                    ? 'Subiendo...'
+                    : 'Subir imagen desde ordenador'}
+                </button>
+                <input
+                  ref={newsletterImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingNewsletterImage}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file || !selectedNewsletterBlock) return;
+                    await uploadNewsletterImageForBlock(
+                      file,
+                      selectedNewsletterBlock.id,
+                      'gallery',
+                    );
+                    e.currentTarget.value = '';
+                  }}
+                  className="sr-only"
+                />
+              </div>
+            </div>
+          )}
+
+          {selectedNewsletterBlock.type === 'socialLinks' && (
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-xs text-muted-foreground">
+                Facebook
+                <input
+                  value={selectedNewsletterBlock.socialFacebook || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ socialFacebook: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="https://facebook.com/..."
+                />
+              </label>
+              <label className="text-xs text-muted-foreground">
+                X / Twitter
+                <input
+                  value={selectedNewsletterBlock.socialTwitter || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ socialTwitter: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="https://twitter.com/..."
+                />
+              </label>
+              <label className="text-xs text-muted-foreground">
+                Instagram
+                <input
+                  value={selectedNewsletterBlock.socialInstagram || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ socialInstagram: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="https://instagram.com/..."
+                />
+              </label>
+              <label className="text-xs text-muted-foreground">
+                LinkedIn
+                <input
+                  value={selectedNewsletterBlock.socialLinkedin || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ socialLinkedin: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="https://linkedin.com/..."
+                />
+              </label>
+              <label className="text-xs text-muted-foreground">
+                YouTube
+                <input
+                  value={selectedNewsletterBlock.socialYoutube || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ socialYoutube: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="https://youtube.com/..."
+                />
+              </label>
+            </div>
+          )}
+
+          {selectedNewsletterBlock.type === 'countdown' && (
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-xs text-muted-foreground">
+                Fecha y hora objetivo
+                <input
+                  type="datetime-local"
+                  value={selectedNewsletterBlock.countdownDate || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ countdownDate: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                />
+              </label>
+              <label className="text-xs text-muted-foreground">
+                Texto superior (opcional)
+                <input
+                  value={selectedNewsletterBlock.countdownLabel || ''}
+                  onChange={(e) =>
+                    updateSelectedNewsletterBlock({ countdownLabel: e.target.value })
+                  }
+                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                  placeholder="Ej: No te lo pierdas"
+                />
+              </label>
+              <p className="text-[11px] text-muted-foreground">
+                Al sincronizar HTML se calcula la cuenta atrás respecto al momento actual.
+              </p>
+            </div>
+          )}
+
+          {(selectedNewsletterBlock.type === 'image' ||
+            selectedNewsletterBlock.type === 'button' ||
+            selectedNewsletterBlock.type === 'iconButton' ||
+            selectedNewsletterBlock.type === 'figure' ||
+            selectedNewsletterBlock.type === 'imgText') && (
+            <label className="text-xs text-muted-foreground md:col-span-2">
+              {selectedNewsletterBlock.type === 'figure' || selectedNewsletterBlock.type === 'imgText'
+                ? 'URL imagen'
+                : 'URL'}
+              <input
+                value={selectedNewsletterBlock.url || ''}
+                onChange={(e) =>
+                  updateSelectedNewsletterBlock({ url: e.target.value })
+                }
+                className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                placeholder="https://..."
+              />
+            </label>
+          )}
+
+          {selectedNewsletterBlock.type === 'iconButton' && (
+            <label className="text-xs text-muted-foreground md:col-span-2">
+              URL icono
+              <input
+                value={selectedNewsletterBlock.iconUrl || ''}
+                onChange={(e) =>
+                  updateSelectedNewsletterBlock({ iconUrl: e.target.value })
+                }
+                className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                placeholder="https://..."
+              />
+            </label>
+          )}
+
+          {(selectedNewsletterBlock.type === 'image' ||
+            selectedNewsletterBlock.type === 'figure' ||
+            selectedNewsletterBlock.type === 'imgText') && (
+            <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
+              <p className="text-sm font-semibold text-foreground">
+                {selectedNewsletterBlock.type === 'figure'
+                  ? 'Imagen de la figura'
+                  : selectedNewsletterBlock.type === 'imgText'
+                    ? 'Imagen del bloque Img+Texto'
+                    : 'Imagen del bloque (paso principal)'}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Pulsa el botón grande para subirla desde tu ordenador.
+              </p>
+              <button
+                type="button"
+                onClick={() => newsletterImageInputRef.current?.click()}
+                disabled={uploadingNewsletterImage}
+                className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+              >
+                {uploadingNewsletterImage
+                  ? 'Subiendo imagen...'
+                  : 'Subir imagen desde ordenador'}
+              </button>
+              <input
+                ref={newsletterImageInputRef}
+                type="file"
+                accept="image/*"
+                disabled={uploadingNewsletterImage}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  await uploadNewsletterImageForBlock(
+                    file,
+                    selectedNewsletterBlock.id,
+                  );
+                  e.currentTarget.value = '';
+                }}
+                className="sr-only"
+              />
+              {selectedNewsletterBlock.url && (
+                <button
+                  type="button"
+                  onClick={() => setEditingImageBlockId(selectedNewsletterBlock.id)}
+                  className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  ✏️ Editar imagen (recortar, redimensionar, alt)
+                </button>
+              )}
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                También puedes pegar una URL manual en el campo URL de arriba.
+              </p>
+            </div>
+          )}
+
+          {selectedNewsletterBlock.type === 'iconButton' && (
+            <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
+              <p className="text-sm font-semibold text-foreground">
+                Icono del botón cuadrado
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Sube tu icono oficial para usarlo dentro del botón.
+              </p>
+              <button
+                type="button"
+                onClick={() => newsletterIconInputRef.current?.click()}
+                disabled={uploadingNewsletterImage}
+                className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+              >
+                {uploadingNewsletterImage ? 'Subiendo icono...' : 'Subir icono desde ordenador'}
+              </button>
+              <input
+                ref={newsletterIconInputRef}
+                type="file"
+                accept="image/*"
+                disabled={uploadingNewsletterImage}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  await uploadNewsletterImageForBlock(
+                    file,
+                    selectedNewsletterBlock.id,
+                    'iconUrl',
+                  );
+                  e.currentTarget.value = '';
+                }}
+                className="sr-only"
+              />
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Recomendado: icono PNG/SVG cuadrado.
+              </p>
+            </div>
+          )}
+
+          {(selectedNewsletterBlock.type === 'button' ||
+            selectedNewsletterBlock.type === 'iconButton') && (
+            <label className="text-xs text-muted-foreground md:col-span-2">
+              {selectedNewsletterBlock.type === 'iconButton'
+                ? 'Etiqueta icono'
+                : 'Texto del botón'}
+              <input
+                value={selectedNewsletterBlock.label || ''}
+                onChange={(e) =>
+                  updateSelectedNewsletterBlock({
+                    label: e.target.value,
+                  })
+                }
+                className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+              />
+            </label>
+          )}
+
+          {selectedNewsletterBlock.type === 'buttonRow' && (
+            <div className="md:col-span-2 space-y-3">
+              <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                Cada botón tiene su propia alineación. Si los dos coinciden se ponen juntos en una línea; si difieren se apilan en dos líneas, cada una con su alineación (cambiar uno NO mueve al otro).
+              </p>
+              <div className="flex gap-3">
+                <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
+                  <label className="block text-xs text-muted-foreground">
+                    Texto
+                    <input value={selectedNewsletterBlock.label || ''} onChange={(e) => updateSelectedNewsletterBlock({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Leer más" />
+                  </label>
+                  <label className="block text-xs text-muted-foreground">
+                    URL
+                    <input value={selectedNewsletterBlock.url || ''} onChange={(e) => updateSelectedNewsletterBlock({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                  </label>
+                  <label className="block text-xs text-muted-foreground">
+                    Alineación
+                    <select
+                      value={selectedNewsletterBlock.alignBtn1 || 'center'}
+                      onChange={(e) => updateSelectedNewsletterBlock({ alignBtn1: e.target.value as 'left' | 'center' | 'right' })}
+                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                    >
+                      <option value="left">Izquierda</option>
+                      <option value="center">Centro</option>
+                      <option value="right">Derecha</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Botón derecho</p>
+                  <label className="block text-xs text-muted-foreground">
+                    Texto
+                    <input value={selectedNewsletterBlock.btn2Label || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Conoce más" />
+                  </label>
+                  <label className="block text-xs text-muted-foreground">
+                    URL
+                    <input value={selectedNewsletterBlock.btn2Url || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                  </label>
+                  <label className="block text-xs text-muted-foreground">
+                    Alineación
+                    <select
+                      value={selectedNewsletterBlock.alignBtn2 || 'center'}
+                      onChange={(e) => updateSelectedNewsletterBlock({ alignBtn2: e.target.value as 'left' | 'center' | 'right' })}
+                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                    >
+                      <option value="left">Izquierda</option>
+                      <option value="center">Centro</option>
+                      <option value="right">Derecha</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              {/* Mini preview que reproduce EXACTAMENTE la lógica del render:
+                  - Misma alineación → ambos en una línea con esa alineación.
+                  - Alineaciones distintas → DOS líneas verticales independientes.
+                  Así cambiar uno NO mueve al otro. */}
+              {(() => {
+                const a1 = selectedNewsletterBlock.alignBtn1 || 'center';
+                const a2 = selectedNewsletterBlock.alignBtn2 || 'center';
+                const textAlignMap: Record<string, 'left' | 'center' | 'right'> = {
+                  left: 'left',
+                  center: 'center',
+                  right: 'right',
+                };
+                const Btn = ({ label }: { label: string }) => (
+                  <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">
+                    {label}
+                  </span>
+                );
+                return (
+                  <div className="rounded-md border border-dashed border-border bg-white/50 p-3">
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Vista previa (así se verá en el email)
+                    </p>
+                    {a1 === a2 ? (
+                      <div style={{ textAlign: textAlignMap[a1], width: '100%' }}>
+                        <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
+                        <span className="inline-block w-2" />
+                        <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ textAlign: textAlignMap[a1], width: '100%', marginBottom: 8 }}>
+                          <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
+                        </div>
+                        <div style={{ textAlign: textAlignMap[a2], width: '100%' }}>
+                          <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          <label className="text-xs text-muted-foreground">
+            Fondo
+            <input
+              type="color"
+              value={selectedNewsletterBlock.backgroundColor || '#ffffff'}
+              onChange={(e) =>
+                updateSelectedNewsletterBlock({
+                  backgroundColor: e.target.value,
+                })
+              }
+              className="mt-1 h-9 w-full rounded-md border border-border p-1"
+            />
+          </label>
+          <label className="text-xs text-muted-foreground">
+            Color texto
+            <input
+              type="color"
+              value={selectedNewsletterBlock.textColor || '#111111'}
+              onChange={(e) =>
+                updateSelectedNewsletterBlock({
+                  textColor: e.target.value,
+                })
+              }
+              className="mt-1 h-9 w-full rounded-md border border-border p-1"
+            />
+          </label>
+          <label className="text-xs text-muted-foreground">
+            Padding vertical
+            <input
+              type="number"
+              min={0}
+              max={40}
+              value={selectedNewsletterBlock.paddingY ?? 10}
+              onChange={(e) =>
+                updateSelectedNewsletterBlock({
+                  paddingY: Math.max(
+                    0,
+                    Math.min(40, Number(e.target.value || 0)),
+                  ),
+                })
+              }
+              className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+            />
+          </label>
+          <label className="text-xs text-muted-foreground">
+            Radio borde
+            <input
+              type="number"
+              min={0}
+              max={30}
+              value={selectedNewsletterBlock.borderRadius ?? 8}
+              onChange={(e) =>
+                updateSelectedNewsletterBlock({
+                  borderRadius: Math.max(
+                    0,
+                    Math.min(30, Number(e.target.value || 0)),
+                  ),
+                })
+              }
+              className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+            />
+          </label>
+        </div>
+    ) : (
+      <p className="text-xs text-muted-foreground">
+        Selecciona un bloque en el lienzo para editar sus propiedades.
+      </p>
+    );
+  };
 
   return (
     <div className={embeddedInShell ? 'space-y-8' : 'mt-8 space-y-8'}>
@@ -4130,639 +4755,46 @@ export default function NotasPrensaNewsletterClient({
                                       Separador horizontal
                                     </div>
                                   )}
+                                  {selectedNewsletterBlockId === block.id ? (
+                                    <div
+                                      className="mt-2 rounded-md border-2 border-primary/40 bg-background p-3"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <p className="mb-2 flex items-center justify-between gap-2 text-xs font-semibold uppercase text-primary">
+                                        <span>Inspector de bloque (persiana)</span>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => { e.stopPropagation(); setSelectedNewsletterBlockId(null); }}
+                                          className="rounded border border-border bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted"
+                                        >
+                                          Cerrar
+                                        </button>
+                                      </p>
+                                      {renderInspectorBody()}
+                                    </div>
+                                  ) : null}
                                 </div>
                               ))}
                             </div>
                           )}
                         </div>
 
-                        <div className="rounded-md border border-border bg-background p-3">
-                          <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
-                            Inspector de bloque
-                          </p>
-                          {selectedNewsletterBlock ? (
-                            <div className="grid gap-2 md:grid-cols-2">
-                              <label className="text-xs text-muted-foreground">
-                                Tipo
-                                <input
-                                  value={selectedNewsletterBlock.type}
-                                  readOnly
-                                  className="mt-1 w-full rounded-md border border-border bg-muted px-2 py-1 text-sm"
-                                />
-                              </label>
-
-                              <label className="text-xs text-muted-foreground">
-                                Alineación
-                                <select
-                                  value={selectedNewsletterBlock.align || 'left'}
-                                  onChange={(e) =>
-                                    updateSelectedNewsletterBlock({
-                                      align:
-                                        (e.target.value as 'left' | 'center' | 'right') || 'left',
-                                    })
-                                  }
-                                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                >
-                                  <option value="left">Izquierda</option>
-                                  <option value="center">Centro</option>
-                                  <option value="right">Derecha</option>
-                                </select>
-                              </label>
-
-                              {selectedNewsletterBlock.type === 'image' && (
-                                <>
-                                  <label className="text-xs text-muted-foreground md:col-span-2">
-                                    Texto alt
-                                    <input
-                                      value={selectedNewsletterBlock.content || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({
-                                          content: e.target.value,
-                                        })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="Texto alternativo de la imagen"
-                                    />
-                                  </label>
-                                  <div className="md:col-span-2">
-                                    <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Ancho de imagen</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {['80px', '120px', '160px', '200px', '250px', '300px', '50%', '75%', '100%'].map((w) => (
-                                        <button
-                                          key={w}
-                                          type="button"
-                                          onClick={() => updateSelectedNewsletterBlock({ imageWidth: w })}
-                                          className={`rounded border px-2 py-1 text-[11px] font-medium transition ${(selectedNewsletterBlock.imageWidth || '100%') === w ? 'border-primary bg-primary text-white' : 'border-border bg-white hover:bg-muted'}`}
-                                        >
-                                          {w}
-                                        </button>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </>
-                              )}
-
-                              {(selectedNewsletterBlock.type === 'heading' ||
-                                selectedNewsletterBlock.type === 'text' ||
-                                selectedNewsletterBlock.type === 'imgText') && (
-                                <div className="md:col-span-2">
-                                  <p className="mb-1 text-xs text-muted-foreground">
-                                    {selectedNewsletterBlock.type === 'heading'
-                                      ? 'Contenido del titular'
-                                      : selectedNewsletterBlock.type === 'imgText'
-                                        ? 'Texto junto a la imagen'
-                                        : 'Contenido del bloque'}
-                                  </p>
-                                  <BlockRichEditor
-                                    content={selectedNewsletterBlock.content || ''}
-                                    onChange={(html) =>
-                                      updateSelectedNewsletterBlock({ content: html })
-                                    }
-                                    placeholder={
-                                      selectedNewsletterBlock.type === 'heading'
-                                        ? 'Escribe el titular...'
-                                        : 'Escribe el contenido...'
-                                    }
-                                  />
-                                </div>
-                              )}
-
-                              {(selectedNewsletterBlock.type === 'columns2' || selectedNewsletterBlock.type === 'columns3') && (
-                                <>
-                                  {(selectedNewsletterBlock.type === 'columns2'
-                                    ? (['colLeftImg', 'colRightImg'] as const)
-                                    : (['colLeftImg', 'colCenterImg', 'colRightImg'] as const)
-                                  ).map((imgField, idx) => {
-                                    const textField = selectedNewsletterBlock.type === 'columns3'
-                                      ? (idx === 0 ? 'colLeft' : idx === 1 ? 'colCenter' : 'colRight')
-                                      : (idx === 0 ? 'colLeft' : 'colRight');
-                                    const labels = selectedNewsletterBlock.type === 'columns3'
-                                      ? ['Columna izquierda', 'Columna central', 'Columna derecha']
-                                      : ['Columna izquierda', 'Columna derecha'];
-                                    const label = labels[idx];
-                                    const imgUrl = selectedNewsletterBlock[imgField] || '';
-                                    return (
-                                      <div key={imgField} className="md:col-span-2 space-y-2 rounded-lg border border-border/60 bg-muted/5 p-3">
-                                        <p className="text-xs font-semibold text-foreground">{label}</p>
-                                        <div className="rounded-md border border-dashed border-border bg-white p-2">
-                                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Imagen (opcional)</p>
-                                          {imgUrl ? (
-                                            <div className="relative mb-2">
-                                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                                              <img src={imgUrl} alt="" className="h-28 w-full rounded-md object-cover" />
-                                              <button type="button" onClick={() => updateSelectedNewsletterBlock({ [imgField]: '' })} className="absolute right-1 top-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow hover:bg-red-700">✕</button>
-                                            </div>
-                                          ) : (
-                                            <div className="mb-2 space-y-1.5">
-                                              <button
-                                                type="button"
-                                                disabled={uploadingNewsletterImage}
-                                                onClick={() => { setNlColImgUploadField(imgField); setTimeout(() => newsletterColImgInputRef.current?.click(), 50); }}
-                                                className="flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50 transition-colors"
-                                              >
-                                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 16V8m0 0l-3 3m3-3l3 3" strokeLinecap="round" strokeLinejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-                                                {uploadingNewsletterImage && nlColImgUploadField === imgField ? 'Subiendo...' : 'Subir foto'}
-                                              </button>
-                                              <input
-                                                type="text"
-                                                placeholder="o pega URL de imagen..."
-                                                className="w-full rounded-md border border-border px-2 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50"
-                                                onBlur={(e) => { const v = e.target.value.trim(); if (v) { updateSelectedNewsletterBlock({ [imgField]: v }); e.target.value = ''; } }}
-                                                onKeyDown={(e) => { if (e.key === 'Enter') { const v = (e.target as HTMLInputElement).value.trim(); if (v) { updateSelectedNewsletterBlock({ [imgField]: v }); (e.target as HTMLInputElement).value = ''; } } }}
-                                              />
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div>
-                                          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Texto</p>
-                                          <BlockRichEditor
-                                            content={selectedNewsletterBlock[textField] || ''}
-                                            onChange={(html) => updateSelectedNewsletterBlock({ [textField]: html })}
-                                            placeholder={`${label}...`}
-                                          />
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                  <input ref={newsletterColImgInputRef} type="file" accept="image/*" disabled={uploadingNewsletterImage} className="sr-only"
-                                    onChange={async (e) => {
-                                      const f = e.target.files?.[0];
-                                      if (!f || !nlColImgUploadField || !selectedNewsletterBlockId) return;
-                                      await uploadNewsletterImageForBlock(f, selectedNewsletterBlockId, nlColImgUploadField);
-                                      setNlColImgUploadField(null);
-                                      e.currentTarget.value = '';
-                                    }} />
-                                </>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'figure' && (
-                                <label className="text-xs text-muted-foreground md:col-span-2">
-                                  Pie de imagen
-                                  <input
-                                    value={selectedNewsletterBlock.caption || ''}
-                                    onChange={(e) =>
-                                      updateSelectedNewsletterBlock({ caption: e.target.value })
-                                    }
-                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder="Descripción bajo la imagen"
-                                  />
-                                </label>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'gallery' && (
-                                <div className="space-y-2 md:col-span-2">
-                                  <p className="text-xs text-muted-foreground">
-                                    URLs de imágenes de la galería (una por línea)
-                                  </p>
-                                  <textarea
-                                    rows={5}
-                                    value={(selectedNewsletterBlock.imageUrls || []).join('\n')}
-                                    onChange={(e) =>
-                                      updateSelectedNewsletterBlock({
-                                        imageUrls: e.target.value
-                                          .split('\n')
-                                          .map((l) => l.trim())
-                                          .filter(Boolean),
-                                      })
-                                    }
-                                    className="w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder={'https://imagen1.jpg\nhttps://imagen2.jpg'}
-                                  />
-                                  <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3">
-                                    <p className="text-sm font-semibold text-foreground">
-                                      Subir imagen a la galería
-                                    </p>
-                                    <button
-                                      type="button"
-                                      onClick={() => newsletterImageInputRef.current?.click()}
-                                      disabled={uploadingNewsletterImage}
-                                      className="mt-2 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-                                    >
-                                      {uploadingNewsletterImage
-                                        ? 'Subiendo...'
-                                        : 'Subir imagen desde ordenador'}
-                                    </button>
-                                    <input
-                                      ref={newsletterImageInputRef}
-                                      type="file"
-                                      accept="image/*"
-                                      disabled={uploadingNewsletterImage}
-                                      onChange={async (e) => {
-                                        const file = e.target.files?.[0];
-                                        if (!file || !selectedNewsletterBlock) return;
-                                        await uploadNewsletterImageForBlock(
-                                          file,
-                                          selectedNewsletterBlock.id,
-                                          'gallery',
-                                        );
-                                        e.currentTarget.value = '';
-                                      }}
-                                      className="sr-only"
-                                    />
-                                  </div>
-                                </div>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'socialLinks' && (
-                                <div className="space-y-2 md:col-span-2">
-                                  <label className="text-xs text-muted-foreground">
-                                    Facebook
-                                    <input
-                                      value={selectedNewsletterBlock.socialFacebook || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ socialFacebook: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="https://facebook.com/..."
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground">
-                                    X / Twitter
-                                    <input
-                                      value={selectedNewsletterBlock.socialTwitter || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ socialTwitter: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="https://twitter.com/..."
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground">
-                                    Instagram
-                                    <input
-                                      value={selectedNewsletterBlock.socialInstagram || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ socialInstagram: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="https://instagram.com/..."
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground">
-                                    LinkedIn
-                                    <input
-                                      value={selectedNewsletterBlock.socialLinkedin || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ socialLinkedin: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="https://linkedin.com/..."
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground">
-                                    YouTube
-                                    <input
-                                      value={selectedNewsletterBlock.socialYoutube || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ socialYoutube: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="https://youtube.com/..."
-                                    />
-                                  </label>
-                                </div>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'countdown' && (
-                                <div className="space-y-2 md:col-span-2">
-                                  <label className="text-xs text-muted-foreground">
-                                    Fecha y hora objetivo
-                                    <input
-                                      type="datetime-local"
-                                      value={selectedNewsletterBlock.countdownDate || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ countdownDate: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    />
-                                  </label>
-                                  <label className="text-xs text-muted-foreground">
-                                    Texto superior (opcional)
-                                    <input
-                                      value={selectedNewsletterBlock.countdownLabel || ''}
-                                      onChange={(e) =>
-                                        updateSelectedNewsletterBlock({ countdownLabel: e.target.value })
-                                      }
-                                      className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                      placeholder="Ej: No te lo pierdas"
-                                    />
-                                  </label>
-                                  <p className="text-[11px] text-muted-foreground">
-                                    Al sincronizar HTML se calcula la cuenta atrás respecto al momento actual.
-                                  </p>
-                                </div>
-                              )}
-
-                              {(selectedNewsletterBlock.type === 'image' ||
-                                selectedNewsletterBlock.type === 'button' ||
-                                selectedNewsletterBlock.type === 'iconButton' ||
-                                selectedNewsletterBlock.type === 'figure' ||
-                                selectedNewsletterBlock.type === 'imgText') && (
-                                <label className="text-xs text-muted-foreground md:col-span-2">
-                                  {selectedNewsletterBlock.type === 'figure' || selectedNewsletterBlock.type === 'imgText'
-                                    ? 'URL imagen'
-                                    : 'URL'}
-                                  <input
-                                    value={selectedNewsletterBlock.url || ''}
-                                    onChange={(e) =>
-                                      updateSelectedNewsletterBlock({ url: e.target.value })
-                                    }
-                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder="https://..."
-                                  />
-                                </label>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'iconButton' && (
-                                <label className="text-xs text-muted-foreground md:col-span-2">
-                                  URL icono
-                                  <input
-                                    value={selectedNewsletterBlock.iconUrl || ''}
-                                    onChange={(e) =>
-                                      updateSelectedNewsletterBlock({ iconUrl: e.target.value })
-                                    }
-                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                    placeholder="https://..."
-                                  />
-                                </label>
-                              )}
-
-                              {(selectedNewsletterBlock.type === 'image' ||
-                                selectedNewsletterBlock.type === 'figure' ||
-                                selectedNewsletterBlock.type === 'imgText') && (
-                                <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
-                                  <p className="text-sm font-semibold text-foreground">
-                                    {selectedNewsletterBlock.type === 'figure'
-                                      ? 'Imagen de la figura'
-                                      : selectedNewsletterBlock.type === 'imgText'
-                                        ? 'Imagen del bloque Img+Texto'
-                                        : 'Imagen del bloque (paso principal)'}
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    Pulsa el botón grande para subirla desde tu ordenador.
-                                  </p>
-                                  <button
-                                    type="button"
-                                    onClick={() => newsletterImageInputRef.current?.click()}
-                                    disabled={uploadingNewsletterImage}
-                                    className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-                                  >
-                                    {uploadingNewsletterImage
-                                      ? 'Subiendo imagen...'
-                                      : 'Subir imagen desde ordenador'}
-                                  </button>
-                                  <input
-                                    ref={newsletterImageInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    disabled={uploadingNewsletterImage}
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      await uploadNewsletterImageForBlock(
-                                        file,
-                                        selectedNewsletterBlock.id,
-                                      );
-                                      e.currentTarget.value = '';
-                                    }}
-                                    className="sr-only"
-                                  />
-                                  {selectedNewsletterBlock.url && (
-                                    <button
-                                      type="button"
-                                      onClick={() => setEditingImageBlockId(selectedNewsletterBlock.id)}
-                                      className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                                    >
-                                      ✏️ Editar imagen (recortar, redimensionar, alt)
-                                    </button>
-                                  )}
-                                  <p className="mt-2 text-[11px] text-muted-foreground">
-                                    También puedes pegar una URL manual en el campo URL de arriba.
-                                  </p>
-                                </div>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'iconButton' && (
-                                <div className="rounded-md border-2 border-primary/40 bg-primary/5 p-3 md:col-span-2">
-                                  <p className="text-sm font-semibold text-foreground">
-                                    Icono del botón cuadrado
-                                  </p>
-                                  <p className="mt-1 text-xs text-muted-foreground">
-                                    Sube tu icono oficial para usarlo dentro del botón.
-                                  </p>
-                                  <button
-                                    type="button"
-                                    onClick={() => newsletterIconInputRef.current?.click()}
-                                    disabled={uploadingNewsletterImage}
-                                    className="mt-3 w-full rounded-md border border-primary bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-                                  >
-                                    {uploadingNewsletterImage ? 'Subiendo icono...' : 'Subir icono desde ordenador'}
-                                  </button>
-                                  <input
-                                    ref={newsletterIconInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    disabled={uploadingNewsletterImage}
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      await uploadNewsletterImageForBlock(
-                                        file,
-                                        selectedNewsletterBlock.id,
-                                        'iconUrl',
-                                      );
-                                      e.currentTarget.value = '';
-                                    }}
-                                    className="sr-only"
-                                  />
-                                  <p className="mt-2 text-[11px] text-muted-foreground">
-                                    Recomendado: icono PNG/SVG cuadrado.
-                                  </p>
-                                </div>
-                              )}
-
-                              {(selectedNewsletterBlock.type === 'button' ||
-                                selectedNewsletterBlock.type === 'iconButton') && (
-                                <label className="text-xs text-muted-foreground md:col-span-2">
-                                  {selectedNewsletterBlock.type === 'iconButton'
-                                    ? 'Etiqueta icono'
-                                    : 'Texto del botón'}
-                                  <input
-                                    value={selectedNewsletterBlock.label || ''}
-                                    onChange={(e) =>
-                                      updateSelectedNewsletterBlock({
-                                        label: e.target.value,
-                                      })
-                                    }
-                                    className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                  />
-                                </label>
-                              )}
-
-                              {selectedNewsletterBlock.type === 'buttonRow' && (
-                                <div className="md:col-span-2 space-y-3">
-                                  <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
-                                    Cada botón tiene su propia alineación. Si los dos coinciden se renderizan juntos en línea; si difieren se reparten en dos mitades (útil para “uno a la izquierda y otro a la derecha”).
-                                  </p>
-                                  <div className="flex gap-3">
-                                    <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
-                                      <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
-                                      <label className="block text-xs text-muted-foreground">
-                                        Texto
-                                        <input value={selectedNewsletterBlock.label || ''} onChange={(e) => updateSelectedNewsletterBlock({ label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Leer más" />
-                                      </label>
-                                      <label className="block text-xs text-muted-foreground">
-                                        URL
-                                        <input value={selectedNewsletterBlock.url || ''} onChange={(e) => updateSelectedNewsletterBlock({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                                      </label>
-                                      <label className="block text-xs text-muted-foreground">
-                                        Alineación
-                                        <select
-                                          value={selectedNewsletterBlock.alignBtn1 || 'center'}
-                                          onChange={(e) => updateSelectedNewsletterBlock({ alignBtn1: e.target.value as 'left' | 'center' | 'right' })}
-                                          className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                        >
-                                          <option value="left">Izquierda</option>
-                                          <option value="center">Centro</option>
-                                          <option value="right">Derecha</option>
-                                        </select>
-                                      </label>
-                                    </div>
-                                    <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
-                                      <p className="text-xs font-semibold text-foreground">Botón derecho</p>
-                                      <label className="block text-xs text-muted-foreground">
-                                        Texto
-                                        <input value={selectedNewsletterBlock.btn2Label || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Label: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="Conoce más" />
-                                      </label>
-                                      <label className="block text-xs text-muted-foreground">
-                                        URL
-                                        <input value={selectedNewsletterBlock.btn2Url || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
-                                      </label>
-                                      <label className="block text-xs text-muted-foreground">
-                                        Alineación
-                                        <select
-                                          value={selectedNewsletterBlock.alignBtn2 || 'center'}
-                                          onChange={(e) => updateSelectedNewsletterBlock({ alignBtn2: e.target.value as 'left' | 'center' | 'right' })}
-                                          className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                        >
-                                          <option value="left">Izquierda</option>
-                                          <option value="center">Centro</option>
-                                          <option value="right">Derecha</option>
-                                        </select>
-                                      </label>
-                                    </div>
-                                  </div>
-                                  {/* Mini preview que reproduce exactamente la lógica del render:
-                                      misma alineación → ambos juntos en línea con esa alineación;
-                                      alineaciones distintas → tabla 50/50, cada botón en su mitad. */}
-                                  {(() => {
-                                    const a1 = selectedNewsletterBlock.alignBtn1 || 'center';
-                                    const a2 = selectedNewsletterBlock.alignBtn2 || 'center';
-                                    const justifyMap: Record<string, string> = {
-                                      left: 'flex-start',
-                                      center: 'center',
-                                      right: 'flex-end',
-                                    };
-                                    const Btn = ({ label }: { label: string }) => (
-                                      <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">
-                                        {label}
-                                      </span>
-                                    );
-                                    return (
-                                      <div className="rounded-md border border-dashed border-border bg-white/50 p-2">
-                                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                                          Vista previa (en el email se verá así)
-                                        </p>
-                                        {a1 === a2 ? (
-                                          <div className="flex items-center gap-2" style={{ justifyContent: justifyMap[a1] }}>
-                                            <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
-                                            <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
-                                          </div>
-                                        ) : (
-                                          <div className="grid grid-cols-2 gap-2">
-                                            <div className="flex" style={{ justifyContent: justifyMap[a1] }}>
-                                              <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
-                                            </div>
-                                            <div className="flex" style={{ justifyContent: justifyMap[a2] }}>
-                                              <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    );
-                                  })()}
-                                </div>
-                              )}
-
-                              <label className="text-xs text-muted-foreground">
-                                Fondo
-                                <input
-                                  type="color"
-                                  value={selectedNewsletterBlock.backgroundColor || '#ffffff'}
-                                  onChange={(e) =>
-                                    updateSelectedNewsletterBlock({
-                                      backgroundColor: e.target.value,
-                                    })
-                                  }
-                                  className="mt-1 h-9 w-full rounded-md border border-border p-1"
-                                />
-                              </label>
-                              <label className="text-xs text-muted-foreground">
-                                Color texto
-                                <input
-                                  type="color"
-                                  value={selectedNewsletterBlock.textColor || '#111111'}
-                                  onChange={(e) =>
-                                    updateSelectedNewsletterBlock({
-                                      textColor: e.target.value,
-                                    })
-                                  }
-                                  className="mt-1 h-9 w-full rounded-md border border-border p-1"
-                                />
-                              </label>
-                              <label className="text-xs text-muted-foreground">
-                                Padding vertical
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={40}
-                                  value={selectedNewsletterBlock.paddingY ?? 10}
-                                  onChange={(e) =>
-                                    updateSelectedNewsletterBlock({
-                                      paddingY: Math.max(
-                                        0,
-                                        Math.min(40, Number(e.target.value || 0)),
-                                      ),
-                                    })
-                                  }
-                                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                />
-                              </label>
-                              <label className="text-xs text-muted-foreground">
-                                Radio borde
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={30}
-                                  value={selectedNewsletterBlock.borderRadius ?? 8}
-                                  onChange={(e) =>
-                                    updateSelectedNewsletterBlock({
-                                      borderRadius: Math.max(
-                                        0,
-                                        Math.min(30, Number(e.target.value || 0)),
-                                      ),
-                                    })
-                                  }
-                                  className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
-                                />
-                              </label>
-                            </div>
-                          ) : (
+                        {/* Inspector de bloque: ahora se despliega INLINE como
+                            persiana debajo del bloque seleccionado en el lienzo
+                            (ver `Inspector de bloque (persiana)` más arriba),
+                            para que el usuario no tenga que bajar a buscarlo.
+                            Si no hay nada seleccionado, mostramos un texto de
+                            ayuda en su lugar. */}
+                        {!selectedNewsletterBlock ? (
+                          <div className="rounded-md border border-dashed border-border bg-muted/10 p-3 text-center">
                             <p className="text-xs text-muted-foreground">
-                              Selecciona un bloque en el lienzo para editar sus propiedades.
+                              Pulsa cualquier bloque del lienzo para abrir su
+                              inspector justo debajo (estilo persiana). Para
+                              cerrarlo, pulsa <strong>Cerrar</strong> en la
+                              cabecera del inspector.
                             </p>
-                          )}
-                        </div>
+                          </div>
+                        ) : null}
 
                         <div className="rounded-md border border-border bg-background p-3">
                           <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
