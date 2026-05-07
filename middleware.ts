@@ -351,7 +351,7 @@ export function middleware(req: NextRequest): NextResponse {
     'actualidad', 'agenda', 'alertas', 'app', 'articulos', 'aviso-legal',
     'c', 'checkout', 'club', 'colaborador', 'contacto', 'cookies', 'cuenta',
     'cultura', 'cupones', 'descubre', 'donde-comer', 'donde-comprar', 'donde-dormir',
-    'el-sello', 'en-familia', 'entrar', 'eventos', 'experiencias',
+    'el-sello', 'en-familia', 'encuentros', 'entrar', 'eventos', 'experiencias',
     'gestion', 'mapa', 'meteo', 'mi-cuenta', 'multiexperiencias',
     'naturaleza', 'newsletter', 'noche-romantica', 'noticias', 'notificaciones',
     'negocio', 'para-negocios', 'patrimonio', 'petfriendly', 'planifica', 'prensa',

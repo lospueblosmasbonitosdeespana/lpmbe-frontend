@@ -2526,5 +2526,32 @@
         "tagline": "In den Fels gebaute Höhlenwohnungen"
       }
     }
+  },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "Siehe Programm",
+      "downloadPdf": "Programm herunterladen (PDF)"
+    },
+    "sections": {
+      "program": "Offizielles Programm",
+      "villages": "Dörfer entlang der Route",
+      "map": "Reisen auf der Straße",
+      "logistics": "Praktische Informationen",
+      "live": "Live",
+      "galleryTitle": "Fotos von der Veranstaltung",
+      "galleryIntro": "Eine Auswahl von Momenten, die von den Delegationen während der Veranstaltungstage geteilt wurden. Wird in Echtzeit aktualisiert."
+    },
+    "aviso": {
+      "label": {
+        "info": "Informationen",
+        "warning": "Wichtiger Hinweis",
+        "critical": "Dringend"
+      },
+      "shareWhatsApp": "Teilen über WhatsApp",
+      "dismiss": "Als gelesen markieren"
+    },
+    "galeria": {
+      "vacio": "Es sind noch keine Fotos hochgeladen worden."
+    }
   }
 }

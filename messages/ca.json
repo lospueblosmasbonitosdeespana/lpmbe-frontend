@@ -2526,5 +2526,32 @@
         "tagline": "Habitacions excavades a la roca"
       }
     }
+  },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "Veure el programa",
+      "downloadPdf": "Descarrega el programa (PDF)"
+    },
+    "sections": {
+      "program": "Programa oficial",
+      "villages": "Pobles al llarg de la ruta",
+      "map": "Viatge per carretera",
+      "logistics": "Informació pràctica",
+      "live": "En directe",
+      "galleryTitle": "Fotos de l'esdeveniment",
+      "galleryIntro": "Una selecció de moments compartits per les delegacions durant l'esdeveniment. Actualitzat en temps real."
+    },
+    "aviso": {
+      "label": {
+        "info": "Informació",
+        "warning": "Avís important",
+        "critical": "Urgent"
+      },
+      "shareWhatsApp": "Comparteix per WhatsApp",
+      "dismiss": "Marcar com a llegit"
+    },
+    "galeria": {
+      "vacio": "Encara no s'han pujat cap foto."
+    }
   }
 }

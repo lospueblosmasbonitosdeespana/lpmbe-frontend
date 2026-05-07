@@ -1,0 +1,396 @@
+import Image from 'next/image';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { getGranEventoBySlug, getGranEventoFotos, pickI18n } from '@/lib/grandes-eventos';
+import GranEventoBannerAvisos from './GranEventoBannerAvisos';
+import GranEventoPueblos from './GranEventoPueblos';
+import GranEventoMapa from './GranEventoMapa';
+import GranEventoGaleria from './GranEventoGaleria';
+
+/**
+ * Página pública de un Gran Evento (asambleas, encuentros internacionales).
+ * Lee toda la información de la BD por slug, soporta i18n automático con
+ * fallback al español, y muestra:
+ * - Banner de avisos urgentes (con polling y botón WhatsApp).
+ * - Hero con logo, título, fechas e intro.
+ * - Programa por días.
+ * - Tarjetas de pueblos del recorrido.
+ * - Mapa interactivo siguiendo carreteras.
+ * - Galería de fotos en vivo (si hay).
+ * - Logística y contacto urgente.
+ */
+export default async function GranEventoPage({ slug }: { slug: string }) {
+  const evento = await getGranEventoBySlug(slug);
+  if (!evento) notFound();
+
+  const locale = (await getLocale()) || 'es';
+  const t = await getTranslations('granEvento');
+
+  const heroKicker = pickI18n(evento.heroKicker_es, evento.heroKicker_i18n, locale);
+  const heroTitulo = pickI18n(evento.heroTitulo_es, evento.heroTitulo_i18n, locale);
+  const heroSubtitulo = pickI18n(evento.heroSubtitulo_es, evento.heroSubtitulo_i18n, locale);
+  const heroIntro = pickI18n(evento.heroIntro_es, evento.heroIntro_i18n, locale);
+  const heroFederacion = pickI18n(evento.heroFederacion_es, evento.heroFederacion_i18n, locale);
+
+  const villagesIntro = pickI18n(evento.villagesIntro_es, evento.villagesIntro_i18n, locale);
+  const mapIntro = pickI18n(evento.mapIntro_es, evento.mapIntro_i18n, locale);
+
+  const fotosIniciales = await getGranEventoFotos(slug);
+
+  const logoUrl = evento.logoUrl || '/rencontres/logo-federation.png';
+
+  return (
+    <main className="relative min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50">
+      {/* Banner de avisos en la parte superior */}
+      <GranEventoBannerAvisos slug={evento.slug} eventoTitulo={heroTitulo || evento.nombre} />
+
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px] overflow-hidden"
+        aria-hidden
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/60 via-stone-50 to-emerald-50/40" />
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 20% 30%, #854d0e 0%, transparent 50%), radial-gradient(circle at 80% 70%, #15803d 0%, transparent 50%)',
+          }}
+        />
+      </div>
+
+      {/* HERO */}
+      <header className="relative px-6 pt-16 pb-10 sm:pt-20 sm:pb-14">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8 flex justify-center">
+            <div className="relative h-28 w-28 sm:h-32 sm:w-32">
+              <Image
+                src={logoUrl}
+                alt={heroFederacion || evento.nombre}
+                fill
+                priority
+                sizes="(max-width: 640px) 112px, 128px"
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
+          </div>
+
+          {heroKicker ? (
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.32em] text-amber-700">
+              {heroKicker}
+            </p>
+          ) : null}
+          {heroFederacion ? (
+            <p className="mt-3 text-center text-sm font-medium text-stone-500 sm:text-base">
+              {heroFederacion}
+            </p>
+          ) : null}
+
+          {heroTitulo ? (
+            <h1 className="mx-auto mt-5 max-w-3xl text-center text-3xl font-bold leading-tight tracking-tight text-stone-900 sm:text-4xl md:text-5xl">
+              {heroTitulo}
+            </h1>
+          ) : null}
+
+          {heroSubtitulo ? (
+            <p className="mt-5 text-center text-base font-medium text-amber-800 sm:text-lg">
+              {heroSubtitulo}
+            </p>
+          ) : null}
+
+          {heroIntro ? (
+            <p className="mx-auto mt-6 max-w-2xl text-center text-[15px] leading-relaxed text-stone-600 sm:text-base">
+              {heroIntro}
+            </p>
+          ) : null}
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            {evento.dias.length > 0 ? (
+              <a
+                href="#programa"
+                className="inline-flex items-center gap-2 rounded-full bg-amber-800 px-6 py-3 text-sm font-semibold text-white shadow-md ring-1 ring-amber-900/10 transition hover:bg-amber-900 hover:shadow-lg"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                  <path
+                    fillRule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {t('actions.viewProgram')}
+              </a>
+            ) : null}
+            {evento.pdfUrl ? (
+              <a
+                href={evento.pdfUrl}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                  <path
+                    fillRule="evenodd"
+                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                {t('actions.downloadPdf')}
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      {/* GALERÍA EN VIVO (solo si hay fotos) */}
+      {fotosIniciales.length > 0 ? (
+        <section className="border-t border-stone-100 bg-gradient-to-br from-amber-900/5 via-white to-emerald-900/5 px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-10 max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
+                {t('sections.live')}
+              </p>
+              <div className="mt-3 mb-4 inline-flex h-1 w-12 rounded-full bg-amber-700" />
+              <h2 className="mb-2 text-2xl font-bold text-stone-900 sm:text-3xl">{t('sections.galleryTitle')}</h2>
+              <p className="text-[15px] leading-relaxed text-stone-600 sm:text-base">{t('sections.galleryIntro')}</p>
+            </div>
+            <GranEventoGaleria slug={evento.slug} fotosIniciales={fotosIniciales} />
+          </div>
+        </section>
+      ) : null}
+
+      {/* PROGRAMA */}
+      {evento.dias.length > 0 ? (
+        <section id="programa" className="px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-10 text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
+                {t('sections.program')}
+              </p>
+              <div className="mt-3 inline-flex h-1 w-12 rounded-full bg-amber-700" />
+            </div>
+            <ProgramaTimeline dias={evento.dias} locale={locale} />
+          </div>
+        </section>
+      ) : null}
+
+      {/* PUEBLOS */}
+      {evento.pueblos.length > 0 ? (
+        <section className="border-t border-stone-100 bg-stone-50/50 px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-10 max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
+                {t('sections.villages')}
+              </p>
+              <div className="mt-3 mb-4 inline-flex h-1 w-12 rounded-full bg-amber-700" />
+              {villagesIntro ? (
+                <p className="text-[15px] leading-relaxed text-stone-600 sm:text-base">{villagesIntro}</p>
+              ) : null}
+            </div>
+            <GranEventoPueblos pueblos={evento.pueblos} locale={locale} />
+          </div>
+        </section>
+      ) : null}
+
+      {/* MAPA */}
+      {evento.pueblos.length >= 2 ? (
+        <section className="border-t border-stone-100 px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-8 max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
+                {t('sections.map')}
+              </p>
+              <div className="mt-3 mb-4 inline-flex h-1 w-12 rounded-full bg-amber-700" />
+              {mapIntro ? (
+                <p className="text-[15px] leading-relaxed text-stone-600 sm:text-base">{mapIntro}</p>
+              ) : null}
+            </div>
+            <GranEventoMapa pueblos={evento.pueblos} />
+          </div>
+        </section>
+      ) : null}
+
+      {/* LOGÍSTICA */}
+      <LogisticaSection evento={evento} locale={locale} />
+
+      {/* FOOTER */}
+      <footer className="border-t border-stone-100 px-6 py-12">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="mx-auto mb-5 h-16 w-16 opacity-80">
+            <Image src={logoUrl} alt="" width={64} height={64} style={{ objectFit: 'contain' }} />
+          </div>
+          {heroFederacion ? (
+            <p className="text-sm font-semibold text-stone-700">{heroFederacion}</p>
+          ) : null}
+          {heroKicker ? (
+            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-stone-400">{heroKicker}</p>
+          ) : null}
+        </div>
+      </footer>
+    </main>
+  );
+}
+
+function ProgramaTimeline({
+  dias,
+  locale,
+}: {
+  dias: import('@/lib/grandes-eventos').GranEventoDia[];
+  locale: string;
+}) {
+  return (
+    <div className="space-y-12">
+      {dias.map((dia) => {
+        const label = pickI18n(dia.label_es, dia.label_i18n, locale);
+        const titulo = pickI18n(dia.titulo_es, dia.titulo_i18n, locale);
+        return (
+          <div key={dia.id} className="relative">
+            <div className="mb-6 border-b border-stone-200 pb-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">{label}</p>
+              <h3 className="mt-1.5 text-xl font-bold text-stone-900 sm:text-2xl">{titulo}</h3>
+            </div>
+            <ol className="relative space-y-5 border-l-2 border-amber-200/70 pl-6">
+              {dia.actos.map((acto) => {
+                const texto = pickI18n(acto.texto_es, acto.texto_i18n, locale);
+                return (
+                  <li key={acto.id} className="relative">
+                    <span
+                      className="absolute -left-[33px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white ring-2 ring-amber-700 shadow-sm"
+                      aria-hidden
+                    >
+                      <span className="block h-1.5 w-1.5 rounded-full bg-amber-700" />
+                    </span>
+                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:gap-4">
+                      <p className="shrink-0 text-sm font-bold tabular-nums text-amber-800 sm:w-28">
+                        {acto.hora}
+                      </p>
+                      <p className="text-[15px] leading-relaxed text-stone-700">{texto}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function LogisticaSection({
+  evento,
+  locale,
+}: {
+  evento: import('@/lib/grandes-eventos').GranEvento;
+  locale: string;
+}) {
+  const t = (es: string | null, i18n: Record<string, string> | null) => pickI18n(es, i18n, locale);
+
+  const airportTitle = t(evento.logisticaAirportTitulo_es, evento.logisticaAirportTitulo_i18n);
+  const airportText = t(evento.logisticaAirportTexto_es, evento.logisticaAirportTexto_i18n);
+  const hotelTitle = t(evento.logisticaHotelTitulo_es, evento.logisticaHotelTitulo_i18n);
+  const hotelText = t(evento.logisticaHotelTexto_es, evento.logisticaHotelTexto_i18n);
+  const idiomasTitle = t(evento.logisticaIdiomasTitulo_es, evento.logisticaIdiomasTitulo_i18n);
+  const idiomasText = t(evento.logisticaIdiomasTexto_es, evento.logisticaIdiomasTexto_i18n);
+  const contactTitle = t(evento.contactoTitulo_es, evento.contactoTitulo_i18n);
+  const contactText = t(evento.contactoTexto_es, evento.contactoTexto_i18n);
+
+  const hasAny = [airportTitle, hotelTitle, idiomasTitle, evento.contactoTelefono].some(Boolean);
+  if (!hasAny) return null;
+
+  return (
+    <section className="border-t border-stone-100 bg-stone-50/50 px-6 py-16 sm:py-20">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-10">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
+            {/* No translation key for label here – use heading directly */}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {airportTitle ? <InfoCard icon="airport" title={airportTitle} text={airportText} /> : null}
+          {hotelTitle ? <InfoCard icon="hotel" title={hotelTitle} text={hotelText} /> : null}
+          {idiomasTitle ? <InfoCard icon="languages" title={idiomasTitle} text={idiomasText} /> : null}
+          {evento.contactoTelefono ? (
+            <ContactCard
+              title={contactTitle}
+              text={contactText}
+              name={evento.contactoNombre ?? ''}
+              phone={evento.contactoTelefono}
+            />
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function InfoCard({
+  icon,
+  title,
+  text,
+}: {
+  icon: 'airport' | 'hotel' | 'languages';
+  title: string;
+  text: string;
+}) {
+  const icons: Record<typeof icon, React.ReactNode> = {
+    airport: (
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+      </svg>
+    ),
+    hotel: (
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z" />
+      </svg>
+    ),
+    languages: (
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
+      </svg>
+    ),
+  };
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm transition hover:border-amber-200 hover:shadow-md">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-700/10 text-amber-800">
+        <div className="h-5 w-5">{icons[icon]}</div>
+      </div>
+      <h3 className="text-base font-semibold text-stone-900">{title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{text}</p>
+    </div>
+  );
+}
+
+function ContactCard({
+  title,
+  text,
+  name,
+  phone,
+}: {
+  title: string;
+  text: string;
+  name: string;
+  phone: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-6 shadow-sm transition hover:border-amber-300 hover:shadow-md">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-700/10 text-amber-800">
+        <div className="h-5 w-5">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.21 2.2z" />
+          </svg>
+        </div>
+      </div>
+      <h3 className="text-base font-semibold text-stone-900">{title}</h3>
+      {text ? <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{text}</p> : null}
+      <div className="mt-3 space-y-1">
+        {name ? <p className="text-sm font-semibold text-stone-800">{name}</p> : null}
+        <a
+          href={`tel:${phone.replace(/\s/g, '')}`}
+          className="inline-flex items-center gap-2 text-base font-bold text-amber-800 hover:text-amber-900 hover:underline"
+        >
+          {phone}
+        </a>
+      </div>
+    </div>
+  );
+}

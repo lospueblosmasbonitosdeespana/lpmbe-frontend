@@ -2311,6 +2311,33 @@
     "offersOne": "{n} oferta",
     "offersMany": "{n} ofertas"
   },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "Ver programa",
+      "downloadPdf": "Descargar programa (PDF)"
+    },
+    "sections": {
+      "program": "Programa oficial",
+      "villages": "Pueblos del recorrido",
+      "map": "Recorrido por carretera",
+      "logistics": "Información práctica",
+      "live": "En directo",
+      "galleryTitle": "Fotos del evento",
+      "galleryIntro": "Una selección de momentos compartidos por las delegaciones durante los días del evento. Se actualiza en tiempo real."
+    },
+    "aviso": {
+      "label": {
+        "info": "Información",
+        "warning": "Aviso importante",
+        "critical": "Urgente"
+      },
+      "shareWhatsApp": "Compartir por WhatsApp",
+      "dismiss": "Marcar como leído"
+    },
+    "galeria": {
+      "vacio": "Aún no se han subido fotos."
+    }
+  },
   "rencontres2026": {
     "meta": {
       "title": "Rencontres Internationales 2026 — Pueblos Más Bonitos de la Tierra",

@@ -2526,5 +2526,32 @@
         "tagline": "Casas-caverna construídas na rocha"
       }
     }
+  },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "Ver programa",
+      "downloadPdf": "Descarregar o programa (PDF)"
+    },
+    "sections": {
+      "program": "Programa oficial",
+      "villages": "Aldeias ao longo do percurso",
+      "map": "Viagens por estrada",
+      "logistics": "Informações práticas",
+      "live": "Em direto",
+      "galleryTitle": "Fotos do evento",
+      "galleryIntro": "Uma seleção de momentos partilhados pelas delegações durante os dias do evento. Atualizado em tempo real."
+    },
+    "aviso": {
+      "label": {
+        "info": "Informações",
+        "warning": "Aviso importante",
+        "critical": "Urgente"
+      },
+      "shareWhatsApp": "Partilhar via WhatsApp",
+      "dismiss": "Marcar como lido"
+    },
+    "galeria": {
+      "vacio": "Ainda não foram carregadas quaisquer fotografias."
+    }
   }
 }

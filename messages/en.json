@@ -2526,5 +2526,32 @@
         "tagline": "Cave-houses built into the rock"
       }
     }
+  },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "See program",
+      "downloadPdf": "Download program (PDF)"
+    },
+    "sections": {
+      "program": "Official program",
+      "villages": "Villages along the route",
+      "map": "Road travel",
+      "logistics": "Practical information",
+      "live": "Live",
+      "galleryTitle": "Photos of the event",
+      "galleryIntro": "A selection of moments shared by delegations during the days of the event. Updated in real time."
+    },
+    "aviso": {
+      "label": {
+        "info": "Information",
+        "warning": "Important Notice",
+        "critical": "Urgent"
+      },
+      "shareWhatsApp": "Share via WhatsApp",
+      "dismiss": "Mark as read"
+    },
+    "galeria": {
+      "vacio": "No photos have been uploaded yet."
+    }
   }
 }

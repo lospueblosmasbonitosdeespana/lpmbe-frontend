@@ -2526,5 +2526,32 @@
         "tagline": "Case-grotta costruite nella roccia"
       }
     }
+  },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "Vedi programma",
+      "downloadPdf": "Scarica il programma (PDF)"
+    },
+    "sections": {
+      "program": "Programma ufficiale",
+      "villages": "Villaggi lungo il percorso",
+      "map": "Viaggio su strada",
+      "logistics": "Informazioni pratiche",
+      "live": "In diretta",
+      "galleryTitle": "Foto dell'evento",
+      "galleryIntro": "Una selezione di momenti condivisi dalle delegazioni durante i giorni dell'evento. Aggiornata in tempo reale."
+    },
+    "aviso": {
+      "label": {
+        "info": "Informazioni",
+        "warning": "Avviso importante",
+        "critical": "Urgente"
+      },
+      "shareWhatsApp": "Condividi via WhatsApp",
+      "dismiss": "Segna come letto"
+    },
+    "galeria": {
+      "vacio": "Non sono ancora state caricate foto."
+    }
   }
 }

@@ -2526,5 +2526,32 @@
         "tagline": "Maisons troglodytes construites dans la roche"
       }
     }
+  },
+  "granEvento": {
+    "actions": {
+      "viewProgram": "Voir le programme",
+      "downloadPdf": "Télécharger le programme (PDF)"
+    },
+    "sections": {
+      "program": "Programme officiel",
+      "villages": "Villages le long de l'itinéraire",
+      "map": "Voyage par la route",
+      "logistics": "Informations pratiques",
+      "live": "Vivre",
+      "galleryTitle": "Photos de l'événement",
+      "galleryIntro": "Une sélection de moments partagés par les délégations au cours des journées de l'événement. Mise à jour en temps réel."
+    },
+    "aviso": {
+      "label": {
+        "info": "Informations",
+        "warning": "Avis important",
+        "critical": "Urgent"
+      },
+      "shareWhatsApp": "Partager via WhatsApp",
+      "dismiss": "Marquer comme lu"
+    },
+    "galeria": {
+      "vacio": "Aucune photo n'a encore été téléchargée."
+    }
   }
 }

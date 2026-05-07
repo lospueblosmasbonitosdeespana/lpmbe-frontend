@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import type { GranEventoPueblo } from '@/lib/grandes-eventos';
 
 const RutaMap = dynamic(() => import('@/app/_components/RutaMap'), {
   ssr: false,
@@ -24,14 +25,13 @@ const RutaMap = dynamic(() => import('@/app/_components/RutaMap'), {
   ),
 });
 
-const WAYPOINTS = [
-  { lat: 36.318842, lng: -5.452998, titulo: 'Castellar de la Frontera', orden: 1 },
-  { lat: 36.252034, lng: -5.966736, titulo: 'Vejer de la Frontera', orden: 2 },
-  { lat: 36.758675, lng: -5.368439, titulo: 'Grazalema', orden: 3 },
-  { lat: 36.839494, lng: -5.391992, titulo: 'Zahara', orden: 4 },
-  { lat: 36.862426, lng: -5.176447, titulo: 'Setenil de las Bodegas', orden: 5 },
-];
+export default function GranEventoMapa({ pueblos }: { pueblos: GranEventoPueblo[] }) {
+  const waypoints = pueblos.map((p) => ({
+    lat: p.pueblo.lat,
+    lng: p.pueblo.lng,
+    titulo: p.pueblo.nombre,
+    orden: p.orden,
+  }));
 
-export default function MapaRutaAsamblea() {
-  return <RutaMap waypoints={WAYPOINTS} height={520} showRouting allowReverse={false} />;
+  return <RutaMap waypoints={waypoints} height={520} showRouting allowReverse={false} />;
 }
