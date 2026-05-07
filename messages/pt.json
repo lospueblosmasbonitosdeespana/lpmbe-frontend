@@ -2312,5 +2312,217 @@
     "giftBadge": "Prenda",
     "offersOne": "{n} oferta",
     "offersMany": "{n} oferece"
+  },
+  "rencontres2026": {
+    "meta": {
+      "title": "Rencontres Internationales 2026 - As cidades mais bonitas do mundo",
+      "description": "Programa oficial dos Encontros Internacionais 2026 da Federação das Cidades Mais Belas do Mundo. Espanha, de 20 a 24 de maio."
+    },
+    "hero": {
+      "kicker": "Encontros Internacionais 2026",
+      "federation": "Federação das mais belas aldeias do mundo",
+      "title": "Assembleia Geral Internacional",
+      "subtitle": "Espanha - Sierra de Cádiz - 20-24 de maio de 2026",
+      "intro": "A Federação Internacional celebra a sua assembleia anual na Andaluzia. Cinco dias de trabalho institucional, de descoberta do património e de encontros entre as delegações dos países membros."
+    },
+    "actions": {
+      "downloadPdf": "Descarregar o programa (PDF)",
+      "viewProgram": "Ver programa",
+      "viewVillages": "Ver aldeias",
+      "viewMap": "Ver mapa do itinerário",
+      "viewVillage": "Ver aldeia"
+    },
+    "sections": {
+      "program": "Programa",
+      "villages": "Aldeias ao longo do percurso",
+      "villagesIntro": "Cinco aldeias da Rede das Aldeias Mais Bonitas de Espanha, todas na província de Cádis, no coração da Serra de Grazalema e da região do Campo de Gibraltar.",
+      "map": "Mapa do trajeto",
+      "mapIntro": "O itinerário liga Castellar de la Frontera, Vejer de la Frontera, Grazalema, Zahara e Setenil de las Bodegas ao longo de cinco dias.",
+      "logistics": "Informações práticas"
+    },
+    "logistics": {
+      "airportTitle": "Chegada e partida",
+      "airportText": "Aeroporto de Málaga (AGP). Transferes organizados pela Federação.",
+      "hotelTitle": "Alojamento principal",
+      "hotelText": "Hotel El Alcornocal, Castellar de la Frontera (noites de 20 a 22 de maio).",
+      "languagesTitle": "Línguas",
+      "languagesText": "Esta página detecta automaticamente a língua do seu navegador. Disponível em 7 línguas: espanhol, inglês, francês, alemão, português, italiano e catalão.",
+      "contactTitle": "Contacto",
+      "contactText": "Para qualquer incidente durante os Encontros, é favor contactar a equipa da Federação ou a Associação anfitriã."
+    },
+    "days": {
+      "wednesday": {
+        "label": "Quarta-feira, 20 de maio",
+        "title": "Chegada - Castellar de la Frontera",
+        "items": [
+          {
+            "time": "15:30",
+            "text": "Transfere do aeroporto de Málaga para Castellar de la Frontera, Hotel El Alcornocal."
+          },
+          {
+            "time": "18:30",
+            "text": "Transporte em miniautocarro do Hotel El Alcornocal para o castelo de Castellar de la Frontera."
+          },
+          {
+            "time": "19:00",
+            "text": "Visita guiada."
+          },
+          {
+            "time": "20:00",
+            "text": "Jantar de boas-vindas e cocktail no Castelo de Castellar de la Frontera."
+          },
+          {
+            "time": "21:00",
+            "text": "Concerto de música tradicional andaluza com danças regionais."
+          },
+          {
+            "time": "22:30",
+            "text": "Transporte em miniautocarro para o hotel."
+          }
+        ]
+      },
+      "thursday": {
+        "label": "Quinta-feira, 21 de maio",
+        "title": "Assembleia Geral - La Almoraima - Vejer de la Frontera",
+        "items": [
+          {
+            "time": "08:15",
+            "text": "Transfer do Hotel El Alcornocal para La Almoraima das associações que são membros activos, para a reunião do Conselho de Administração."
+          },
+          {
+            "time": "09:45",
+            "text": "Transferência do Hotel El Alcornocal para La Almoraima para o resto das delegações."
+          },
+          {
+            "time": "10:00",
+            "text": "Abertura da Assembleia Geral da Federação das Aldeias Mais Belas do Mundo."
+          },
+          {
+            "time": "13:30–15:00",
+            "text": "Almoço de cocktail."
+          },
+          {
+            "time": "15:00–17:00",
+            "text": "Seminário."
+          },
+          {
+            "time": "17:00",
+            "text": "Encerramento da Assembleia Geral e transferência de La Almoraima para o Hotel El Alcornocal. Os quartos estarão disponíveis até às 18:00."
+          },
+          {
+            "time": "18:00",
+            "text": "Transfer para Vejer de la Frontera."
+          },
+          {
+            "time": "21:00",
+            "text": "Jantar e concerto de jazz em Vejer de la Frontera."
+          }
+        ]
+      },
+      "friday": {
+        "label": "Sexta-feira, 22 de maio",
+        "title": "Vejer - Benamahoma - Grazalema",
+        "items": [
+          {
+            "time": "09:00",
+            "text": "Visita a Vejer de la Frontera."
+          },
+          {
+            "time": "10:00",
+            "text": "Transferência para Benamahoma."
+          },
+          {
+            "time": "12:00",
+            "text": "Prova de mel em Benamahoma e visita ao Pinsapar, floresta milenar e Reserva da Biosfera reconhecida pela UNESCO."
+          },
+          {
+            "time": "14:30",
+            "text": "Almoço em Benamahoma."
+          },
+          {
+            "time": "16:30",
+            "text": "Transfer para o alojamento em Grazalema."
+          },
+          {
+            "time": "19:30",
+            "text": "Visita guiada nocturna temática a Grazalema."
+          },
+          {
+            "time": "21:00",
+            "text": "Jantar e concerto de música clássica."
+          }
+        ]
+      },
+      "saturday": {
+        "label": "Sábado, 23 de maio",
+        "title": "Zahara - Setenil de las Bodegas",
+        "items": [
+          {
+            "time": "10:00",
+            "text": "Partida para Zahara."
+          },
+          {
+            "time": "11:00",
+            "text": "Visita guiada dramatizada, incluindo a subida à Torre del Homenaje."
+          },
+          {
+            "time": "14:00",
+            "text": "Almoço em Zahara."
+          },
+          {
+            "time": "16:00",
+            "text": "Transfer para Setenil de las Bodegas."
+          },
+          {
+            "time": "17:30",
+            "text": "Visita da cidade velha e das casas-caverna construídas na rocha."
+          },
+          {
+            "time": "19:30",
+            "text": "Espetáculo de dança flamenca."
+          },
+          {
+            "time": "20:00",
+            "text": "Transfer em comboio turístico para o restaurante onde se realizará o jantar de despedida."
+          },
+          {
+            "time": "21:30",
+            "text": "Regresso a Grazalema."
+          }
+        ]
+      },
+      "sunday": {
+        "label": "Domingo, 24 de maio",
+        "title": "Adeus",
+        "items": [
+          {
+            "time": "07:00",
+            "text": "Transfer para o aeroporto de Málaga."
+          }
+        ]
+      }
+    },
+    "villages": {
+      "castellar": {
+        "name": "Castellar de la Frontera",
+        "tagline": "Local de acolhimento"
+      },
+      "vejer": {
+        "name": "Vejer de la Frontera",
+        "tagline": "Aldeia branca com vista para o Atlântico"
+      },
+      "grazalema": {
+        "name": "Grazalema",
+        "tagline": "Coração da Serra e Reserva da Biosfera"
+      },
+      "zahara": {
+        "name": "Zahara",
+        "tagline": "Castelo de Nasrid sobre o reservatório"
+      },
+      "setenil": {
+        "name": "Setenil de las Bodegas",
+        "tagline": "Casas-caverna construídas na rocha"
+      }
+    }
   }
 }

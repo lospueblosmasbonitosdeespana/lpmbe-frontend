@@ -2312,5 +2312,217 @@
     "giftBadge": "Gift",
     "offersOne": "{n} offer",
     "offersMany": "{n} offers"
+  },
+  "rencontres2026": {
+    "days": {
+      "wednesday": {
+        "label": "Wednesday, 20 May",
+        "title": "Arrival · Castellar de la Frontera",
+        "items": [
+          {
+            "time": "15:30",
+            "text": "Transfer from Malaga Airport to Castellar de la Frontera, Hotel El Alcornocal."
+          },
+          {
+            "time": "18:30",
+            "text": "Transfer by minibus from Hotel El Alcornocal to the Castle of Castellar de la Frontera."
+          },
+          {
+            "time": "19:00",
+            "text": "Guided tour."
+          },
+          {
+            "time": "20:00",
+            "text": "Welcome cocktail dinner at the Castle of Castellar de la Frontera."
+          },
+          {
+            "time": "21:00",
+            "text": "Traditional Andalusian music concert with regional dances."
+          },
+          {
+            "time": "22:30",
+            "text": "Transfer by minibus back to the hotel."
+          }
+        ]
+      },
+      "thursday": {
+        "label": "Thursday, 21 May",
+        "title": "General Assembly · La Almoraima · Vejer de la Frontera",
+        "items": [
+          {
+            "time": "08:15",
+            "text": "Transfer from Hotel El Alcornocal to La Almoraima for the active member associations attending the Board of Directors meeting."
+          },
+          {
+            "time": "09:45",
+            "text": "Transfer from Hotel El Alcornocal to La Almoraima for the remaining delegations."
+          },
+          {
+            "time": "10:00",
+            "text": "Opening of the General Assembly of the Federation of the Most Beautiful Villages of the World."
+          },
+          {
+            "time": "13:30–15:00",
+            "text": "Cocktail lunch."
+          },
+          {
+            "time": "15:00–17:00",
+            "text": "Seminar."
+          },
+          {
+            "time": "17:00",
+            "text": "Closing of the General Assembly and transfer from La Almoraima to Hotel El Alcornocal. Rooms will be available until 18:00."
+          },
+          {
+            "time": "18:00",
+            "text": "Transfer to Vejer de la Frontera."
+          },
+          {
+            "time": "21:00",
+            "text": "Dinner and jazz concert in Vejer de la Frontera."
+          }
+        ]
+      },
+      "friday": {
+        "label": "Friday, 22 May",
+        "title": "Vejer - Benamahoma - Grazalema",
+        "items": [
+          {
+            "time": "09:00",
+            "text": "Visit to Vejer de la Frontera."
+          },
+          {
+            "time": "10:00",
+            "text": "Transfer to Benamahoma."
+          },
+          {
+            "time": "12:00",
+            "text": "Honey tasting in Benamahoma and visit to the Pinsapar, an ancient forest and UNESCO Biosphere Reserve."
+          },
+          {
+            "time": "14:30",
+            "text": "Lunch in Benamahoma."
+          },
+          {
+            "time": "16:30",
+            "text": "Transfer to the accommodation in Grazalema."
+          },
+          {
+            "time": "19:30",
+            "text": "Themed night-time guided tour of Grazalema."
+          },
+          {
+            "time": "21:00",
+            "text": "Dinner and classical music concert."
+          }
+        ]
+      },
+      "saturday": {
+        "label": "Saturday, 23 May",
+        "title": "Zahara - Setenil de las Bodegas",
+        "items": [
+          {
+            "time": "10:00",
+            "text": "Departure for Zahara."
+          },
+          {
+            "time": "11:00",
+            "text": "Theatrical guided tour, including the ascent to the Torre del Homenaje."
+          },
+          {
+            "time": "14:00",
+            "text": "Lunch in Zahara."
+          },
+          {
+            "time": "16:00",
+            "text": "Transfer to Setenil de las Bodegas."
+          },
+          {
+            "time": "17:30",
+            "text": "Visit to the historic centre and the cave-houses integrated into the rock."
+          },
+          {
+            "time": "19:30",
+            "text": "Flamenco dance performance."
+          },
+          {
+            "time": "20:00",
+            "text": "Transfer by tourist train to the restaurant where the farewell dinner will be held."
+          },
+          {
+            "time": "21:30",
+            "text": "Return to Grazalema."
+          }
+        ]
+      },
+      "sunday": {
+        "label": "Sunday, 24 May",
+        "title": "Departure",
+        "items": [
+          {
+            "time": "07:00",
+            "text": "Transfer to Malaga Airport."
+          }
+        ]
+      }
+    },
+    "meta": {
+      "title": "Rencontres Internationales 2026 - The Most Beautiful Villages on Earth",
+      "description": "Official program of the International Meetings 2026 of the Federation of the Most Beautiful Villages of the Earth. Spain, from May 20 to 24."
+    },
+    "hero": {
+      "kicker": "Rencontres Internationales 2026",
+      "federation": "Federation of the Most Beautiful Villages of the Earth",
+      "title": "International General Assembly",
+      "subtitle": "Spain - Sierra de Cádiz - 20-24 May 2026",
+      "intro": "The International Federation celebrates its annual assembly in Andalusia. Five days of institutional work, heritage discovery and meetings between delegations from member countries."
+    },
+    "actions": {
+      "downloadPdf": "Download program (PDF)",
+      "viewProgram": "See program",
+      "viewVillages": "See towns",
+      "viewMap": "View route map",
+      "viewVillage": "See town"
+    },
+    "sections": {
+      "program": "Program",
+      "villages": "Villages along the route",
+      "villagesIntro": "Five villages of the Network of the Most Beautiful Villages of Spain, all in the province of Cadiz, in the Sierra de Grazalema and the region of Campo de Gibraltar.",
+      "map": "Route map",
+      "mapIntro": "The route links Castellar de la Frontera, Vejer de la Frontera, Grazalema, Zahara and Setenil de las Bodegas over five days.",
+      "logistics": "Practical information"
+    },
+    "logistics": {
+      "airportTitle": "Arrival and departure",
+      "airportText": "Malaga Airport (AGP). Transfers organized by the Federation.",
+      "hotelTitle": "Main housing",
+      "hotelText": "Hotel El Alcornocal, Castellar de la Frontera (nights of May 20-22).",
+      "languagesTitle": "Languages",
+      "languagesText": "This page automatically detects the browser language. Available in 7 languages: Spanish, English, French, German, Portuguese, Italian and Catalan.",
+      "contactTitle": "Contact",
+      "contactText": "For any incident during the Meetings, please contact the team of the Federation or the host Association."
+    },
+    "villages": {
+      "castellar": {
+        "name": "Castellar de la Frontera",
+        "tagline": "Welcoming venue"
+      },
+      "vejer": {
+        "name": "Vejer de la Frontera",
+        "tagline": "White village overlooking the Atlantic"
+      },
+      "grazalema": {
+        "name": "Grazalema",
+        "tagline": "Heart of the Sierra and Biosphere Reserve"
+      },
+      "zahara": {
+        "name": "Zahara",
+        "tagline": "Nasrid castle over the reservoir"
+      },
+      "setenil": {
+        "name": "Setenil de las Bodegas",
+        "tagline": "Cave-houses built into the rock"
+      }
+    }
   }
 }

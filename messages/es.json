@@ -2310,5 +2310,127 @@
     "giftBadge": "Regalo",
     "offersOne": "{n} oferta",
     "offersMany": "{n} ofertas"
+  },
+  "rencontres2026": {
+    "meta": {
+      "title": "Rencontres Internationales 2026 — Pueblos Más Bonitos de la Tierra",
+      "description": "Programa oficial de los Encuentros Internacionales 2026 de la Federación de Los Pueblos Más Bonitos de la Tierra. España, del 20 al 24 de mayo."
+    },
+    "hero": {
+      "kicker": "Rencontres Internationales 2026",
+      "federation": "Federación de los Pueblos Más Bonitos de la Tierra",
+      "title": "Asamblea General Internacional",
+      "subtitle": "España · Sierra de Cádiz · 20–24 de mayo de 2026",
+      "intro": "La Federación Internacional celebra su asamblea anual en Andalucía. Cinco días de trabajo institucional, descubrimiento patrimonial y encuentros entre las delegaciones de los países miembros."
+    },
+    "actions": {
+      "downloadPdf": "Descargar programa (PDF)",
+      "viewProgram": "Ver programa",
+      "viewVillages": "Ver pueblos",
+      "viewMap": "Ver mapa de la ruta",
+      "viewVillage": "Ver pueblo"
+    },
+    "sections": {
+      "program": "Programa",
+      "villages": "Pueblos del recorrido",
+      "villagesIntro": "Cinco pueblos de la Red de Los Pueblos Más Bonitos de España, todos en la provincia de Cádiz, en plena Sierra de Grazalema y la comarca del Campo de Gibraltar.",
+      "map": "Mapa de la ruta",
+      "mapIntro": "El recorrido enlaza Castellar de la Frontera, Vejer de la Frontera, Grazalema, Zahara y Setenil de las Bodegas a lo largo de cinco días.",
+      "logistics": "Información práctica"
+    },
+    "logistics": {
+      "airportTitle": "Llegada y salida",
+      "airportText": "Aeropuerto de Málaga (AGP). Traslados organizados por la Federación.",
+      "hotelTitle": "Alojamiento principal",
+      "hotelText": "Hotel El Alcornocal, Castellar de la Frontera (noches del 20 al 22 de mayo).",
+      "languagesTitle": "Idiomas",
+      "languagesText": "Esta página detecta automáticamente el idioma del navegador. Disponible en 7 idiomas: español, inglés, francés, alemán, portugués, italiano y catalán.",
+      "contactTitle": "Contacto",
+      "contactText": "Para cualquier incidencia durante los Encuentros, dirigirse al equipo de la Federación o de la Asociación anfitriona."
+    },
+    "days": {
+      "wednesday": {
+        "label": "Miércoles 20 de mayo",
+        "title": "Llegada · Castellar de la Frontera",
+        "items": [
+          { "time": "15:30", "text": "Traslado desde el Aeropuerto de Málaga hasta Castellar de la Frontera, Hotel El Alcornocal." },
+          { "time": "18:30", "text": "Traslado en minibús desde el Hotel El Alcornocal hasta el Castillo de Castellar de la Frontera." },
+          { "time": "19:00", "text": "Visita guiada." },
+          { "time": "20:00", "text": "Cena-cóctel de bienvenida en el Castillo de Castellar de la Frontera." },
+          { "time": "21:00", "text": "Concierto de música tradicional andaluza con bailes regionales." },
+          { "time": "22:30", "text": "Traslado en minibús hasta el hotel." }
+        ]
+      },
+      "thursday": {
+        "label": "Jueves 21 de mayo",
+        "title": "Asamblea General · La Almoraima · Vejer de la Frontera",
+        "items": [
+          { "time": "08:15", "text": "Traslado desde el Hotel El Alcornocal hasta La Almoraima de las asociaciones que son miembros activos, para la reunión del Consejo de Administración." },
+          { "time": "09:45", "text": "Traslado desde el Hotel El Alcornocal hasta La Almoraima del resto de delegaciones." },
+          { "time": "10:00", "text": "Apertura de la Asamblea General de la Federación de Los Pueblos Más Bonitos de la Tierra." },
+          { "time": "13:30–15:00", "text": "Almuerzo tipo cóctel." },
+          { "time": "15:00–17:00", "text": "Seminario." },
+          { "time": "17:00", "text": "Clausura de la Asamblea General y traslado desde La Almoraima hasta el Hotel El Alcornocal. Las habitaciones estarán disponibles hasta las 18:00." },
+          { "time": "18:00", "text": "Traslado a Vejer de la Frontera." },
+          { "time": "21:00", "text": "Cena y concierto de jazz en Vejer de la Frontera." }
+        ]
+      },
+      "friday": {
+        "label": "Viernes 22 de mayo",
+        "title": "Vejer · Benamahoma · Grazalema",
+        "items": [
+          { "time": "09:00", "text": "Visita a Vejer de la Frontera." },
+          { "time": "10:00", "text": "Traslado a Benamahoma." },
+          { "time": "12:00", "text": "Degustación de miel en Benamahoma y visita al Pinsapar, bosque milenario y Reserva de la Biosfera reconocida por la UNESCO." },
+          { "time": "14:30", "text": "Almuerzo en Benamahoma." },
+          { "time": "16:30", "text": "Traslado a los alojamientos en Grazalema." },
+          { "time": "19:30", "text": "Visita guiada nocturna tematizada a Grazalema." },
+          { "time": "21:00", "text": "Cena y concierto de música clásica." }
+        ]
+      },
+      "saturday": {
+        "label": "Sábado 23 de mayo",
+        "title": "Zahara · Setenil de las Bodegas",
+        "items": [
+          { "time": "10:00", "text": "Salida hacia Zahara." },
+          { "time": "11:00", "text": "Visita guiada teatralizada, incluyendo la subida a la Torre del Homenaje." },
+          { "time": "14:00", "text": "Almuerzo en Zahara." },
+          { "time": "16:00", "text": "Traslado a Setenil de las Bodegas." },
+          { "time": "17:30", "text": "Visita del casco histórico y de las casas-cueva integradas en la roca." },
+          { "time": "19:30", "text": "Espectáculo de baile flamenco." },
+          { "time": "20:00", "text": "Traslado en tren turístico al restaurante donde se celebrará la cena de despedida." },
+          { "time": "21:30", "text": "Regreso a Grazalema." }
+        ]
+      },
+      "sunday": {
+        "label": "Domingo 24 de mayo",
+        "title": "Despedida",
+        "items": [
+          { "time": "07:00", "text": "Traslado al Aeropuerto de Málaga." }
+        ]
+      }
+    },
+    "villages": {
+      "castellar": {
+        "name": "Castellar de la Frontera",
+        "tagline": "Sede de bienvenida"
+      },
+      "vejer": {
+        "name": "Vejer de la Frontera",
+        "tagline": "Pueblo blanco con vistas al Atlántico"
+      },
+      "grazalema": {
+        "name": "Grazalema",
+        "tagline": "Corazón de la Sierra y Reserva de la Biosfera"
+      },
+      "zahara": {
+        "name": "Zahara",
+        "tagline": "Castillo nazarí sobre el embalse"
+      },
+      "setenil": {
+        "name": "Setenil de las Bodegas",
+        "tagline": "Casas-cueva integradas en la roca"
+      }
+    }
   }
 }
