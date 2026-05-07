@@ -2348,7 +2348,9 @@
       "languagesTitle": "Idiomes",
       "languagesText": "Aquesta pàgina detecta automàticament l'idioma del vostre navegador. Disponible en 7 idiomes: espanyol, anglès, francès, alemany, portuguès, italià i català.",
       "contactTitle": "Contacte",
-      "contactText": "Si teniu cap problema durant l'esdeveniment, poseu-vos en contacte amb l'equip de la Federació o amb l'associació amfitriona."
+      "contactText": "Si teniu cap problema durant l'esdeveniment, poseu-vos en contacte amb l'equip de la Federació o amb l'associació amfitriona.",
+      "contactName": "Esther Aisa",
+      "contactPhone": "+34 633 976 027"
     },
     "days": {
       "wednesday": {

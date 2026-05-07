@@ -2500,7 +2500,9 @@
       "languagesTitle": "Languages",
       "languagesText": "This page automatically detects the browser language. Available in 7 languages: Spanish, English, French, German, Portuguese, Italian and Catalan.",
       "contactTitle": "Contact",
-      "contactText": "For any incident during the Meetings, please contact the team of the Federation or the host Association."
+      "contactText": "For any incident during the Meetings, please contact the team of the Federation or the host Association.",
+      "contactName": "Esther Aisa",
+      "contactPhone": "+34 633 976 027"
     },
     "villages": {
       "castellar": {

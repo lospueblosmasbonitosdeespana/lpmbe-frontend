@@ -1,12 +1,33 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
 const PUEBLOS = [
-  { key: 'castellar', slug: 'castellar-de-la-frontera', day: 1 },
-  { key: 'vejer', slug: 'vejer-de-la-frontera', day: 2 },
-  { key: 'grazalema', slug: 'grazalema', day: 3 },
-  { key: 'zahara', slug: 'zahara', day: 4 },
-  { key: 'setenil', slug: 'setenil-de-las-bodegas', day: 4 },
+  {
+    key: 'castellar',
+    slug: 'castellar-de-la-frontera',
+    foto: 'https://media.lospueblosmasbonitosdeespana.org/pueblos/103/castellar-de-la-frontera-foto-07.png',
+  },
+  {
+    key: 'vejer',
+    slug: 'vejer-de-la-frontera',
+    foto: 'https://media.lospueblosmasbonitosdeespana.org/pueblos/27/vejer-de-la-frontera-destacada.jpg',
+  },
+  {
+    key: 'grazalema',
+    slug: 'grazalema',
+    foto: 'https://media.lospueblosmasbonitosdeespana.org/pueblos/60/grazalema-destacada.jpg',
+  },
+  {
+    key: 'zahara',
+    slug: 'zahara',
+    foto: 'https://media.lospueblosmasbonitosdeespana.org/pueblos/f59a9b5c-c6b8-4df0-8f7e-72fcc57a49d2.jpg',
+  },
+  {
+    key: 'setenil',
+    slug: 'setenil-de-las-bodegas',
+    foto: 'https://media.lospueblosmasbonitosdeespana.org/pueblos/92/setenil-de-las-bodegas-foto-07.jpg',
+  },
 ] as const;
 
 export default async function PueblosRuta() {
@@ -20,16 +41,17 @@ export default async function PueblosRuta() {
           href={`/pueblos/${p.slug}`}
           className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg"
         >
-          <div className="relative h-40 overflow-hidden bg-gradient-to-br from-amber-100 via-stone-100 to-emerald-100">
-            <div
-              className="absolute inset-0 opacity-40 transition group-hover:opacity-60"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 30% 20%, rgba(133,77,14,0.25), transparent 60%), radial-gradient(circle at 70% 80%, rgba(16,121,75,0.2), transparent 60%)',
-              }}
-              aria-hidden
+          <div className="relative h-44 overflow-hidden bg-stone-100">
+            <Image
+              src={p.foto}
+              alt={p.key}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              style={{ objectFit: 'cover', transition: 'transform 0.4s ease' }}
+              className="group-hover:scale-105"
             />
-            <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-amber-700 text-sm font-bold text-white shadow-md">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" aria-hidden />
+            <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-amber-700 text-sm font-bold text-white shadow-md ring-2 ring-white/60">
               {idx + 1}
             </div>
             <div className="absolute right-4 top-4 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-700 shadow-sm backdrop-blur">

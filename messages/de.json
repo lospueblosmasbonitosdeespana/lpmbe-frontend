@@ -2348,7 +2348,9 @@
       "languagesTitle": "Sprachen",
       "languagesText": "Diese Seite erkennt automatisch die Sprache Ihres Browsers. Verfügbar in 7 Sprachen: Spanisch, Englisch, Französisch, Deutsch, Portugiesisch, Italienisch und Katalanisch.",
       "contactTitle": "Kontakt",
-      "contactText": "Bei Zwischenfällen während des Treffens wenden Sie sich bitte an das Verbandsteam oder den gastgebenden Verband."
+      "contactText": "Bei Zwischenfällen während des Treffens wenden Sie sich bitte an das Verbandsteam oder den gastgebenden Verband.",
+      "contactName": "Esther Aisa",
+      "contactPhone": "+34 633 976 027"
     },
     "days": {
       "wednesday": {

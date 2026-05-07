@@ -2500,7 +2500,9 @@
       "languagesTitle": "Langues",
       "languagesText": "Cette page détecte automatiquement la langue de votre navigateur. Disponible en 7 langues : espagnol, anglais, français, allemand, portugais, italien et catalan.",
       "contactTitle": "Contact",
-      "contactText": "Pour tout incident durant les Rencontres, veuillez contacter l'équipe de la Fédération ou l'Association hôte."
+      "contactText": "Pour tout incident durant les Rencontres, veuillez contacter l'équipe de la Fédération ou l'Association hôte.",
+      "contactName": "Esther Aisa",
+      "contactPhone": "+34 633 976 027"
     },
     "villages": {
       "castellar": {

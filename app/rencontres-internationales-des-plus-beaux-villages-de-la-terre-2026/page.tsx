@@ -166,10 +166,11 @@ export default async function Page() {
               title={t('logistics.languagesTitle')}
               text={t('logistics.languagesText')}
             />
-            <InfoCard
-              icon="contact"
+            <ContactCard
               title={t('logistics.contactTitle')}
               text={t('logistics.contactText')}
+              name={t('logistics.contactName')}
+              phone={t('logistics.contactPhone')}
             />
           </div>
         </div>
@@ -238,6 +239,41 @@ function InfoCard({
       </div>
       <h3 className="text-base font-semibold text-stone-900">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{text}</p>
+    </div>
+  );
+}
+
+function ContactCard({
+  title,
+  text,
+  name,
+  phone,
+}: {
+  title: string;
+  text: string;
+  name: string;
+  phone: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-6 shadow-sm transition hover:border-amber-300 hover:shadow-md">
+      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-700/10 text-amber-800">
+        <div className="h-5 w-5">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.21 2.2z" />
+          </svg>
+        </div>
+      </div>
+      <h3 className="text-base font-semibold text-stone-900">{title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{text}</p>
+      <div className="mt-3 space-y-1">
+        <p className="text-sm font-semibold text-stone-800">{name}</p>
+        <a
+          href={`tel:${phone.replace(/\s/g, '')}`}
+          className="inline-flex items-center gap-2 text-base font-bold text-amber-800 hover:text-amber-900 hover:underline"
+        >
+          {phone}
+        </a>
+      </div>
     </div>
   );
 }

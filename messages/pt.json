@@ -2348,7 +2348,9 @@
       "languagesTitle": "Línguas",
       "languagesText": "Esta página detecta automaticamente a língua do seu navegador. Disponível em 7 línguas: espanhol, inglês, francês, alemão, português, italiano e catalão.",
       "contactTitle": "Contacto",
-      "contactText": "Para qualquer incidente durante os Encontros, é favor contactar a equipa da Federação ou a Associação anfitriã."
+      "contactText": "Para qualquer incidente durante os Encontros, é favor contactar a equipa da Federação ou a Associação anfitriã.",
+      "contactName": "Esther Aisa",
+      "contactPhone": "+34 633 976 027"
     },
     "days": {
       "wednesday": {
