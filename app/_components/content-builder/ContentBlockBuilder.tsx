@@ -256,13 +256,15 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         colCenterImg: sanitizeTemplateUrl(String(src.colCenterImg || '')),
         btn2Label: String(src.btn2Label || ''),
         btn2Url: sanitizeTemplateUrl(String(src.btn2Url || '')),
-        alignBtn1: (() => {
+        alignBtn1: ((): 'left' | 'center' | 'right' | undefined => {
           const v = String(src.alignBtn1 || '');
-          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+          if (v === 'left' || v === 'center' || v === 'right') return v;
+          return undefined;
         })(),
-        alignBtn2: (() => {
+        alignBtn2: ((): 'left' | 'center' | 'right' | undefined => {
           const v = String(src.alignBtn2 || '');
-          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+          if (v === 'left' || v === 'center' || v === 'right') return v;
+          return undefined;
         })(),
       };
     });

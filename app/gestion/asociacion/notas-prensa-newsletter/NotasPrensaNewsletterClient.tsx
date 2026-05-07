@@ -466,13 +466,15 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         colCenterImg: sanitizeTemplateUrl(String(b.colCenterImg || '')),
         btn2Label: String(b.btn2Label || ''),
         btn2Url: sanitizeTemplateUrl(String(b.btn2Url || '')),
-        alignBtn1: (() => {
+        alignBtn1: ((): 'left' | 'center' | 'right' | undefined => {
           const v = String(b.alignBtn1 || '');
-          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+          if (v === 'left' || v === 'center' || v === 'right') return v;
+          return undefined;
         })(),
-        alignBtn2: (() => {
+        alignBtn2: ((): 'left' | 'center' | 'right' | undefined => {
           const v = String(b.alignBtn2 || '');
-          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+          if (v === 'left' || v === 'center' || v === 'right') return v;
+          return undefined;
         })(),
       };
     })
