@@ -61,6 +61,36 @@ export type GranEventoFoto = {
   createdAt: string;
 };
 
+export type GranEventoAlojamientoAsignacion = {
+  id: number;
+  alojamientoId: number;
+  delegacion: string;
+  persona: string;
+  notas: string | null;
+  orden: number;
+};
+
+export type GranEventoAlojamiento = {
+  id: number;
+  eventoId: number;
+  orden: number;
+  nombre: string;
+  paraTodos: boolean;
+  pendiente: boolean;
+  fechaCheckIn: string;
+  fechaCheckOut: string;
+  direccion: string | null;
+  ciudad: string | null;
+  lat: number | null;
+  lng: number | null;
+  telefono: string | null;
+  web: string | null;
+  fotoUrl: string | null;
+  notas_es: string | null;
+  notas_i18n: Record<string, string> | null;
+  asignaciones: GranEventoAlojamientoAsignacion[];
+};
+
 export type ParadaTipo =
   | 'airport'
   | 'food'
@@ -130,6 +160,7 @@ export type GranEvento = {
   dias: GranEventoDia[];
   pueblos: GranEventoPueblo[];
   paradas: GranEventoParada[];
+  alojamientos: GranEventoAlojamiento[];
 };
 
 /**

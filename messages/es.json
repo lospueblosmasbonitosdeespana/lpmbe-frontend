@@ -2314,7 +2314,8 @@
   "granEvento": {
     "actions": {
       "viewProgram": "Ver programa",
-      "downloadPdf": "Descargar programa (PDF)"
+      "downloadPdf": "Descargar programa (PDF)",
+      "viewAlojamientos": "Alojamientos"
     },
     "sections": {
       "program": "Programa oficial",
@@ -2336,6 +2337,21 @@
     },
     "galeria": {
       "vacio": "Aún no se han subido fotos."
+    },
+    "alojamientos": {
+      "kicker": "Dónde duerme cada delegación",
+      "titulo": "Alojamientos del evento",
+      "intro": "Consulta el hotel asignado a cada delegación y persona durante los días del evento. Toca en \"Cómo llegar\" para abrir el hotel en Google Maps desde tu móvil.",
+      "buscarPlaceholder": "Busca tu nombre, delegación u hotel…",
+      "nocheNum": "Noche {n}",
+      "numNoches": "{n} noches",
+      "comoLlegar": "Cómo llegar",
+      "web": "Web del hotel",
+      "paraTodos": "Todas las delegaciones",
+      "paraTodosDescripcion": "Esta noche todas las delegaciones se alojan juntas en este hotel.",
+      "pendienteTitulo": "Pendiente de asignar",
+      "pendienteDescripcion": "Aún se está confirmando el hotel para estas personas. Se actualizará en cuanto haya información.",
+      "sinAsignaciones": "Aún no hay personas asignadas a este hotel."
     }
   },
   "rencontres2026": {

@@ -1,12 +1,13 @@
 import Image from 'next/image';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Calendar, FileDown, Plane, Hotel, Languages, Phone } from 'lucide-react';
+import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble } from 'lucide-react';
 import { getGranEventoBySlug, getGranEventoFotos, pickI18n } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
 import GranEventoMapa from './GranEventoMapa';
 import GranEventoGaleria from './GranEventoGaleria';
+import GranEventoAlojamientos from './GranEventoAlojamientos';
 
 /**
  * Página pública de un Gran Evento (asambleas, encuentros internacionales).
@@ -127,6 +128,15 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
                 {t('actions.downloadPdf')}
               </a>
             ) : null}
+            {(evento.alojamientos?.length ?? 0) > 0 ? (
+              <a
+                href="#alojamientos"
+                className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
+              >
+                <BedDouble className="h-4 w-4" />
+                {t('actions.viewAlojamientos')}
+              </a>
+            ) : null}
           </div>
         </div>
       </header>
@@ -197,6 +207,11 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
             <GranEventoMapa pueblos={evento.pueblos} paradas={evento.paradas ?? []} />
           </div>
         </section>
+      ) : null}
+
+      {/* ALOJAMIENTOS */}
+      {(evento.alojamientos?.length ?? 0) > 0 ? (
+        <GranEventoAlojamientos alojamientos={evento.alojamientos} />
       ) : null}
 
       {/* LOGÍSTICA */}

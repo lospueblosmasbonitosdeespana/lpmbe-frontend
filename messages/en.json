@@ -2530,7 +2530,8 @@
   "granEvento": {
     "actions": {
       "viewProgram": "See program",
-      "downloadPdf": "Download program (PDF)"
+      "downloadPdf": "Download program (PDF)",
+      "viewAlojamientos": "Accommodations"
     },
     "sections": {
       "program": "Official program",
@@ -2552,6 +2553,21 @@
     },
     "galeria": {
       "vacio": "No photos have been uploaded yet."
+    },
+    "alojamientos": {
+      "kicker": "Where each delegation sleeps",
+      "titulo": "Event accommodations",
+      "intro": "Check the hotel assigned to each delegation and person during the days of the event. Tap on \"How to get there\" to open the hotel on Google Maps from your cell phone.",
+      "buscarPlaceholder": "Search for your name, delegation or hotel...",
+      "nocheNum": "Night {n}",
+      "numNoches": "{n} nights",
+      "comoLlegar": "How to get there",
+      "web": "Hotel website",
+      "paraTodos": "All delegations",
+      "paraTodosDescripcion": "Tonight all delegations stay together at this hotel.",
+      "pendienteTitulo": "To be assigned",
+      "pendienteDescripcion": "The hotel for these people is still being confirmed. Will update as soon as information is available.",
+      "sinAsignaciones": "There are no people assigned to this hotel yet."
     }
   }
 }

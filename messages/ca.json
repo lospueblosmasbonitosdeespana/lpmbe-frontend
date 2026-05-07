@@ -2530,7 +2530,8 @@
   "granEvento": {
     "actions": {
       "viewProgram": "Veure el programa",
-      "downloadPdf": "Descarrega el programa (PDF)"
+      "downloadPdf": "Descarrega el programa (PDF)",
+      "viewAlojamientos": "Allotjament"
     },
     "sections": {
       "program": "Programa oficial",
@@ -2552,6 +2553,21 @@
     },
     "galeria": {
       "vacio": "Encara no s'han pujat cap foto."
+    },
+    "alojamientos": {
+      "kicker": "On s'allotja cada delegació",
+      "titulo": "Allotjament per a l'esdeveniment",
+      "intro": "Comprova quin hotel s'ha assignat a cada delegació i a cada persona durant la durada de l'esdeveniment. Toca «Com arribar-hi» per obrir la ubicació de l'hotel a Google Maps al teu mòbil.",
+      "buscarPlaceholder": "Cerqueu el vostre nom, sucursal o hotel…",
+      "nocheNum": "Nit {n}",
+      "numNoches": "{n} nits",
+      "comoLlegar": "Com arribar-hi",
+      "web": "Lloc web de l'hotel",
+      "paraTodos": "Totes les branques",
+      "paraTodosDescripcion": "Totes les delegacions s'allotgen juntes en aquest hotel aquesta nit.",
+      "pendienteTitulo": "Per assignar",
+      "pendienteDescripcion": "L'hotel per a aquests hostes encara s'està confirmant. Us ho actualitzarem tan aviat com tinguem més informació.",
+      "sinAsignaciones": "Encara no s'ha assignat cap membre del personal a aquest hotel."
     }
   }
 }

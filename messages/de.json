@@ -2530,7 +2530,8 @@
   "granEvento": {
     "actions": {
       "viewProgram": "Siehe Programm",
-      "downloadPdf": "Programm herunterladen (PDF)"
+      "downloadPdf": "Programm herunterladen (PDF)",
+      "viewAlojamientos": "Unterkunft"
     },
     "sections": {
       "program": "Offizielles Programm",
@@ -2552,6 +2553,21 @@
     },
     "galeria": {
       "vacio": "Es sind noch keine Fotos hochgeladen worden."
+    },
+    "alojamientos": {
+      "kicker": "Wo jede Delegation schläft",
+      "titulo": "Unterkünfte für die Veranstaltung",
+      "intro": "Überprüfen Sie das Hotel, das den einzelnen Delegationen und Personen während der Veranstaltungstage zugewiesen wurde. Tippen Sie auf \"Anfahrtsbeschreibung\", um das Hotel auf Google Maps von Ihrem Mobiltelefon aus zu öffnen.",
+      "buscarPlaceholder": "Suchen Sie nach Ihrem Namen, Ihrer Delegation oder Ihrem Hotel...",
+      "nocheNum": "Nacht {n}",
+      "numNoches": "{n} Nächte",
+      "comoLlegar": "Wie man dorthin kommt",
+      "web": "Website des Hotels",
+      "paraTodos": "Alle Delegationen",
+      "paraTodosDescripcion": "Heute Abend übernachten alle Delegationen gemeinsam in diesem Hotel.",
+      "pendienteTitulo": "Zuzuordnen",
+      "pendienteDescripcion": "Das Hotel für diese Personen wird noch bestätigt. Wir aktualisieren, sobald Informationen verfügbar sind.",
+      "sinAsignaciones": "Diesem Hotel sind noch keine Personen zugeordnet."
     }
   }
 }
