@@ -250,7 +250,7 @@ export const PRODUCTOS_RRSS_SUELTOS: ProductoRRSS[] = [
     label: 'Post de Instagram (imagen o carrusel)',
     descripcion:
       'Publicación en feed con imagen o carrusel. Mejor rendimiento orgánico y vida útil larga.',
-    precio: 700,
+    precio: 695,
     requiereAprobacion: true,
   },
   {
@@ -258,7 +258,7 @@ export const PRODUCTOS_RRSS_SUELTOS: ProductoRRSS[] = [
     label: 'Reel de Instagram',
     descripcion:
       'Vídeo corto en Reels. El formato con más alcance orgánico actualmente. Requiere material de vídeo de calidad.',
-    precio: 900,
+    precio: 895,
     requiereAprobacion: true,
   },
   {
@@ -266,7 +266,7 @@ export const PRODUCTOS_RRSS_SUELTOS: ProductoRRSS[] = [
     label: 'Post en Facebook',
     descripcion:
       'Publicación en la página de Facebook de LPMBE. Útil para llegar a un público de mayor edad o más local.',
-    precio: 200,
+    precio: 195,
   },
 ];
 

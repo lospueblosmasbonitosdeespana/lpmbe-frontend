@@ -57,7 +57,6 @@ const LOCK = (
 const F = PLAN_FEATURES.FREE;
 const R = PLAN_FEATURES.RECOMENDADO;
 const P = PLAN_FEATURES.PREMIUM;
-const S = PLAN_FEATURES.SELECTION;
 
 type Feature = { text: string; free: boolean; reco: boolean; prem: boolean };
 
@@ -89,21 +88,6 @@ const FEATURES: Feature[] = [
   { text: "Placa física «Premium Club LPMBE»",                   free: F.physicalPlaqueIncluded,      reco: R.physicalPlaqueIncluded,                              prem: P.physicalPlaqueIncluded },
 ];
 
-const SELECTION_FEATURES = [
-  `Hasta ${S.maxPhotos} fotografías profesionales`,
-  "Landing completamente personalizada",
-  `${S.monthlyEditorialMention} menciones editoriales/mes en RRSS de LPMBE`,
-  `${S.monthlyStoryIncluded} stories/mes en el highlight «Ventajas Club»`,
-  "Presencia destacada en la guía oficial",
-  "Co-branding con la marca LPMBE",
-  "Badge «Club LPMBE Selection»",
-  "Placa física premium grabada",
-  "Traducción automática a 7 idiomas",
-  "Estadísticas avanzadas de visitas y conversión",
-  "Sistema de reservas integrado",
-  "Sección propia en lpmbe.com/selection",
-  "Atención y soporte personalizado",
-];
 
 function fmtEuros(n: number | null): string {
   if (n == null) return "Consultar";
@@ -240,63 +224,6 @@ export default async function ParaNegociosPage() {
           Precios sin IVA. Pago mensual o anual con descuento. Cancela cuando quieras.
         </p>
 
-        {/* ─── SELECTION ─── */}
-        <div className="mt-20 relative">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
-          <div className="relative rounded-3xl border border-slate-600 p-8 md:p-12">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <svg className="h-8 w-8 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                  <h2 className="text-3xl font-bold text-white">Club LPMBE Selection</h2>
-                </div>
-                <p className="text-lg text-slate-300 max-w-xl">
-                  Para establecimientos excepcionales en cualquier punto de España.
-                  Hoteles con encanto, restaurantes de autor, experiencias únicas.
-                </p>
-                <p className="mt-3 text-sm text-slate-400">
-                  Un programa exclusivo por invitación o candidatura para negocios que
-                  representan lo mejor del turismo rural y la gastronomía española,
-                  estén o no en un pueblo de la red.
-                </p>
-
-                <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                  {SELECTION_FEATURES.map((feat) => (
-                    <div key={feat} className="flex items-start gap-2">
-                      <svg className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      <span className="text-sm text-slate-200">{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="shrink-0 rounded-2xl border border-slate-600 bg-slate-800/80 p-6 md:w-80">
-                <div className="text-center mb-6">
-                  <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">Precio anual</p>
-                  <p className="mt-2 text-3xl font-bold text-white">Consultar</p>
-                  <p className="mt-1 text-xs text-slate-500">Acceso por invitación o candidatura</p>
-                </div>
-                <Link
-                  href="/selection"
-                  className="block w-full rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 text-center text-sm font-semibold text-white hover:from-amber-600 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/25"
-                >
-                  Descubrir Selection
-                </Link>
-                <Link
-                  href="/selection/candidatura"
-                  className="mt-3 block w-full rounded-lg border border-slate-500 px-4 py-2.5 text-center text-sm font-medium text-slate-300 hover:bg-slate-700 transition-colors"
-                >
-                  Presentar candidatura
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* RRSS section — incluido + extras con precios reales */}
         <div className="mt-20" id="rrss">
           <div className="text-center mb-8">
@@ -304,8 +231,8 @@ export default async function ParaNegociosPage() {
               Servicios de Redes Sociales LPMBE
             </h2>
             <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-              Más de 240.000 seguidores cualificados interesados en turismo rural.
-              Una audiencia que tu negocio no puede conseguir solo.
+              Más de 350.000 seguidores en Instagram y Facebook cualificados, interesados
+              en turismo rural. Una audiencia que tu negocio no puede conseguir solo.
             </p>
           </div>
 
@@ -314,7 +241,7 @@ export default async function ParaNegociosPage() {
             <h3 className="text-lg font-bold text-foreground mb-4">
               Incluido en tu plan
             </h3>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-xl border border-border bg-muted/30 p-4">
                 <p className="text-sm font-bold text-foreground">Recomendado</p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -325,12 +252,6 @@ export default async function ParaNegociosPage() {
                 <p className="text-sm font-bold text-amber-900">Premium</p>
                 <p className="mt-1 text-xs text-amber-900/80">
                   {P.monthlyEditorialMention} mención editorial mensual + {P.monthlyStoryIncluded} story en el highlight del Club.
-                </p>
-              </div>
-              <div className="rounded-xl border border-slate-700 bg-slate-900 p-4">
-                <p className="text-sm font-bold text-amber-300">Selection</p>
-                <p className="mt-1 text-xs text-slate-300">
-                  {S.monthlyEditorialMention} menciones editoriales + {S.monthlyStoryIncluded} stories al mes.
                 </p>
               </div>
             </div>

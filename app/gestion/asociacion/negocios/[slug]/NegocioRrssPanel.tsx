@@ -146,11 +146,11 @@ export default function NegocioRrssPanel({
       }),
     });
     const d = await res.json().catch(() => ({}));
-    if (res.ok) {
-      setMsg('Solicitud enviada. Te enviaremos un presupuesto para confirmarla.');
+    if (res.ok && d.id) {
       setBriefDraft('');
       setShowSueltaPicker(false);
-      load();
+      // Lanzar checkout de Stripe directamente
+      await pagar(d.id);
     } else {
       setMsg(d?.message || 'No se pudo crear la solicitud');
     }
@@ -419,9 +419,9 @@ export default function NegocioRrssPanel({
                     {new Date(s.createdAt).toLocaleDateString('es-ES')}
                   </p>
                 </div>
-                {/* Botón "Pagar" si la suelta está aprobada y no pagada */}
+                {/* Botón "Pagar" si la suelta está pendiente/aprobada y no pagada */}
                 {TIPOS_DE_PAGO.includes(s.tipo) &&
-                  s.estado === 'APROBADA' &&
+                  (s.estado === 'APROBADA' || s.estado === 'PENDIENTE') &&
                   !s.pagadaAt &&
                   s.importeCents != null && (
                     <button
