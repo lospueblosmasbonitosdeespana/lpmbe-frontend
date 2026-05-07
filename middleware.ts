@@ -357,6 +357,8 @@ export function middleware(req: NextRequest): NextResponse {
     'negocio', 'para-negocios', 'patrimonio', 'petfriendly', 'planifica', 'prensa',
     'privacidad', 'pueblos', 'que-comer', 'recuperar', 'recursos',
     'redes-sociales', 'registro', 'rutas', 'selection', 'tienda', 'validador', 'webcams',
+    // Página privada (noindex) para los Encuentros Internacionales 2026 — slug largo destino del QR de las acreditaciones.
+    'rencontres-internationales-des-plus-beaux-villages-de-la-terre-2026',
   ]);
   const singleSegMatch = pathname.match(/^\/([^/]+)$/);
   if (singleSegMatch) {
