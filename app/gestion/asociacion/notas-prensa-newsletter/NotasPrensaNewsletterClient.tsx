@@ -2155,6 +2155,7 @@ export default function NotasPrensaNewsletterClient({
       setMessage(
         `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}. Puedes ajustar el contenido y publicar en la web.`,
       );
+      setSelectedNewsletterBlockId(null);
       setPressPhotoFiles([]);
       await loadData();
       return;
@@ -2216,6 +2217,7 @@ export default function NotasPrensaNewsletterClient({
     setMessage(
       `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}. Puedes ajustar el contenido y publicar en la web.`,
     );
+    setSelectedNewsletterBlockId(null);
     setPressPhotoFiles([]);
     await loadData();
   }
