@@ -375,41 +375,40 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
         parts.push(`<div style="${wrapStyle}">${b.content || ''}</div>`);
       }
     } else if (b.type === 'socialLinks') {
-      const iconSize = 40;
-      const iconInner = 20;
-      const iconMargin = Math.round((iconSize - iconInner) / 2);
+      const iconSize = 44;
       const cells: string[] = [];
 
-      const buildSocialCell = (url: string, title: string, bgColor: string, iconSlug: string) =>
-        `<td align="center" valign="middle" style="padding:0 6px;">` +
+      // Iconos auto-contenidos (fondo + logo) alojados en nuestro dominio.
+      // Compatibles con navegadores y clientes de email modernos (Gmail, Apple Mail,
+      // Outlook.com, iOS Mail). Se usa URL absoluta para que los emails los carguen.
+      const ICONS_BASE = 'https://lospueblosmasbonitosdeespana.org/icons/social';
+
+      const buildSocialCell = (url: string, title: string, iconSlug: string) =>
+        `<td align="center" valign="middle" style="padding:0 7px;">` +
           `<a href="${escHtml(url)}" style="text-decoration:none;display:block;" title="${escHtml(title)}">` +
-            `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;">` +
-              `<tr><td align="center" valign="middle" style="background:${bgColor};border-radius:50%;width:${iconSize}px;height:${iconSize}px;">` +
-                `<img src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/${iconSlug}.svg" width="${iconInner}" height="${iconInner}" style="filter:invert(1);display:block;margin:${iconMargin}px auto;" alt="${escHtml(title)}" />` +
-              `</td></tr>` +
-            `</table>` +
+            `<img src="${ICONS_BASE}/${iconSlug}.svg" width="${iconSize}" height="${iconSize}" style="display:block;border-radius:8px;" alt="${escHtml(title)}" />` +
           `</a>` +
         `</td>`;
 
       // Facebook
       if (b.socialFacebook) {
-        cells.push(buildSocialCell(b.socialFacebook, 'Facebook', '#1877F2', 'facebook'));
+        cells.push(buildSocialCell(b.socialFacebook, 'Facebook', 'facebook'));
       }
       // X / Twitter
       if (b.socialTwitter) {
-        cells.push(buildSocialCell(b.socialTwitter, 'X', '#000000', 'x'));
+        cells.push(buildSocialCell(b.socialTwitter, 'X', 'x'));
       }
-      // Instagram (color sólido por compatibilidad en clientes de email)
+      // Instagram
       if (b.socialInstagram) {
-        cells.push(buildSocialCell(b.socialInstagram, 'Instagram', '#E1306C', 'instagram'));
+        cells.push(buildSocialCell(b.socialInstagram, 'Instagram', 'instagram'));
       }
       // LinkedIn
       if (b.socialLinkedin) {
-        cells.push(buildSocialCell(b.socialLinkedin, 'LinkedIn', '#0077B5', 'linkedin'));
+        cells.push(buildSocialCell(b.socialLinkedin, 'LinkedIn', 'linkedin'));
       }
       // YouTube
       if (b.socialYoutube) {
-        cells.push(buildSocialCell(b.socialYoutube, 'YouTube', '#FF0000', 'youtube'));
+        cells.push(buildSocialCell(b.socialYoutube, 'YouTube', 'youtube'));
       }
 
       if (cells.length) {
