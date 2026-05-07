@@ -39,6 +39,7 @@ import {
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
 import { getApiUrl } from '@/lib/api';
+import ImageUploader from './_ImageUploader';
 
 const RutaMap = dynamic(() => import('@/app/_components/RutaMap'), {
   ssr: false,
@@ -196,11 +197,11 @@ export default function TabRuta({
 
       {/* Lista ordenable */}
       {rows.length > 0 ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={rows.map((r) => r.rowId)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
               {rows.map((row) => (
-                <SortableRow key={row.rowId} row={row} reload={reload} />
+                <SortableRow key={row.rowId} row={row} eventoId={evento.id} reload={reload} />
               ))}
             </div>
           </SortableContext>
@@ -216,7 +217,15 @@ export default function TabRuta({
   );
 }
 
-function SortableRow({ row, reload }: { row: Row; reload: () => Promise<void> }) {
+function SortableRow({
+  row,
+  eventoId,
+  reload,
+}: {
+  row: Row;
+  eventoId: number;
+  reload: () => Promise<void>;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: row.rowId });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -286,9 +295,9 @@ function SortableRow({ row, reload }: { row: Row; reload: () => Promise<void> })
 
       {editing ? (
         row.kind === 'pueblo' ? (
-          <EditPuebloModal row={row} onClose={() => setEditing(false)} reload={reload} />
+          <EditPuebloModal row={row} eventoId={eventoId} onClose={() => setEditing(false)} reload={reload} />
         ) : (
-          <EditParadaModal row={row} onClose={() => setEditing(false)} reload={reload} />
+          <EditParadaModal row={row} eventoId={eventoId} onClose={() => setEditing(false)} reload={reload} />
         )
       ) : null}
     </div>
@@ -335,9 +344,19 @@ function ModalShell({ title, onClose, children }: { title: string; onClose: () =
   );
 }
 
-function EditPuebloModal({ row, onClose, reload }: { row: Row; onClose: () => void; reload: () => Promise<void> }) {
+function EditPuebloModal({
+  row,
+  eventoId,
+  onClose,
+  reload,
+}: {
+  row: Row;
+  eventoId: number;
+  onClose: () => void;
+  reload: () => Promise<void>;
+}) {
   const [tagline, setTagline] = useState(row.tagline ?? '');
-  const [fotoUrl, setFotoUrl] = useState(row.imagen ?? '');
+  const [fotoUrl, setFotoUrl] = useState<string | null>(row.imagen ?? null);
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -359,15 +378,12 @@ function EditPuebloModal({ row, onClose, reload }: { row: Row; onClose: () => vo
   return (
     <ModalShell title={`Editar "${row.titulo}"`} onClose={onClose}>
       <div className="space-y-3">
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-600">Tagline (opcional)</span>
+        <Field label="Tagline (opcional)">
           <input value={tagline} onChange={(e) => setTagline(e.target.value)} className={modalInput} placeholder="Ej. Sede de bienvenida" />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-600">URL de foto (opcional)</span>
-          <input value={fotoUrl} onChange={(e) => setFotoUrl(e.target.value)} className={modalInput} placeholder="https://…" />
-          <p className="mt-1 text-[11px] text-stone-500">Si lo dejas vacío, se usa la foto destacada del pueblo.</p>
-        </label>
+        </Field>
+        <Field label="Foto (opcional, sustituye a la oficial del pueblo)">
+          <ImageUploader eventoId={eventoId} subfolder="pueblos" value={fotoUrl} onChange={setFotoUrl} />
+        </Field>
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">Cancelar</button>
           <button onClick={save} disabled={busy} className="rounded-lg bg-amber-700 px-3 py-1.5 text-sm font-semibold text-white">
@@ -379,13 +395,23 @@ function EditPuebloModal({ row, onClose, reload }: { row: Row; onClose: () => vo
   );
 }
 
-function EditParadaModal({ row, onClose, reload }: { row: Row; onClose: () => void; reload: () => Promise<void> }) {
+function EditParadaModal({
+  row,
+  eventoId,
+  onClose,
+  reload,
+}: {
+  row: Row;
+  eventoId: number;
+  onClose: () => void;
+  reload: () => Promise<void>;
+}) {
   const [nombre, setNombre] = useState(row.titulo);
   const [descripcion, setDescripcion] = useState(row.descripcion ?? '');
   const [lat, setLat] = useState(String(row.lat));
   const [lng, setLng] = useState(String(row.lng));
   const [tipoIcono, setTipoIcono] = useState(row.tipoIcono ?? 'point');
-  const [fotoUrl, setFotoUrl] = useState(row.imagen ?? '');
+  const [fotoUrl, setFotoUrl] = useState<string | null>(row.imagen ?? null);
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -435,8 +461,8 @@ function EditParadaModal({ row, onClose, reload }: { row: Row; onClose: () => vo
             <input value={lng} onChange={(e) => setLng(e.target.value)} className={modalInput} placeholder="-4.4214" />
           </Field>
         </div>
-        <Field label="URL de foto (opcional)">
-          <input value={fotoUrl} onChange={(e) => setFotoUrl(e.target.value)} className={modalInput} placeholder="https://…" />
+        <Field label="Foto (opcional)">
+          <ImageUploader eventoId={eventoId} subfolder="paradas" value={fotoUrl} onChange={setFotoUrl} />
         </Field>
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">Cancelar</button>
@@ -461,11 +487,13 @@ function AddPueblo({ evento, reload }: { evento: EventoEditDetail; reload: () =>
       .catch(() => setAllPueblos([]));
   }, []);
 
-  const yaAsignados = new Set(evento.pueblos.map((p) => p.puebloId));
+  const yaCount = new Map<number, number>();
+  evento.pueblos.forEach((p) => {
+    yaCount.set(p.puebloId, (yaCount.get(p.puebloId) ?? 0) + 1);
+  });
   const totalRows = evento.pueblos.length + (evento.paradas?.length ?? 0);
 
   const disponibles = allPueblos
-    .filter((p) => !yaAsignados.has(p.id))
     .filter((p) => {
       const f = filter.trim().toLowerCase();
       if (!f) return true;
@@ -491,6 +519,9 @@ function AddPueblo({ evento, reload }: { evento: EventoEditDetail; reload: () =>
       <h4 className="flex items-center gap-1.5 text-sm font-semibold text-stone-900">
         <Plus className="h-4 w-4" /> Añadir pueblo de la red
       </h4>
+      <p className="mt-1 text-xs text-stone-500">
+        Puedes añadir el mismo pueblo más de una vez (p.ej. ida y vuelta o si pasáis dos veces).
+      </p>
       <div className="mt-2 flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-3 py-2">
         <Search className="h-4 w-4 text-stone-400" />
         <input
@@ -502,24 +533,32 @@ function AddPueblo({ evento, reload }: { evento: EventoEditDetail; reload: () =>
       </div>
       {filter && disponibles.length > 0 ? (
         <ul className="mt-3 space-y-1.5">
-          {disponibles.map((p) => (
-            <li key={p.id}>
-              <button
-                onClick={() => addPueblo(p.id)}
-                disabled={busy}
-                className="flex w-full items-center gap-2.5 rounded-lg border border-stone-200 p-2 text-left text-sm hover:border-amber-300 hover:bg-amber-50/60"
-              >
-                <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-stone-100">
-                  {p.foto_destacada ? <Image src={p.foto_destacada} alt="" fill style={{ objectFit: 'cover' }} sizes="56px" /> : null}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-stone-900">{p.nombre}</p>
-                  <p className="truncate text-xs text-stone-500">{p.provincia}</p>
-                </div>
-                <Plus className="h-4 w-4 text-amber-700" />
-              </button>
-            </li>
-          ))}
+          {disponibles.map((p) => {
+            const count = yaCount.get(p.id) ?? 0;
+            return (
+              <li key={p.id}>
+                <button
+                  onClick={() => addPueblo(p.id)}
+                  disabled={busy}
+                  className="flex w-full items-center gap-2.5 rounded-lg border border-stone-200 p-2 text-left text-sm hover:border-amber-300 hover:bg-amber-50/60"
+                >
+                  <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-stone-100">
+                    {p.foto_destacada ? <Image src={p.foto_destacada} alt="" fill style={{ objectFit: 'cover' }} sizes="56px" /> : null}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-stone-900">{p.nombre}</p>
+                    <p className="truncate text-xs text-stone-500">{p.provincia}</p>
+                  </div>
+                  {count > 0 ? (
+                    <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-800">
+                      Ya está {count}×
+                    </span>
+                  ) : null}
+                  <Plus className="h-4 w-4 text-amber-700" />
+                </button>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
       {filter && disponibles.length === 0 ? (
@@ -575,6 +614,7 @@ function CreateParadaModal({
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
   const [tipoIcono, setTipoIcono] = useState('point');
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -592,6 +632,7 @@ function CreateParadaModal({
           lat: parseFloat(lat),
           lng: parseFloat(lng),
           tipoIcono,
+          fotoUrl,
           orden: ordenSiguiente,
         },
       });
@@ -651,6 +692,9 @@ function CreateParadaModal({
         <p className="text-[11px] text-stone-500">
           Tip: en Google Maps haz clic derecho sobre el sitio → copia las coordenadas (formato: lat, lng).
         </p>
+        <Field label="Foto (opcional)">
+          <ImageUploader eventoId={eventoId} subfolder="paradas" value={fotoUrl} onChange={setFotoUrl} />
+        </Field>
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">Cancelar</button>
           <button onClick={save} disabled={busy} className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white">
