@@ -337,51 +337,27 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       // caemos en `align` (alineación general del bloque) para retrocompatibilidad.
       const a1 = (b.alignBtn1 || (align === 'full' ? 'center' : align)) as 'left' | 'center' | 'right';
       const a2 = (b.alignBtn2 || (align === 'full' ? 'center' : align)) as 'left' | 'center' | 'right';
-      // Helper para envolver un solo botón con su alineación email-safe.
-      const renderSingleButtonWrapper = (
-        btn: string,
-        alg: 'left' | 'center' | 'right',
-      ): string => {
-        const m =
-          alg === 'center' ? '0 auto' : alg === 'right' ? '0 0 0 auto' : '0';
-        return (
-          `<table align="${alg}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${m};">` +
-            `<tr><td>${btn}</td></tr>` +
-          `</table>`
-        );
-      };
-      if (btn1 && btn2 && a1 !== a2) {
-        // Alineaciones distintas → cada botón en su propia línea con su
-        // alineación, totalmente independiente del otro. Cambiar la
-        // alineación de uno NO mueve al otro.
+      // CADA BOTÓN TIENE SU PROPIA COLUMNA DE 50%. Dentro de su columna se
+      // alinea según `alignBtn{1,2}`. Cambiar la alineación de uno NO mueve
+      // al otro, y "derecha" no manda al botón al borde del bloque sino al
+      // borde de su mitad, por lo que no descuadra el contenido vertical.
+      if (btn1 && btn2) {
         parts.push(
           `<div style="${wrapStyle}">` +
-            `<div style="text-align:${a1};margin-bottom:8px;">${renderSingleButtonWrapper(btn1, a1)}</div>` +
-            `<div style="text-align:${a2};">${renderSingleButtonWrapper(btn2, a2)}</div>` +
-          `</div>`,
-        );
-      } else if (btn1 || btn2) {
-        // Misma alineación (o solo un botón). Para máxima compatibilidad
-        // combinamos:
-        //   1) text-align en el contenedor (centra inline/inline-block)
-        //   2) `align="…"` HTML legacy en la <table> (Outlook, iOS Mail)
-        //   3) margin:auto cuando es centro (refuerza en navegador moderno)
-        const commonAlign = btn1 ? a1 : a2;
-        const tblMargin =
-          commonAlign === 'center'
-            ? '0 auto'
-            : commonAlign === 'right'
-              ? '0 0 0 auto'
-              : '0';
-        parts.push(
-          `<div style="${wrapStyle}text-align:${commonAlign};">` +
-            `<table align="${commonAlign}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${tblMargin};">` +
+            `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;table-layout:fixed;">` +
               `<tr>` +
-                `${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}` +
-                `${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}` +
+                `<td width="50%" align="${a1}" valign="middle" style="width:50%;padding:0 6px 0 0;text-align:${a1};">${btn1}</td>` +
+                `<td width="50%" align="${a2}" valign="middle" style="width:50%;padding:0 0 0 6px;text-align:${a2};">${btn2}</td>` +
               `</tr>` +
             `</table>` +
           `</div>`,
+        );
+      } else if (btn1 || btn2) {
+        // Solo uno → ocupa toda la fila con su propia alineación.
+        const onlyAlign = btn1 ? a1 : a2;
+        const onlyBtn = btn1 || btn2;
+        parts.push(
+          `<div style="${wrapStyle}text-align:${onlyAlign};">${onlyBtn}</div>`,
         );
       }
     } else if (b.type === 'iconButton') {
@@ -1470,7 +1446,7 @@ export default function ContentBlockBuilder({
         {selectedBlock.type === 'buttonRow' && (
           <div className="md:col-span-2 space-y-3">
             <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
-              Cada botón tiene su propia alineación. Si los dos coinciden se ponen juntos en una línea; si difieren se apilan en dos líneas, cada una con su alineación (cambiar uno NO mueve al otro).
+                      Cada botón vive en su propia columna del 50% del ancho. La alineación que elijas posiciona el botón DENTRO de su columna (izquierda / centro / derecha de su mitad), no del bloque entero. Cambiar uno NUNCA mueve al otro.
             </p>
             <div className="flex gap-3">
               <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
@@ -1520,46 +1496,42 @@ export default function ContentBlockBuilder({
                 </label>
               </div>
             </div>
-            {/* Mini preview que reproduce EXACTAMENTE la lógica del render:
-                - Misma alineación → ambos juntos en una línea.
-                - Distinta → DOS líneas verticales independientes. */}
-            {(() => {
-              const a1 = selectedBlock.alignBtn1 || 'center';
-              const a2 = selectedBlock.alignBtn2 || 'center';
-              const textAlignMap: Record<string, 'left' | 'center' | 'right'> = {
-                left: 'left',
-                center: 'center',
-                right: 'right',
-              };
-              const Btn = ({ label }: { label: string }) => (
-                <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">
-                  {label}
-                </span>
-              );
-              return (
-                <div className="rounded-md border border-dashed border-border bg-white/50 p-3">
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Vista previa (así se verá en el email/web)
-                  </p>
-                  {a1 === a2 ? (
-                    <div style={{ textAlign: textAlignMap[a1], width: '100%' }}>
-                      <Btn label={selectedBlock.label || 'Botón 1'} />
-                      <span className="inline-block w-2" />
-                      <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ textAlign: textAlignMap[a1], width: '100%', marginBottom: 8 }}>
-                        <Btn label={selectedBlock.label || 'Botón 1'} />
-                      </div>
-                      <div style={{ textAlign: textAlignMap[a2], width: '100%' }}>
-                        <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })()}
+                    {/* Mini preview: cada botón en su columna 50%,
+                        alineado dentro de su columna. Reproduce
+                        EXACTAMENTE la salida HTML del email/web. */}
+                    {(() => {
+                      const a1 = selectedBlock.alignBtn1 || 'center';
+                      const a2 = selectedBlock.alignBtn2 || 'center';
+                      const textAlignMap: Record<string, 'left' | 'center' | 'right'> = {
+                        left: 'left',
+                        center: 'center',
+                        right: 'right',
+                      };
+                      const Btn = ({ label }: { label: string }) => (
+                        <span className="inline-block rounded-md bg-[#c0392b] px-4 py-1.5 text-xs font-semibold text-white">
+                          {label}
+                        </span>
+                      );
+                      return (
+                        <div className="rounded-md border border-dashed border-border bg-white/50 p-3">
+                          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            Vista previa (cada botón en su columna 50%)
+                          </p>
+                          <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+                            <tbody>
+                              <tr>
+                                <td style={{ width: '50%', textAlign: textAlignMap[a1], paddingRight: 6, verticalAlign: 'middle' }}>
+                                  <Btn label={selectedBlock.label || 'Botón 1'} />
+                                </td>
+                                <td style={{ width: '50%', textAlign: textAlignMap[a2], paddingLeft: 6, verticalAlign: 'middle' }}>
+                                  <Btn label={selectedBlock.btn2Label || 'Botón 2'} />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      );
+                    })()}
           </div>
         )}
 

@@ -554,53 +554,33 @@ function renderNewsletterBlocksToHtml(
           align === 'right' ? 'right' : align === 'left' ? 'left' : 'center';
         const a1 = (block.alignBtn1 || fallback) as 'left' | 'center' | 'right';
         const a2 = (block.alignBtn2 || fallback) as 'left' | 'center' | 'right';
-        // Helper para construir un wrapper individual de un solo botón con
-        // su propia alineación, usando el patrón email-safe canónico.
-        const renderSingleButtonWrapper = (
-          btn: string,
-          alg: 'left' | 'center' | 'right',
-        ): string => {
-          const m =
-            alg === 'center' ? '0 auto' : alg === 'right' ? '0 0 0 auto' : '0';
-          return (
-            `<table align="${alg}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${m};">` +
-              `<tr><td>${btn}</td></tr>` +
-            `</table>`
-          );
-        };
-        if (b1 && b2 && a1 !== a2) {
-          // Alineaciones distintas → cada botón en su propia línea con su
-          // alineación, totalmente independiente del otro. Cambiar la
-          // alineación de uno NO mueve al otro. La forma más fiable y
-          // predecible para el usuario.
+        // CADA BOTÓN TIENE SU PROPIA COLUMNA DE 50%. Dentro de su columna se
+        // alinea según su `alignBtn{1,2}` (izquierda / centro / derecha de
+        // ESA columna, no del email). Esto evita los dos problemas que
+        // reportaba el usuario:
+        //   1) Cambiar la alineación de un botón NO mueve al otro (cada uno
+        //      vive en su mitad del ancho).
+        //   2) Poner "derecha" no manda el botón al borde del email,
+        //      sino al borde de su columna (al medio del email cuando son
+        //      dos botones), por lo que no descuadran los bloques de abajo.
+        // Si solo hay un botón, ocupa el 100% y se alinea con su `align`.
+        if (b1 && b2) {
           return (
             `<div style="${boxStyle}">` +
-              `<div style="text-align:${a1};margin-bottom:8px;">${renderSingleButtonWrapper(b1, a1)}</div>` +
-              `<div style="text-align:${a2};">${renderSingleButtonWrapper(b2, a2)}</div>` +
+              `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;table-layout:fixed;">` +
+                `<tr>` +
+                  `<td width="50%" align="${a1}" valign="middle" style="width:50%;padding:0 6px 0 0;text-align:${a1};">${b1}</td>` +
+                  `<td width="50%" align="${a2}" valign="middle" style="width:50%;padding:0 0 0 6px;text-align:${a2};">${b2}</td>` +
+                `</tr>` +
+              `</table>` +
             `</div>`
           );
         }
-        // Misma alineación (o solo un botón): los dos juntos en línea.
-        // Para máxima compatibilidad combinamos:
-        //   1) text-align en el contenedor (centra inline/inline-block)
-        //   2) `align="…"` HTML legacy en la <table> (Outlook, iOS Mail)
-        //   3) margin:auto cuando es centro (refuerza en navegador)
-        const commonAlign = b1 ? a1 : a2;
-        const tblMargin =
-          commonAlign === 'center'
-            ? '0 auto'
-            : commonAlign === 'right'
-              ? '0 0 0 auto'
-              : '0';
+        // Solo un botón → ocupa toda la fila con su propia alineación.
+        const onlyAlign = b1 ? a1 : a2;
+        const onlyBtn = b1 || b2;
         return (
-          `<div style="${boxStyle}text-align:${commonAlign};">` +
-            `<table align="${commonAlign}" role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:${tblMargin};">` +
-              `<tr>` +
-                `${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}` +
-                `${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}` +
-              `</tr>` +
-            `</table>` +
-          `</div>`
+          `<div style="${boxStyle}text-align:${onlyAlign};">${onlyBtn}</div>`
         );
       }
       if (block.type === 'iconButton') {
@@ -3295,7 +3275,7 @@ export default function NotasPrensaNewsletterClient({
           {selectedNewsletterBlock.type === 'buttonRow' && (
             <div className="md:col-span-2 space-y-3">
               <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
-                Cada botón tiene su propia alineación. Si los dos coinciden se ponen juntos en una línea; si difieren se apilan en dos líneas, cada una con su alineación (cambiar uno NO mueve al otro).
+                                    Cada botón vive en su propia columna del 50% del ancho. La alineación que elijas posiciona el botón DENTRO de su columna (izquierda / centro / derecha de su mitad), no del email entero. Cambiar uno NUNCA mueve al otro.
               </p>
               <div className="flex gap-3">
                 <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
@@ -3345,47 +3325,42 @@ export default function NotasPrensaNewsletterClient({
                   </label>
                 </div>
               </div>
-              {/* Mini preview que reproduce EXACTAMENTE la lógica del render:
-                  - Misma alineación → ambos en una línea con esa alineación.
-                  - Alineaciones distintas → DOS líneas verticales independientes.
-                  Así cambiar uno NO mueve al otro. */}
-              {(() => {
-                const a1 = selectedNewsletterBlock.alignBtn1 || 'center';
-                const a2 = selectedNewsletterBlock.alignBtn2 || 'center';
-                const textAlignMap: Record<string, 'left' | 'center' | 'right'> = {
-                  left: 'left',
-                  center: 'center',
-                  right: 'right',
-                };
-                const Btn = ({ label }: { label: string }) => (
-                  <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">
-                    {label}
-                  </span>
-                );
-                return (
-                  <div className="rounded-md border border-dashed border-border bg-white/50 p-3">
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Vista previa (así se verá en el email)
-                    </p>
-                    {a1 === a2 ? (
-                      <div style={{ textAlign: textAlignMap[a1], width: '100%' }}>
-                        <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
-                        <span className="inline-block w-2" />
-                        <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ textAlign: textAlignMap[a1], width: '100%', marginBottom: 8 }}>
-                          <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
-                        </div>
-                        <div style={{ textAlign: textAlignMap[a2], width: '100%' }}>
-                          <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })()}
+                                  {/* Mini preview: cada botón en su columna 50%,
+                                      alineado dentro de su columna. Reproduce
+                                      EXACTAMENTE la salida HTML del email. */}
+                                  {(() => {
+                                    const a1 = selectedNewsletterBlock.alignBtn1 || 'center';
+                                    const a2 = selectedNewsletterBlock.alignBtn2 || 'center';
+                                    const textAlignMap: Record<string, 'left' | 'center' | 'right'> = {
+                                      left: 'left',
+                                      center: 'center',
+                                      right: 'right',
+                                    };
+                                    const Btn = ({ label }: { label: string }) => (
+                                      <span className="inline-block rounded-md bg-[#8B5E3C] px-4 py-1.5 text-xs font-semibold text-white">
+                                        {label}
+                                      </span>
+                                    );
+                                    return (
+                                      <div className="rounded-md border border-dashed border-border bg-white/50 p-3">
+                                        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                          Vista previa (cada botón en su columna 50%)
+                                        </p>
+                                        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
+                                          <tbody>
+                                            <tr>
+                                              <td style={{ width: '50%', textAlign: textAlignMap[a1], paddingRight: 6, verticalAlign: 'middle' }}>
+                                                <Btn label={selectedNewsletterBlock.label || 'Botón 1'} />
+                                              </td>
+                                              <td style={{ width: '50%', textAlign: textAlignMap[a2], paddingLeft: 6, verticalAlign: 'middle' }}>
+                                                <Btn label={selectedNewsletterBlock.btn2Label || 'Botón 2'} />
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    );
+                                  })()}
             </div>
           )}
 
