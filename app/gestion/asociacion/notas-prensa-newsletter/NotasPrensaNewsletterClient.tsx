@@ -1429,6 +1429,30 @@ export default function NotasPrensaNewsletterClient({
     );
   }
 
+  // Limpieza silenciosa después de un envío exitoso: vacía el constructor
+  // y el formulario para que el editor quede en blanco listo para la próxima.
+  function resetAfterSend() {
+    setNewsletterBlocks([]);
+    setSelectedNewsletterBlockId(null);
+    setCampaignForm({
+      kind: (mode === 'newsletter' ? 'NEWSLETTER' : 'PRESS') as 'PRESS' | 'NEWSLETTER',
+      subject: '',
+      preheader: '',
+      html: '',
+      includeNational: true,
+      includeInternational: false,
+      ccaa: '',
+      provincia: '',
+      puebloSlug: '',
+      source: '',
+    });
+    if (editor) editor.commands.clearContent();
+    const builderDraftKey = 'lpmbe-press-builder-draft';
+    localStorage.removeItem(builderDraftKey);
+    localStorage.removeItem(getDraftStorageKey());
+    setDraftSavedAt(null);
+  }
+
   function resetAllFields() {
     if (!confirm('¿Empezar de cero? Se perderá todo lo que hay en el formulario actual.')) return;
     setCampaignForm({
@@ -2155,7 +2179,7 @@ export default function NotasPrensaNewsletterClient({
       setMessage(
         `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}. Puedes ajustar el contenido y publicar en la web.`,
       );
-      setSelectedNewsletterBlockId(null);
+      resetAfterSend();
       setPressPhotoFiles([]);
       await loadData();
       return;
@@ -2217,7 +2241,7 @@ export default function NotasPrensaNewsletterClient({
     setMessage(
       `Campaña enviada. Destinatarios: ${data.totalRecipients}. Enviados: ${data.sentCount}. Fallidos: ${data.failedCount}. Puedes ajustar el contenido y publicar en la web.`,
     );
-    setSelectedNewsletterBlockId(null);
+    resetAfterSend();
     setPressPhotoFiles([]);
     await loadData();
   }
