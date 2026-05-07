@@ -97,6 +97,13 @@ type NewsletterBlock = {
   colCenterImg?: string;
   btn2Label?: string;
   btn2Url?: string;
+  /**
+   * Alineación independiente para cada botón en `buttonRow`. Si ambos
+   * coinciden se renderizan juntos; si difieren se reparten en una tabla
+   * 50/50 (útil para “uno a la izquierda y otro a la derecha”).
+   */
+  alignBtn1?: 'left' | 'center' | 'right';
+  alignBtn2?: 'left' | 'center' | 'right';
 };
 type NewsletterTemplate = {
   id: number;
@@ -227,6 +234,8 @@ function createBlock(type: NewsletterBlockType, patch: Partial<NewsletterBlock> 
           : '',
     btn2Label: type === 'buttonRow' ? 'Conoce más' : '',
     btn2Url: type === 'buttonRow' ? '' : '',
+    alignBtn1: type === 'buttonRow' ? 'center' : undefined,
+    alignBtn2: type === 'buttonRow' ? 'center' : undefined,
     iconUrl: type === 'iconButton' ? '' : '',
     caption: type === 'figure' ? 'Pie de imagen' : '',
     colLeft: type === 'columns2' || type === 'columns3' ? 'Columna izquierda' : '',
@@ -457,6 +466,14 @@ function normalizeNewsletterBlocks(value: unknown): NewsletterBlock[] {
         colCenterImg: sanitizeTemplateUrl(String(b.colCenterImg || '')),
         btn2Label: String(b.btn2Label || ''),
         btn2Url: sanitizeTemplateUrl(String(b.btn2Url || '')),
+        alignBtn1: (() => {
+          const v = String(b.alignBtn1 || '');
+          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+        })(),
+        alignBtn2: (() => {
+          const v = String(b.alignBtn2 || '');
+          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+        })(),
       };
     })
     .filter((b) => b.id);
@@ -528,13 +545,31 @@ function renderNewsletterBlocksToHtml(
         const btnStyle = `display:inline-block;background:#8B5E3C;color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600;`;
         const b1 = url1 ? `<a href="${escapeHtml(url1)}" target="_blank" rel="noopener noreferrer" style="${btnStyle}">${label1}</a>` : '';
         const b2 = url2 ? `<a href="${escapeHtml(url2)}" target="_blank" rel="noopener noreferrer" style="${btnStyle}">${label2}</a>` : '';
-        if (b1 || b2) {
-          // Para que el centrado funcione en todos los clientes (web, Gmail, Apple Mail
-          // y Outlook) usamos `text-align` en el contenedor + `display:inline-table`
-          // en la tabla. `margin:0 auto` por sí solo no centra una <table> sin width.
-          return `<div style="${boxStyle}text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}</tr></table></div>`;
+        if (!b1 && !b2) return '';
+        // Alineación independiente por botón. Si no se ha configurado, caemos
+        // en `align` (alineación general del bloque) por retrocompatibilidad.
+        const fallback: 'left' | 'center' | 'right' =
+          align === 'right' ? 'right' : align === 'left' ? 'left' : 'center';
+        const a1 = (block.alignBtn1 || fallback) as 'left' | 'center' | 'right';
+        const a2 = (block.alignBtn2 || fallback) as 'left' | 'center' | 'right';
+        if (b1 && b2 && a1 !== a2) {
+          // Alineaciones distintas → tabla 50/50, cada celda con su align.
+          // Es la forma email-safe de conseguir “uno a la izquierda y otro a
+          // la derecha” o cualquier otra combinación.
+          return (
+            `<div style="${boxStyle}">` +
+              `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">` +
+                `<tr>` +
+                  `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;">${b1}</td>` +
+                  `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;">${b2}</td>` +
+                `</tr>` +
+              `</table>` +
+            `</div>`
+          );
         }
-        return '';
+        // Misma alineación (o solo un botón): los dos juntos en línea.
+        const commonAlign = b1 ? a1 : a2;
+        return `<div style="${boxStyle}text-align:${commonAlign};"><table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>${b1 ? `<td style="padding:0 8px 0 0;">${b1}</td>` : ''}${b2 ? `<td style="padding:0 0 0 8px;">${b2}</td>` : ''}</tr></table></div>`;
       }
       if (block.type === 'iconButton') {
         const url = sanitizeTemplateUrl(String(block.url || ''));
@@ -4539,6 +4574,9 @@ export default function NotasPrensaNewsletterClient({
 
                               {selectedNewsletterBlock.type === 'buttonRow' && (
                                 <div className="md:col-span-2 space-y-3">
+                                  <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                                    Cada botón tiene su propia alineación. Si los dos coinciden se renderizan juntos en línea; si difieren se reparten en dos mitades (útil para “uno a la izquierda y otro a la derecha”).
+                                  </p>
                                   <div className="flex gap-3">
                                     <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
                                       <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
@@ -4550,6 +4588,18 @@ export default function NotasPrensaNewsletterClient({
                                         URL
                                         <input value={selectedNewsletterBlock.url || ''} onChange={(e) => updateSelectedNewsletterBlock({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
                                       </label>
+                                      <label className="block text-xs text-muted-foreground">
+                                        Alineación
+                                        <select
+                                          value={selectedNewsletterBlock.alignBtn1 || 'center'}
+                                          onChange={(e) => updateSelectedNewsletterBlock({ alignBtn1: e.target.value as 'left' | 'center' | 'right' })}
+                                          className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                        >
+                                          <option value="left">Izquierda</option>
+                                          <option value="center">Centro</option>
+                                          <option value="right">Derecha</option>
+                                        </select>
+                                      </label>
                                     </div>
                                     <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
                                       <p className="text-xs font-semibold text-foreground">Botón derecho</p>
@@ -4560,6 +4610,18 @@ export default function NotasPrensaNewsletterClient({
                                       <label className="block text-xs text-muted-foreground">
                                         URL
                                         <input value={selectedNewsletterBlock.btn2Url || ''} onChange={(e) => updateSelectedNewsletterBlock({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                                      </label>
+                                      <label className="block text-xs text-muted-foreground">
+                                        Alineación
+                                        <select
+                                          value={selectedNewsletterBlock.alignBtn2 || 'center'}
+                                          onChange={(e) => updateSelectedNewsletterBlock({ alignBtn2: e.target.value as 'left' | 'center' | 'right' })}
+                                          className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                                        >
+                                          <option value="left">Izquierda</option>
+                                          <option value="center">Centro</option>
+                                          <option value="right">Derecha</option>
+                                        </select>
                                       </label>
                                     </div>
                                   </div>

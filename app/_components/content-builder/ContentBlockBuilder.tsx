@@ -66,6 +66,14 @@ export interface ContentBlock {
   colCenterImg?: string;
   btn2Label?: string;
   btn2Url?: string;
+  /**
+   * Alineación independiente para cada botón en `buttonRow`. Permite
+   * combinaciones como "uno a la izquierda y otro a la derecha".
+   * Si ambos coinciden → se renderizan juntos en línea con esa alineación.
+   * Si difieren → tabla 50/50 donde cada celda usa su propio align.
+   */
+  alignBtn1?: 'left' | 'center' | 'right';
+  alignBtn2?: 'left' | 'center' | 'right';
 }
 
 interface BuilderTemplate {
@@ -169,6 +177,8 @@ function createBlock(type: BlockType, patch: Partial<ContentBlock> = {}): Conten
     url: ['image', 'figure', 'imgText', 'button', 'buttonRow'].includes(type) ? '' : '',
     btn2Label: type === 'buttonRow' ? 'Conoce más' : '',
     btn2Url: type === 'buttonRow' ? '' : '',
+    alignBtn1: type === 'buttonRow' ? 'center' : undefined,
+    alignBtn2: type === 'buttonRow' ? 'center' : undefined,
     iconUrl: type === 'iconButton' ? '' : '',
     caption: type === 'figure' ? 'Pie de imagen' : '',
     colLeft: ['columns2', 'columns3'].includes(type) ? 'Columna izquierda' : '',
@@ -246,6 +256,14 @@ function normalizeBlocks(value: unknown): ContentBlock[] {
         colCenterImg: sanitizeTemplateUrl(String(src.colCenterImg || '')),
         btn2Label: String(src.btn2Label || ''),
         btn2Url: sanitizeTemplateUrl(String(src.btn2Url || '')),
+        alignBtn1: (() => {
+          const v = String(src.alignBtn1 || '');
+          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+        })(),
+        alignBtn2: (() => {
+          const v = String(src.alignBtn2 || '');
+          return v === 'left' || v === 'center' || v === 'right' ? v : undefined;
+        })(),
       };
     });
   } catch {
@@ -313,11 +331,37 @@ function renderBlocksToHtml(blocks: ContentBlock[], webMode = false): string {
       const btnStyle = `display:inline-block;padding:12px 28px;background:#c0392b;color:#fff;border-radius:${br}px;text-decoration:none;font-weight:600;`;
       const btn1 = url1 ? `<a href="${escHtml(url1)}" style="${btnStyle}">${label1}</a>` : '';
       const btn2 = url2 ? `<a href="${escHtml(url2)}" style="${btnStyle}">${label2}</a>` : '';
-      if (btn1 || btn2) {
-        // text-align en el contenedor + display:inline-table en la tabla
-        // garantiza el centrado en todos los clientes (margin:0 auto solo no
-        // basta para tablas sin width explícito).
-        parts.push(`<div style="${wrapStyle}text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;"><tr>${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}</tr></table></div>`);
+      // Alineación independiente de cada botón. Si no se ha configurado,
+      // caemos en `align` (alineación general del bloque) para retrocompatibilidad.
+      const a1 = (b.alignBtn1 || (align === 'full' ? 'center' : align)) as 'left' | 'center' | 'right';
+      const a2 = (b.alignBtn2 || (align === 'full' ? 'center' : align)) as 'left' | 'center' | 'right';
+      if (btn1 && btn2 && a1 !== a2) {
+        // Alineaciones distintas → tabla 50/50, cada celda con su propio align.
+        // Es la forma email-safe de conseguir "uno a la izquierda y otro a la
+        // derecha" o cualquier otra combinación.
+        parts.push(
+          `<div style="${wrapStyle}">` +
+            `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">` +
+              `<tr>` +
+                `<td width="50%" align="${a1}" valign="middle" style="padding:0 4px 0 0;">${btn1}</td>` +
+                `<td width="50%" align="${a2}" valign="middle" style="padding:0 0 0 4px;">${btn2}</td>` +
+              `</tr>` +
+            `</table>` +
+          `</div>`,
+        );
+      } else if (btn1 || btn2) {
+        // Misma alineación (o solo un botón): los dos juntos en línea.
+        const commonAlign = btn1 ? a1 : a2;
+        parts.push(
+          `<div style="${wrapStyle}text-align:${commonAlign};">` +
+            `<table role="presentation" cellpadding="0" cellspacing="0" style="display:inline-table;border-collapse:collapse;">` +
+              `<tr>` +
+                `${btn1 ? `<td style="padding:0 8px 0 0;">${btn1}</td>` : ''}` +
+                `${btn2 ? `<td style="padding:0 0 0 8px;">${btn2}</td>` : ''}` +
+              `</tr>` +
+            `</table>` +
+          `</div>`,
+        );
       }
     } else if (b.type === 'iconButton') {
       const safeUrl = sanitizeTemplateUrl(String(b.url || ''));
@@ -1785,6 +1829,9 @@ export default function ContentBlockBuilder({
                 {/* Button Row (2 buttons side by side) */}
                 {selectedBlock.type === 'buttonRow' && (
                   <div className="md:col-span-2 space-y-3">
+                    <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                      Cada botón tiene su propia alineación. Si los dos coinciden se renderizan juntos en línea; si difieren se reparten en dos mitades (útil para “uno a la izquierda y otro a la derecha”).
+                    </p>
                     <div className="flex gap-3">
                       <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
                         <p className="text-xs font-semibold text-foreground">Botón izquierdo</p>
@@ -1796,6 +1843,18 @@ export default function ContentBlockBuilder({
                           URL
                           <input value={selectedBlock.url || ''} onChange={(e) => updateSelected({ url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
                         </label>
+                        <label className="block text-xs text-muted-foreground">
+                          Alineación
+                          <select
+                            value={selectedBlock.alignBtn1 || 'center'}
+                            onChange={(e) => updateSelected({ alignBtn1: e.target.value as 'left' | 'center' | 'right' })}
+                            className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                          >
+                            <option value="left">Izquierda</option>
+                            <option value="center">Centro</option>
+                            <option value="right">Derecha</option>
+                          </select>
+                        </label>
                       </div>
                       <div className="flex-1 rounded-lg border border-border/60 bg-muted/5 p-3 space-y-2">
                         <p className="text-xs font-semibold text-foreground">Botón derecho</p>
@@ -1806,6 +1865,18 @@ export default function ContentBlockBuilder({
                         <label className="block text-xs text-muted-foreground">
                           URL
                           <input value={selectedBlock.btn2Url || ''} onChange={(e) => updateSelected({ btn2Url: e.target.value })} className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm" placeholder="https://..." />
+                        </label>
+                        <label className="block text-xs text-muted-foreground">
+                          Alineación
+                          <select
+                            value={selectedBlock.alignBtn2 || 'center'}
+                            onChange={(e) => updateSelected({ alignBtn2: e.target.value as 'left' | 'center' | 'right' })}
+                            className="mt-1 w-full rounded-md border border-border px-2 py-1 text-sm"
+                          >
+                            <option value="left">Izquierda</option>
+                            <option value="center">Centro</option>
+                            <option value="right">Derecha</option>
+                          </select>
                         </label>
                       </div>
                     </div>
