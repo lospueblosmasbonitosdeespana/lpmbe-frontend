@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   BedDouble,
   Plus,
@@ -18,6 +19,8 @@ import {
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
 import ImageUploader from './_ImageUploader';
+
+const MapLocationPicker = dynamic(() => import('@/app/components/MapLocationPicker'), { ssr: false });
 
 type Alojamiento = EventoEditDetail['alojamientos'][number];
 type Asignacion = Alojamiento['asignaciones'][number];
@@ -467,6 +470,7 @@ function AlojamientoForm({
         </Field>
         <p className="text-[11px] text-stone-500">
           Tip: en Google Maps, clic derecho sobre el hotel → toca las coordenadas para copiarlas y pégalas aquí.
+          O busca/haz clic en el mapa de abajo.
           {parsedCoords ? (
             <span className="ml-1 font-medium text-emerald-700">
               ✓ {parsedCoords.lat.toFixed(5)}, {parsedCoords.lng.toFixed(5)}
@@ -474,6 +478,19 @@ function AlojamientoForm({
           ) : null}
           {coordsError ? <span className="ml-1 font-medium text-red-600">{coordsError}</span> : null}
         </p>
+        <div className="mt-2 overflow-hidden rounded-xl border border-stone-200">
+          <MapLocationPicker
+            center={parsedCoords ? [parsedCoords.lat, parsedCoords.lng] : [36.75, -5.4]}
+            zoom={parsedCoords ? 15 : 8}
+            selectedPosition={parsedCoords}
+            onLocationSelect={(lat, lng) => {
+              setCoords(`${Math.round(lat * 1e6) / 1e6}, ${Math.round(lng * 1e6) / 1e6}`);
+            }}
+            height="250px"
+            searchPlaceholder="Buscar hotel o dirección…"
+            activeHint="Haz clic en el mapa para fijar la ubicación del hotel"
+          />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Teléfono">
             <input value={telefono} onChange={(e) => setTelefono(e.target.value)} className={input} placeholder="+34 956 …" />
