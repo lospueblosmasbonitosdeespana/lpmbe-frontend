@@ -2357,6 +2357,7 @@
       "limitWarning": "La descarga directa está limitada a {limit} fotos a la vez. Para más fotos usa el botón ZIP.",
       "preparandoZip": "Preparando ZIP…",
       "descargar": "Descargar",
+      "guardar": "Guardar",
       "foto": "foto",
       "fotos": "fotos"
     },

@@ -2569,7 +2569,8 @@
       "descargandoFoto": "Scaricare la foto",
       "limitWarning": "Il download diretto è limitato a {limite} di foto alla volta. Per un numero maggiore di foto, utilizzare il pulsante ZIP.",
       "foto": "foto",
-      "fotos": "foto"
+      "fotos": "foto",
+      "guardar": "Risparmiare"
     },
     "alojamientos": {
       "kicker": "Dove dorme ogni delegazione",

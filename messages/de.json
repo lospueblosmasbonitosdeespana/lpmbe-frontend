@@ -2569,7 +2569,8 @@
       "descargandoFoto": "Herunterladen von Fotos",
       "limitWarning": "Der direkte Download ist jeweils auf {limit} Fotos beschränkt. Für mehr Fotos verwenden Sie die Schaltfläche ZIP.",
       "foto": "Foto",
-      "fotos": "Fotos"
+      "fotos": "Fotos",
+      "guardar": "Speichern Sie"
     },
     "alojamientos": {
       "kicker": "Wo jede Delegation schläft",

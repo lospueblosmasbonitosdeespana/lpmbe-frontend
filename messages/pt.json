@@ -2569,7 +2569,8 @@
       "descargandoFoto": "Descarregar fotografia",
       "limitWarning": "A transferência direta está limitada a {limite} fotografias de cada vez. Para mais fotografias, utilize o botão ZIP.",
       "foto": "fotografia",
-      "fotos": "fotos"
+      "fotos": "fotos",
+      "guardar": "Guardar"
     },
     "alojamientos": {
       "kicker": "Onde cada delegação dorme",

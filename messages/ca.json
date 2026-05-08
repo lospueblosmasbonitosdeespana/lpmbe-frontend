@@ -2569,7 +2569,8 @@
       "descargandoFoto": "Descarregant la foto",
       "limitWarning": "Les descàrregues directes estan limitades a {limit} fotos a la vegada. Per a més fotos, utilitza el botó ZIP.",
       "foto": "foto",
-      "fotos": "fotos"
+      "fotos": "fotos",
+      "guardar": "Desa"
     },
     "alojamientos": {
       "kicker": "On s'allotja cada delegació",
