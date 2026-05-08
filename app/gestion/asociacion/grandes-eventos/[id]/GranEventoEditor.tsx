@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ClipboardList, CalendarDays, Map, Bell, ImageIcon, Trash2, BedDouble, UtensilsCrossed } from 'lucide-react';
+import { ClipboardList, CalendarDays, Map, Bell, ImageIcon, Trash2, BedDouble, UtensilsCrossed, Users } from 'lucide-react';
 import TabDatos from './_tabs/TabDatos';
 import TabPrograma from './_tabs/TabPrograma';
 import TabRuta from './_tabs/TabRuta';
@@ -11,6 +11,7 @@ import TabAvisos from './_tabs/TabAvisos';
 import TabFotos from './_tabs/TabFotos';
 import TabAlojamientos from './_tabs/TabAlojamientos';
 import TabRestaurantes from './_tabs/TabRestaurantes';
+import TabAsistentes from './_tabs/TabAsistentes';
 
 export type EventoEditDetail = {
   id: number;
@@ -125,7 +126,7 @@ export type EventoEditDetail = {
   }>;
 };
 
-type Tab = 'datos' | 'programa' | 'ruta' | 'alojamientos' | 'restaurantes' | 'avisos' | 'fotos';
+type Tab = 'datos' | 'programa' | 'ruta' | 'alojamientos' | 'restaurantes' | 'avisos' | 'fotos' | 'asistentes';
 
 export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
   const router = useRouter();
@@ -185,6 +186,7 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
     { id: 'restaurantes', label: 'Restaurantes', count: evento.restaurantes?.length ?? 0, Icon: UtensilsCrossed },
     { id: 'avisos', label: 'Avisos', count: evento.avisos.filter((a) => a.activo).length, Icon: Bell },
     { id: 'fotos', label: 'Fotos', count: evento.fotos.length, Icon: ImageIcon },
+    { id: 'asistentes', label: 'Asistentes', Icon: Users },
   ];
 
   const publicUrl = evento.slug === 'rencontres-internationales-des-plus-beaux-villages-de-la-terre-2026'
@@ -264,6 +266,7 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
         {tab === 'restaurantes' && <TabRestaurantes evento={evento} reload={reload} />}
         {tab === 'avisos' && <TabAvisos evento={evento} reload={reload} />}
         {tab === 'fotos' && <TabFotos evento={evento} reload={reload} />}
+        {tab === 'asistentes' && <TabAsistentes />}
       </div>
     </div>
   );
