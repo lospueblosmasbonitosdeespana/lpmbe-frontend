@@ -66,6 +66,9 @@ export type GranEventoRestaurante = {
   eventoId: number;
   orden: number;
   nombre: string;
+  fecha: string | null;
+  tipo: 'comida' | 'cena' | null;
+  hora: string | null;
   direccion: string | null;
   ciudad: string | null;
   lat: number | null;

@@ -1,16 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import {
-  UtensilsCrossed,
-  Plus,
-  Pencil,
-  Trash2,
-  Phone,
-  Globe,
-  MapPin,
-} from 'lucide-react';
+import { UtensilsCrossed, Plus, Pencil, Trash2, Phone, Globe, MapPin, Sun, Moon } from 'lucide-react';
 
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
@@ -19,6 +11,11 @@ import ImageUploader from './_ImageUploader';
 const MapLocationPicker = dynamic(() => import('@/app/components/MapLocationPicker'), { ssr: false });
 
 type Restaurante = EventoEditDetail['restaurantes'][number];
+
+const TIPO_LABELS: Record<string, { label: string; color: string; Icon: typeof Sun }> = {
+  comida: { label: 'Comida', color: 'bg-amber-100 text-amber-800', Icon: Sun },
+  cena:   { label: 'Cena',   color: 'bg-indigo-100 text-indigo-800', Icon: Moon },
+};
 
 export default function TabRestaurantes({
   evento,
@@ -29,11 +26,30 @@ export default function TabRestaurantes({
 }) {
   const [creando, setCreando] = useState(false);
 
+  // Agrupar por fecha (mismo patrón que hoteles)
+  const grupos = useMemo(() => {
+    const byDate = new Map<string, Restaurante[]>();
+    for (const r of evento.restaurantes ?? []) {
+      const key = r.fecha ? r.fecha.substring(0, 10) : '__sin_fecha__';
+      const arr = byDate.get(key) ?? [];
+      arr.push(r);
+      byDate.set(key, arr);
+    }
+    // ordenar: sin fecha al final
+    return Array.from(byDate.entries())
+      .sort(([a], [b]) => {
+        if (a === '__sin_fecha__') return 1;
+        if (b === '__sin_fecha__') return -1;
+        return a < b ? -1 : 1;
+      })
+      .map(([fecha, restaurantes]) => ({ fecha, restaurantes }));
+  }, [evento.restaurantes]);
+
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-stone-200 bg-amber-50/40 px-4 py-3 text-sm text-stone-700">
-        Añade los restaurantes del evento con su nombre y geolocalización. Los asistentes verán un botón{' '}
-        <em>Cómo llegar</em> que abre Google Maps directamente.
+        Añade los restaurantes del evento con su día, tipo (comida o cena), hora y geolocalización.
+        Los asistentes verán un botón <em>Cómo llegar</em> que abre Google Maps directamente.
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -45,20 +61,52 @@ export default function TabRestaurantes({
         </button>
       </div>
 
-      {(evento.restaurantes ?? []).length === 0 ? (
+      {grupos.length === 0 ? (
         <p className="text-sm text-stone-500">Aún no hay restaurantes. Crea el primero.</p>
-      ) : (
-        <div className="space-y-3">
-          {(evento.restaurantes ?? []).map((r) => (
-            <RestauranteRow key={r.id} restaurante={r} reload={reload} eventoId={evento.id} />
-          ))}
-        </div>
-      )}
+      ) : null}
+
+      {grupos.map(({ fecha, restaurantes }) => (
+        <DiaGroup
+          key={fecha}
+          fecha={fecha}
+          restaurantes={restaurantes}
+          reload={reload}
+          eventoId={evento.id}
+        />
+      ))}
 
       {creando ? (
         <CreateRestauranteModal eventoId={evento.id} onClose={() => setCreando(false)} reload={reload} />
       ) : null}
     </div>
+  );
+}
+
+function DiaGroup({
+  fecha,
+  restaurantes,
+  reload,
+  eventoId,
+}: {
+  fecha: string;
+  restaurantes: Restaurante[];
+  reload: () => Promise<void>;
+  eventoId: number;
+}) {
+  const titulo =
+    fecha === '__sin_fecha__'
+      ? 'Sin fecha asignada'
+      : `${new Date(fecha).toLocaleDateString('es', { weekday: 'long', day: '2-digit', month: 'long' })}`;
+
+  return (
+    <section>
+      <h3 className="mb-2 text-sm font-semibold capitalize text-stone-900">{titulo}</h3>
+      <div className="space-y-2">
+        {restaurantes.map((r) => (
+          <RestauranteRow key={r.id} restaurante={r} reload={reload} eventoId={eventoId} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -92,6 +140,8 @@ function RestauranteRow({
       ? `https://www.google.com/maps/search/?api=1&query=${restaurante.lat},${restaurante.lng}`
       : null;
 
+  const tipoDef = restaurante.tipo ? TIPO_LABELS[restaurante.tipo] : null;
+
   return (
     <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -99,6 +149,17 @@ function RestauranteRow({
           <div className="flex flex-wrap items-center gap-2">
             <UtensilsCrossed className="h-4 w-4 text-amber-700" />
             <h4 className="text-base font-semibold text-stone-900">{restaurante.nombre}</h4>
+            {tipoDef ? (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${tipoDef.color}`}>
+                <tipoDef.Icon className="h-3 w-3" />
+                {tipoDef.label}
+              </span>
+            ) : null}
+            {restaurante.hora ? (
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold text-stone-700">
+                {restaurante.hora}
+              </span>
+            ) : null}
           </div>
           {restaurante.ciudad || restaurante.direccion ? (
             <p className="mt-0.5 text-xs text-stone-500">
@@ -106,7 +167,7 @@ function RestauranteRow({
             </p>
           ) : null}
           {restaurante.notas_es ? (
-            <p className="mt-1 text-xs text-stone-600 italic">{restaurante.notas_es}</p>
+            <p className="mt-1 text-xs italic text-stone-600">{restaurante.notas_es}</p>
           ) : null}
           <div className="mt-2 flex flex-wrap gap-1.5">
             {mapsUrl ? (
@@ -247,6 +308,9 @@ function RestauranteForm({
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
 }) {
   const [nombre, setNombre] = useState(initial?.nombre ?? '');
+  const [fecha, setFecha] = useState(initial?.fecha?.substring(0, 10) ?? '');
+  const [tipo, setTipo] = useState<'comida' | 'cena' | ''>(initial?.tipo ?? '');
+  const [hora, setHora] = useState(initial?.hora ?? '');
   const [ciudad, setCiudad] = useState(initial?.ciudad ?? '');
   const [direccion, setDireccion] = useState(initial?.direccion ?? '');
   const [coords, setCoords] = useState(
@@ -274,6 +338,9 @@ function RestauranteForm({
     try {
       await onSubmit({
         nombre: nombre.trim(),
+        fecha: fecha || null,
+        tipo: tipo || null,
+        hora: hora || null,
         ciudad: ciudad || null,
         direccion: direccion || null,
         lat: parsedCoords?.lat ?? null,
@@ -303,6 +370,39 @@ function RestauranteForm({
             placeholder="Ej. Restaurante El Alcornocal"
           />
         </Field>
+
+        {/* Día, tipo y hora en la misma fila */}
+        <div className="grid grid-cols-3 gap-2">
+          <Field label="Día">
+            <input
+              type="date"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+              className={input}
+            />
+          </Field>
+          <Field label="Comida / Cena">
+            <select
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value as 'comida' | 'cena' | '')}
+              className={input}
+            >
+              <option value="">— seleccionar —</option>
+              <option value="comida">🌞 Comida</option>
+              <option value="cena">🌙 Cena</option>
+            </select>
+          </Field>
+          <Field label="Hora">
+            <input
+              type="time"
+              value={hora}
+              onChange={(e) => setHora(e.target.value)}
+              className={input}
+              placeholder="14:00"
+            />
+          </Field>
+        </div>
+
         <Field label="Ciudad / municipio">
           <input
             value={ciudad}
@@ -314,6 +414,7 @@ function RestauranteForm({
         <Field label="Dirección (opcional)">
           <input value={direccion} onChange={(e) => setDireccion(e.target.value)} className={input} />
         </Field>
+
         <Field label="Coordenadas (latitud, longitud)">
           <input
             value={coords}
@@ -346,6 +447,7 @@ function RestauranteForm({
             activeHint="Haz clic en el mapa para fijar la ubicación del restaurante"
           />
         </div>
+
         <div className="grid grid-cols-2 gap-2">
           <Field label="Teléfono">
             <input
@@ -364,12 +466,14 @@ function RestauranteForm({
             />
           </Field>
         </div>
-        <Field label="Notas (opcional)">
+
+        <Field label="Notas (se traducen automáticamente a los 7 idiomas)">
           <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={2} className={input} />
         </Field>
         <Field label="Foto (opcional)">
           <ImageUploader eventoId={eventoId} subfolder="restaurantes" value={fotoUrl} onChange={setFotoUrl} />
         </Field>
+
         <div className="flex justify-end gap-2 pt-2">
           <button onClick={onClose} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm">
             Cancelar
