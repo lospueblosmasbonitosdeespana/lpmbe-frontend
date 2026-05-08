@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   Sun, CloudSun, Cloud, Cloudy, CloudFog, CloudDrizzle,
@@ -59,7 +58,7 @@ function MeteoChip({
     slot.label === 'afternoon' ? t('afternoon') : null;
 
   return (
-    <Link
+    <a
       href={`/pueblos/${slot.pueblo.slug}/meteo`}
       className="group flex items-center gap-2.5 rounded-xl bg-amber-50/80 px-3.5 py-2.5 ring-1 ring-amber-200/70 shadow-sm transition hover:bg-amber-100 hover:ring-amber-400 hover:shadow-md"
       title={`${slot.pueblo.nombre} — ${t('fullForecast')}`}
@@ -82,7 +81,7 @@ function MeteoChip({
           {day.precipProbPct}%
         </span>
       )}
-    </Link>
+    </a>
   );
 }
 
