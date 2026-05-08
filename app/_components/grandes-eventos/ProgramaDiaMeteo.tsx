@@ -61,23 +61,23 @@ function MeteoChip({
   return (
     <Link
       href={`/pueblos/${slot.pueblo.slug}/meteo`}
-      className="group flex items-center gap-2 rounded-xl bg-stone-50 px-3 py-2 ring-1 ring-stone-200/60 transition hover:bg-amber-50 hover:ring-amber-300"
+      className="group flex items-center gap-2.5 rounded-xl bg-amber-50/80 px-3.5 py-2.5 ring-1 ring-amber-200/70 shadow-sm transition hover:bg-amber-100 hover:ring-amber-400 hover:shadow-md"
       title={`${slot.pueblo.nombre} — ${t('fullForecast')}`}
     >
-      <Icon size={22} className={cls} strokeWidth={1.5} />
+      <Icon size={24} className={cls} strokeWidth={1.5} />
       <div className="flex flex-col leading-tight">
-        <span className="text-xs font-semibold text-stone-800">
+        <span className="text-sm font-bold text-stone-900">
           {day.tMaxC != null ? `${Math.round(day.tMaxC)}°` : '—'}
           <span className="font-normal text-stone-500">
             /{day.tMinC != null ? `${Math.round(day.tMinC)}°` : '—'}
           </span>
         </span>
-        <span className="text-[10px] text-stone-500 group-hover:text-amber-700">
+        <span className="text-[11px] text-stone-600 group-hover:text-amber-800">
           {slotLabel ? `${slotLabel} · ` : ''}{slot.pueblo.nombre}
         </span>
       </div>
       {day.precipProbPct != null && day.precipProbPct > 15 && (
-        <span className="flex items-center gap-0.5 text-[10px] font-semibold text-blue-500">
+        <span className="flex items-center gap-0.5 text-[11px] font-semibold text-blue-600">
           <Droplets className="h-3 w-3" />
           {day.precipProbPct}%
         </span>
