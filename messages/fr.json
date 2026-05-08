@@ -2564,7 +2564,12 @@
       "ninguna": "Aucun",
       "descargarSeleccion": "Télécharger la sélection (ZIP)",
       "preparandoZip": "Préparer le ZIP...",
-      "descargar": "Télécharger"
+      "descargar": "Télécharger",
+      "descargarDirecta": "Télécharger les photos",
+      "descargandoFoto": "Téléchargement d'une photo",
+      "limitWarning": "Le téléchargement direct est limité à {limite} photos à la fois. Pour plus de photos, utilisez le bouton ZIP.",
+      "foto": "photo",
+      "fotos": "photos"
     },
     "alojamientos": {
       "kicker": "Là où chaque délégation dort",
@@ -2585,7 +2590,8 @@
       "volver": "Retour à l'événement",
       "fotos": "photos",
       "foto": "photo",
-      "vacio": "Il n'y a pas encore de photos publiées dans l'album."
+      "vacio": "Il n'y a pas encore de photos publiées dans l'album.",
+      "titulo": "Album de photos"
     }
   }
 }

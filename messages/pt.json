@@ -2564,7 +2564,12 @@
       "ninguna": "Nenhum",
       "descargarSeleccion": "Transferir seleção (ZIP)",
       "preparandoZip": "Preparar o ZIP...",
-      "descargar": "Descarregar"
+      "descargar": "Descarregar",
+      "descargarDirecta": "Descarregar fotografias",
+      "descargandoFoto": "Descarregar fotografia",
+      "limitWarning": "A transferência direta está limitada a {limite} fotografias de cada vez. Para mais fotografias, utilize o botão ZIP.",
+      "foto": "fotografia",
+      "fotos": "fotos"
     },
     "alojamientos": {
       "kicker": "Onde cada delegação dorme",
@@ -2585,7 +2590,8 @@
       "volver": "Voltar ao evento",
       "fotos": "fotos",
       "foto": "fotografia",
-      "vacio": "Ainda não há fotografias publicadas no álbum."
+      "vacio": "Ainda não há fotografias publicadas no álbum.",
+      "titulo": "Álbum de fotografias"
     }
   }
 }

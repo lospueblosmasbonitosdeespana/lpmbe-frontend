@@ -2322,7 +2322,8 @@
       "volver": "Volver al evento",
       "fotos": "fotos",
       "foto": "foto",
-      "vacio": "Todavía no hay fotos publicadas en el álbum."
+      "vacio": "Todavía no hay fotos publicadas en el álbum.",
+      "titulo": "Álbum de fotos"
     },
     "sections": {
       "program": "Programa oficial",
@@ -2344,15 +2345,20 @@
     },
     "galeria": {
       "vacio": "Aún no se han subido fotos.",
-      "descargarTodas": "Descargar todas (ZIP)",
+      "descargarTodas": "Descargar todas",
       "seleccionarFotos": "Seleccionar fotos",
       "cancelarSeleccion": "Cancelar selección",
       "seleccionadas": "{n} seleccionadas",
       "todas": "Todas",
       "ninguna": "Ninguna",
       "descargarSeleccion": "Descargar selección (ZIP)",
+      "descargarDirecta": "Descargar fotos",
+      "descargandoFoto": "Descargando foto",
+      "limitWarning": "La descarga directa está limitada a {limit} fotos a la vez. Para más fotos usa el botón ZIP.",
       "preparandoZip": "Preparando ZIP…",
-      "descargar": "Descargar"
+      "descargar": "Descargar",
+      "foto": "foto",
+      "fotos": "fotos"
     },
     "alojamientos": {
       "kicker": "Dónde duerme cada delegación",

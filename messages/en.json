@@ -2564,7 +2564,12 @@
       "ninguna": "None",
       "descargarSeleccion": "Download selection (ZIP)",
       "preparandoZip": "Preparing ZIP...",
-      "descargar": "Download"
+      "descargar": "Download",
+      "descargarDirecta": "Download photos",
+      "descargandoFoto": "Downloading photo",
+      "limitWarning": "Direct download is limited to {limit} photos at a time. For more photos use the ZIP button.",
+      "foto": "photo",
+      "fotos": "photos"
     },
     "alojamientos": {
       "kicker": "Where each delegation sleeps",
@@ -2585,7 +2590,8 @@
       "volver": "Back to the event",
       "fotos": "photos",
       "foto": "photo",
-      "vacio": "There are no photos published in the album yet."
+      "vacio": "There are no photos published in the album yet.",
+      "titulo": "Photo Album"
     }
   }
 }

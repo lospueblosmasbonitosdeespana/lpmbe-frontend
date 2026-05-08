@@ -2564,7 +2564,12 @@
       "ninguna": "Cap",
       "descargarSeleccion": "Descàrrega de selecció (ZIP)",
       "preparandoZip": "ZIP s'està creant…",
-      "descargar": "Descarrega"
+      "descargar": "Descarrega",
+      "descargarDirecta": "Descarregar fotos",
+      "descargandoFoto": "Descarregant la foto",
+      "limitWarning": "Les descàrregues directes estan limitades a {limit} fotos a la vegada. Per a més fotos, utilitza el botó ZIP.",
+      "foto": "foto",
+      "fotos": "fotos"
     },
     "alojamientos": {
       "kicker": "On s'allotja cada delegació",
@@ -2585,7 +2590,8 @@
       "volver": "Tornar a l'esdeveniment",
       "fotos": "fotos",
       "foto": "foto",
-      "vacio": "Encara no hi ha fotos a l'àlbum."
+      "vacio": "Encara no hi ha fotos a l'àlbum.",
+      "titulo": "Àlbum de fotos"
     }
   }
 }

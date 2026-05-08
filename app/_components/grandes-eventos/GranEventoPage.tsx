@@ -3,11 +3,10 @@ import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble, Images } from 'lucide-react';
-import { getGranEventoBySlug, getGranEventoFotos, pickI18n } from '@/lib/grandes-eventos';
+import { getGranEventoBySlug, pickI18n } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
 import GranEventoMapa from './GranEventoMapa';
-import GranEventoGaleria from './GranEventoGaleria';
 import GranEventoAlojamientos from './GranEventoAlojamientos';
 
 /**
@@ -37,8 +36,6 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
 
   const villagesIntro = pickI18n(evento.villagesIntro_es, evento.villagesIntro_i18n, locale);
   const mapIntro = pickI18n(evento.mapIntro_es, evento.mapIntro_i18n, locale);
-
-  const fotosIniciales = await getGranEventoFotos(slug);
 
   const logoUrl = evento.logoUrl && evento.logoUrl.trim() ? evento.logoUrl : null;
   const totalParadasMapa = evento.pueblos.length + (evento.paradas?.length ?? 0);
@@ -138,7 +135,7 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
                 {t('actions.viewAlojamientos')}
               </a>
             ) : null}
-            {albumHref && fotosIniciales.length > 0 ? (
+            {albumHref ? (
               <Link
                 href={albumHref}
                 className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
@@ -150,23 +147,6 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
           </div>
         </div>
       </header>
-
-      {/* GALERÍA EN VIVO (solo si hay fotos) */}
-      {fotosIniciales.length > 0 ? (
-        <section className="border-t border-stone-100 bg-gradient-to-br from-amber-900/5 via-white to-emerald-900/5 px-6 py-16 sm:py-20">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-10 max-w-2xl">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700/80">
-                {t('sections.live')}
-              </p>
-              <div className="mt-3 mb-4 inline-flex h-1 w-12 rounded-full bg-amber-700" />
-              <h2 className="mb-2 text-2xl font-bold text-stone-900 sm:text-3xl">{t('sections.galleryTitle')}</h2>
-              <p className="text-[15px] leading-relaxed text-stone-600 sm:text-base">{t('sections.galleryIntro')}</p>
-            </div>
-            <GranEventoGaleria slug={evento.slug} fotosIniciales={fotosIniciales} />
-          </div>
-        </section>
-      ) : null}
 
       {/* PROGRAMA */}
       {evento.dias.length > 0 ? (
