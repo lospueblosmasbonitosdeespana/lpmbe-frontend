@@ -106,6 +106,11 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: true, follow: true },
     other: {
       "apple-itunes-app": "app-id=6755147967",
+      // Forzar que los iconos añadidos al "home screen" del iPhone se abran
+      // como Safari completo (con barras de navegación y compartir), NO como
+      // web app standalone que oculta toda la UI del navegador.
+      "apple-mobile-web-app-capable": "no",
+      "mobile-web-app-capable": "no",
     },
   };
 }
