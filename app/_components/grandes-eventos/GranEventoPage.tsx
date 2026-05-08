@@ -137,15 +137,13 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
                 {t('actions.viewAlojamientos')}
               </a>
             ) : null}
-            {(evento.restaurantes?.length ?? 0) > 0 ? (
-              <a
-                href="#restaurantes"
-                className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
-              >
-                <UtensilsCrossed className="h-4 w-4" />
-                {t('actions.viewRestaurantes')}
-              </a>
-            ) : null}
+            <a
+              href="#restaurantes"
+              className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
+            >
+              <UtensilsCrossed className="h-4 w-4" />
+              {t('actions.viewRestaurantes')}
+            </a>
             {albumHref ? (
               <Link
                 href={albumHref}
@@ -220,10 +218,8 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
         <GranEventoAlojamientos alojamientos={evento.alojamientos} />
       ) : null}
 
-      {/* RESTAURANTES */}
-      {(evento.restaurantes?.length ?? 0) > 0 ? (
-        <GranEventoRestaurantes restaurantes={evento.restaurantes} />
-      ) : null}
+      {/* RESTAURANTES — siempre visible; la sección muestra "próximamente" si está vacía */}
+      <GranEventoRestaurantes restaurantes={evento.restaurantes ?? []} />
 
       {/* LOGÍSTICA */}
       <LogisticaSection evento={evento} locale={locale} />

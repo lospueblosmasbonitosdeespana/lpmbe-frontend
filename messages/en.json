@@ -2603,7 +2603,8 @@
       "cena": "Dinner",
       "comoLlegar": "How to get there",
       "web": "Web",
-      "sinFecha": "No date assigned"
+      "sinFecha": "No date assigned",
+      "proximamente": "The event's restaurants will be published soon."
     }
   }
 }

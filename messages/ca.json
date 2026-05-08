@@ -2603,7 +2603,8 @@
       "cena": "Sopar",
       "comoLlegar": "Com arribar-hi",
       "web": "Lloc web",
-      "sinFecha": "No s'ha assignat cap data"
+      "sinFecha": "No s'ha assignat cap data",
+      "proximamente": "Els restaurants que participen en l'esdeveniment s'anunciaran aviat."
     }
   }
 }

@@ -2603,7 +2603,8 @@
       "cena": "Dîner",
       "comoLlegar": "Comment s'y rendre",
       "web": "Web",
-      "sinFecha": "Aucune date n'a été fixée"
+      "sinFecha": "Aucune date n'a été fixée",
+      "proximamente": "Les restaurants de l'événement seront publiés prochainement."
     }
   }
 }

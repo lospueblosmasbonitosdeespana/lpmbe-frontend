@@ -43,8 +43,6 @@ export default function GranEventoRestaurantes({
   const locale = useLocale();
   const t = useTranslations('granEvento.restaurantes');
 
-  if (restaurantes.length === 0) return null;
-
   const grupos = agruparPorFecha(restaurantes);
 
   return (
@@ -62,6 +60,14 @@ export default function GranEventoRestaurantes({
           <h2 className="text-2xl font-bold text-stone-900 sm:text-3xl">{t('titulo')}</h2>
           <p className="mt-2 text-[15px] leading-relaxed text-stone-600 sm:text-base">{t('intro')}</p>
         </div>
+
+        {/* Estado vacío */}
+        {restaurantes.length === 0 && (
+          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-amber-300 bg-amber-50/40 px-6 py-8 text-amber-800">
+            <UtensilsCrossed className="h-6 w-6 shrink-0 opacity-50" />
+            <p className="text-sm font-medium">{t('proximamente')}</p>
+          </div>
+        )}
 
         {/* Grupos por día */}
         <div className="space-y-12">
