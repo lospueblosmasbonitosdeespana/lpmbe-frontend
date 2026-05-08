@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import Image from 'next/image';
-import { Camera, ImageIcon, Eye, EyeOff, Trash2, CheckCircle2 } from 'lucide-react';
+import { Camera, ImageIcon, Eye, EyeOff, Trash2, CheckCircle2, CalendarDays } from 'lucide-react';
 import type { EventoEditDetail } from '../GranEventoEditor';
 import { adminFetch } from './_helpers';
 
@@ -171,6 +171,11 @@ function FotoCard({
   reload: () => Promise<void>;
 }) {
   const [busy, setBusy] = useState(false);
+  // Fecha local: YYYY-MM-DD para el input type="date"
+  const [fechaLocal, setFechaLocal] = useState<string>(
+    foto.fechaFoto ? foto.fechaFoto.slice(0, 10) : '',
+  );
+  const [editandoFecha, setEditandoFecha] = useState(false);
 
   const toggleVisible = async () => {
     setBusy(true);
@@ -181,6 +186,22 @@ function FotoCard({
       alert(e instanceof Error ? e.message : 'Error');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveFecha = async (value: string) => {
+    setBusy(true);
+    try {
+      // Enviar como ISO con hora 12:00 UTC para evitar desfases de zona
+      const fechaFoto = value ? `${value}T12:00:00.000Z` : null;
+      await adminFetch(`/fotos/${foto.id}`, { method: 'PATCH', json: { fechaFoto } });
+      setFechaLocal(value);
+      await reload();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error');
+    } finally {
+      setBusy(false);
+      setEditandoFecha(false);
     }
   };
 
@@ -208,6 +229,45 @@ function FotoCard({
         ) : null}
       </div>
       {foto.pieFoto_es ? <p className="line-clamp-2 px-2 py-2 text-xs text-stone-600">{foto.pieFoto_es}</p> : null}
+
+      {/* Fecha de la foto (para agrupar en el álbum) */}
+      <div className="border-t border-stone-100 px-2 py-2">
+        {editandoFecha ? (
+          <div className="flex items-center gap-1">
+            <input
+              type="date"
+              defaultValue={fechaLocal}
+              className="flex-1 rounded border border-stone-300 px-1 py-0.5 text-[11px] focus:border-amber-400 focus:outline-none"
+              onBlur={(e) => saveFecha(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveFecha((e.target as HTMLInputElement).value);
+                if (e.key === 'Escape') setEditandoFecha(false);
+              }}
+              autoFocus
+              disabled={busy}
+            />
+            <button
+              onClick={() => setEditandoFecha(false)}
+              className="text-[10px] text-stone-400 hover:text-stone-600"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditandoFecha(true)}
+            className="inline-flex w-full items-center gap-1 text-[11px] text-stone-500 hover:text-amber-700"
+          >
+            <CalendarDays className="h-3 w-3 shrink-0" />
+            <span className="truncate">
+              {fechaLocal
+                ? new Date(`${fechaLocal}T12:00:00Z`).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })
+                : 'Asignar fecha'}
+            </span>
+          </button>
+        )}
+      </div>
+
       <div className="flex border-t border-stone-100">
         <button onClick={toggleVisible} disabled={busy} className="inline-flex flex-1 items-center justify-center gap-1 px-2 py-2 text-[11px] font-semibold text-stone-700 hover:bg-stone-50">
           {foto.visible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}

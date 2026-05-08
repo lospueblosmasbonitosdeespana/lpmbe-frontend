@@ -58,6 +58,8 @@ export type GranEventoFoto = {
   pieFoto_i18n: Record<string, string> | null;
   orden: number;
   visible: boolean;
+  /** Fecha real de la foto (asignada por el admin). Si null, usar createdAt. */
+  fechaFoto: string | null;
   createdAt: string;
 };
 
@@ -229,6 +231,21 @@ export async function getGranEventoFotos(slug: string, limit = 60): Promise<Gran
   try {
     const res = await fetch(
       `${API}/public/grandes-eventos/${encodeURIComponent(slug)}/fotos?limit=${limit}`,
+      { next: { revalidate: 30 } },
+    );
+    if (!res.ok) return [];
+    return (await res.json()) as GranEventoFoto[];
+  } catch {
+    return [];
+  }
+}
+
+/** Todas las fotos visibles del evento, ordenadas por fecha real para el álbum. */
+export async function getGranEventoAlbumFotos(slug: string): Promise<GranEventoFoto[]> {
+  const API = getApiUrl();
+  try {
+    const res = await fetch(
+      `${API}/public/grandes-eventos/${encodeURIComponent(slug)}/album`,
       { next: { revalidate: 30 } },
     );
     if (!res.ok) return [];

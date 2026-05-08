@@ -8,5 +8,5 @@ export const revalidate = 30;
  */
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return <GranEventoPage slug={slug} />;
+  return <GranEventoPage slug={slug} albumHref={`/encuentros/${slug}/album`} />;
 }

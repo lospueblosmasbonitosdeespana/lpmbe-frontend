@@ -2315,7 +2315,14 @@
     "actions": {
       "viewProgram": "Ver programa",
       "downloadPdf": "Descargar programa (PDF)",
-      "viewAlojamientos": "Alojamientos"
+      "viewAlojamientos": "Alojamientos",
+      "viewAlbum": "Álbum de Fotos"
+    },
+    "album": {
+      "volver": "Volver al evento",
+      "fotos": "fotos",
+      "foto": "foto",
+      "vacio": "Todavía no hay fotos publicadas en el álbum."
     },
     "sections": {
       "program": "Programa oficial",
@@ -2380,7 +2387,9 @@
       "viewProgram": "Ver programa",
       "viewVillages": "Ver pueblos",
       "viewMap": "Ver mapa de la ruta",
-      "viewVillage": "Ver pueblo"
+      "viewVillage": "Ver pueblo",
+      "viewAlojamientos": "Alojamientos",
+      "viewAlbum": "Álbum de Fotos"
     },
     "sections": {
       "program": "Programa",

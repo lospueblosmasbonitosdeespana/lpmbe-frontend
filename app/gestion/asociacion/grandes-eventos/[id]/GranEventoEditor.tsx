@@ -120,6 +120,7 @@ export type EventoEditDetail = {
     pieFoto_es: string | null;
     orden: number;
     visible: boolean;
+    fechaFoto: string | null;
     createdAt: string;
   }>;
 };

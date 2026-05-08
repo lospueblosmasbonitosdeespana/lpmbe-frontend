@@ -2330,7 +2330,9 @@
       "viewProgram": "Vedi programma",
       "viewVillages": "Vedi villaggi",
       "viewMap": "Visualizza la mappa del percorso",
-      "viewVillage": "Vedi villaggio"
+      "viewVillage": "Vedi villaggio",
+      "viewAlojamientos": "Sistemazione",
+      "viewAlbum": "Album fotografico"
     },
     "sections": {
       "program": "Programma",
@@ -2531,7 +2533,8 @@
     "actions": {
       "viewProgram": "Vedi programma",
       "downloadPdf": "Scarica il programma (PDF)",
-      "viewAlojamientos": "Sistemazione"
+      "viewAlojamientos": "Sistemazione",
+      "viewAlbum": "Album fotografico"
     },
     "sections": {
       "program": "Programma ufficiale",
@@ -2577,6 +2580,12 @@
       "pendienteTitulo": "Da assegnare",
       "pendienteDescripcion": "L'hotel per queste persone è ancora in fase di conferma. Aggiorneremo non appena le informazioni saranno disponibili.",
       "sinAsignaciones": "Non ci sono ancora persone assegnate a questo hotel."
+    },
+    "album": {
+      "volver": "Torna all'evento",
+      "fotos": "foto",
+      "foto": "foto",
+      "vacio": "Non ci sono ancora foto pubblicate nell'album."
     }
   }
 }

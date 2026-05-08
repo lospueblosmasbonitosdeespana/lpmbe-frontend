@@ -2482,7 +2482,9 @@
       "viewProgram": "See program",
       "viewVillages": "See towns",
       "viewMap": "View route map",
-      "viewVillage": "See town"
+      "viewVillage": "See town",
+      "viewAlojamientos": "Accommodations",
+      "viewAlbum": "Photo Album"
     },
     "sections": {
       "program": "Program",
@@ -2531,7 +2533,8 @@
     "actions": {
       "viewProgram": "See program",
       "downloadPdf": "Download program (PDF)",
-      "viewAlojamientos": "Accommodations"
+      "viewAlojamientos": "Accommodations",
+      "viewAlbum": "Photo Album"
     },
     "sections": {
       "program": "Official program",
@@ -2577,6 +2580,12 @@
       "pendienteTitulo": "To be assigned",
       "pendienteDescripcion": "The hotel for these people is still being confirmed. Will update as soon as information is available.",
       "sinAsignaciones": "There are no people assigned to this hotel yet."
+    },
+    "album": {
+      "volver": "Back to the event",
+      "fotos": "photos",
+      "foto": "photo",
+      "vacio": "There are no photos published in the album yet."
     }
   }
 }

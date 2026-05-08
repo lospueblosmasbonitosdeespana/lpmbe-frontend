@@ -1,7 +1,8 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble } from 'lucide-react';
+import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble, Images } from 'lucide-react';
 import { getGranEventoBySlug, getGranEventoFotos, pickI18n } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
@@ -21,7 +22,7 @@ import GranEventoAlojamientos from './GranEventoAlojamientos';
  * - Galería de fotos en vivo (si hay).
  * - Logística y contacto urgente.
  */
-export default async function GranEventoPage({ slug }: { slug: string }) {
+export default async function GranEventoPage({ slug, albumHref }: { slug: string; albumHref?: string }) {
   const evento = await getGranEventoBySlug(slug);
   if (!evento) notFound();
 
@@ -136,6 +137,15 @@ export default async function GranEventoPage({ slug }: { slug: string }) {
                 <BedDouble className="h-4 w-4" />
                 {t('actions.viewAlojamientos')}
               </a>
+            ) : null}
+            {albumHref && fotosIniciales.length > 0 ? (
+              <Link
+                href={albumHref}
+                className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
+              >
+                <Images className="h-4 w-4" />
+                {t('actions.viewAlbum')}
+              </Link>
             ) : null}
           </div>
         </div>

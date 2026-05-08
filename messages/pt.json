@@ -2330,7 +2330,9 @@
       "viewProgram": "Ver programa",
       "viewVillages": "Ver aldeias",
       "viewMap": "Ver mapa do itinerário",
-      "viewVillage": "Ver aldeia"
+      "viewVillage": "Ver aldeia",
+      "viewAlojamientos": "Alojamento",
+      "viewAlbum": "Álbum de fotografias"
     },
     "sections": {
       "program": "Programa",
@@ -2531,7 +2533,8 @@
     "actions": {
       "viewProgram": "Ver programa",
       "downloadPdf": "Descarregar o programa (PDF)",
-      "viewAlojamientos": "Alojamento"
+      "viewAlojamientos": "Alojamento",
+      "viewAlbum": "Álbum de fotografias"
     },
     "sections": {
       "program": "Programa oficial",
@@ -2577,6 +2580,12 @@
       "pendienteTitulo": "A atribuir",
       "pendienteDescripcion": "O hotel para estas pessoas ainda está a ser confirmado. Actualizaremos a informação assim que estiver disponível.",
       "sinAsignaciones": "Ainda não há pessoas afectas a este hotel."
+    },
+    "album": {
+      "volver": "Voltar ao evento",
+      "fotos": "fotos",
+      "foto": "fotografia",
+      "vacio": "Ainda não há fotografias publicadas no álbum."
     }
   }
 }

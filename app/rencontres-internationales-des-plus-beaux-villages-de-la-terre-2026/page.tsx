@@ -10,5 +10,5 @@ const SLUG = 'rencontres-internationales-des-plus-beaux-villages-de-la-terre-202
  * usa `/encuentros/[slug]` (mucho más cómodo de gestionar).
  */
 export default function Page() {
-  return <GranEventoPage slug={SLUG} />;
+  return <GranEventoPage slug={SLUG} albumHref={`/${SLUG}/album`} />;
 }

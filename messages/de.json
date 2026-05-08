@@ -2330,7 +2330,9 @@
       "viewProgram": "Siehe Programm",
       "viewVillages": "Dörfer sehen",
       "viewMap": "Karte der Route ansehen",
-      "viewVillage": "Siehe Dorf"
+      "viewVillage": "Siehe Dorf",
+      "viewAlojamientos": "Unterkunft",
+      "viewAlbum": "Fotoalbum"
     },
     "sections": {
       "program": "Programm",
@@ -2531,7 +2533,8 @@
     "actions": {
       "viewProgram": "Siehe Programm",
       "downloadPdf": "Programm herunterladen (PDF)",
-      "viewAlojamientos": "Unterkunft"
+      "viewAlojamientos": "Unterkunft",
+      "viewAlbum": "Fotoalbum"
     },
     "sections": {
       "program": "Offizielles Programm",
@@ -2577,6 +2580,12 @@
       "pendienteTitulo": "Zuzuordnen",
       "pendienteDescripcion": "Das Hotel für diese Personen wird noch bestätigt. Wir aktualisieren, sobald Informationen verfügbar sind.",
       "sinAsignaciones": "Diesem Hotel sind noch keine Personen zugeordnet."
+    },
+    "album": {
+      "volver": "Zurück zur Veranstaltung",
+      "fotos": "Fotos",
+      "foto": "Foto",
+      "vacio": "Es sind noch keine Fotos im Album veröffentlicht."
     }
   }
 }

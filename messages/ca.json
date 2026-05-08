@@ -2330,7 +2330,9 @@
       "viewProgram": "Veure el programa",
       "viewVillages": "Vegeu pobles",
       "viewMap": "Veure el mapa de la ruta",
-      "viewVillage": "Vegeu poble"
+      "viewVillage": "Vegeu poble",
+      "viewAlojamientos": "Allotjament",
+      "viewAlbum": "Àlbum de fotos"
     },
     "sections": {
       "program": "Programa",
@@ -2531,7 +2533,8 @@
     "actions": {
       "viewProgram": "Veure el programa",
       "downloadPdf": "Descarrega el programa (PDF)",
-      "viewAlojamientos": "Allotjament"
+      "viewAlojamientos": "Allotjament",
+      "viewAlbum": "Àlbum de fotos"
     },
     "sections": {
       "program": "Programa oficial",
@@ -2577,6 +2580,12 @@
       "pendienteTitulo": "Per assignar",
       "pendienteDescripcion": "L'hotel per a aquests hostes encara s'està confirmant. Us ho actualitzarem tan aviat com tinguem més informació.",
       "sinAsignaciones": "Encara no s'ha assignat cap membre del personal a aquest hotel."
+    },
+    "album": {
+      "volver": "Tornar a l'esdeveniment",
+      "fotos": "fotos",
+      "foto": "foto",
+      "vacio": "Encara no hi ha fotos a l'àlbum."
     }
   }
 }
