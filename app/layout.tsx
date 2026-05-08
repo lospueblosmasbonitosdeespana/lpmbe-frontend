@@ -24,6 +24,7 @@ import {
 import JsonLd from "./components/seo/JsonLd";
 import CountdownHydrator from "./_components/CountdownHydrator";
 import ExplorarBar from "./_components/nav/ExplorarBar";
+import StandaloneReloadButton from "./_components/StandaloneReloadButton";
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
@@ -106,11 +107,6 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: true, follow: true },
     other: {
       "apple-itunes-app": "app-id=6755147967",
-      // Forzar que los iconos añadidos al "home screen" del iPhone se abran
-      // como Safari completo (con barras de navegación y compartir), NO como
-      // web app standalone que oculta toda la UI del navegador.
-      "apple-mobile-web-app-capable": "no",
-      "mobile-web-app-capable": "no",
     },
   };
 }
@@ -194,6 +190,7 @@ export default async function RootLayout({
               <ExplorarBar />
               {children}
               <Footer locale={locale} />
+              <StandaloneReloadButton />
               <SpeedInsights />
             </GoogleAuthProviderWrapper>
           </NextIntlClientProvider>
