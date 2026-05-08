@@ -15,12 +15,8 @@ export default function ImageLightbox({ imageUrl, imageAlt, onClose }: ImageLigh
       if (e.key === 'Escape') onClose();
     };
 
-    // Prevenir scroll del body
-    document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', handleEsc);
-
     return () => {
-      document.body.style.overflow = '';
       document.removeEventListener('keydown', handleEsc);
     };
   }, [onClose]);
@@ -39,6 +35,8 @@ export default function ImageLightbox({ imageUrl, imageAlt, onClose }: ImageLigh
         justifyContent: 'center',
         zIndex: 9999,
         padding: '20px',
+        touchAction: 'none',
+        overscrollBehavior: 'contain',
       }}
       onClick={onClose}
     >

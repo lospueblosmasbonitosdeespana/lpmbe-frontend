@@ -258,16 +258,14 @@ export function ImageFullscreenModal({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
     };
   }, [onClose]);
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm touch-none overscroll-contain"
       onClick={onClose}
     >
       <button

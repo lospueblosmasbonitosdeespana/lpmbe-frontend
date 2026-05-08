@@ -66,16 +66,10 @@ export function MobileMenu({ items = navConfig }: { items?: NavItem[] }) {
     close();
   }, [pathname]);
 
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  // No bloquear document.body.overflow: rompe la detección de scroll en Safari iOS
+  // impidiendo que la barra de herramientas inferior reaparezca al hacer scroll.
+  // El panel lateral tiene overscroll-behavior:contain para que el scroll no se
+  // propague fuera de él sin necesidad de bloquear el body.
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -129,7 +123,7 @@ export function MobileMenu({ items = navConfig }: { items?: NavItem[] }) {
             aria-hidden
           />
           <aside
-            className="fixed right-0 top-0 z-50 h-full w-full max-w-sm overflow-y-auto bg-background shadow-lg"
+            className="fixed right-0 top-0 z-50 h-full w-full max-w-sm overflow-y-auto overscroll-contain bg-background shadow-lg"
             role="dialog"
             aria-modal="true"
             aria-label="Menú de navegación"

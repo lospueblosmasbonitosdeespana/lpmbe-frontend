@@ -105,10 +105,8 @@ export default function SafeHtml({ html, className = '', altFallback }: SafeHtml
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxImage(null);
     };
-    document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', handleEsc);
     return () => {
-      document.body.style.overflow = '';
       document.removeEventListener('keydown', handleEsc);
     };
   }, [lightboxImage]);
@@ -133,6 +131,8 @@ export default function SafeHtml({ html, className = '', altFallback }: SafeHtml
             justifyContent: 'center',
             zIndex: 9999,
             padding: '20px',
+            touchAction: 'none',
+            overscrollBehavior: 'contain',
           }}
         >
           <button

@@ -20,10 +20,8 @@ export default function SmartCoverImage({ src, alt }: Props) {
     const onEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', onEsc);
     return () => {
-      document.body.style.overflow = '';
       document.removeEventListener('keydown', onEsc);
     };
   }, [open]);
@@ -56,7 +54,7 @@ export default function SmartCoverImage({ src, alt }: Props) {
           onClick={() => setOpen(false)}
           onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
           onContextMenu={(e) => e.preventDefault()}
-          className="fixed inset-0 z-[10000] flex cursor-zoom-out items-center justify-center bg-black/90 p-4"
+          className="fixed inset-0 z-[10000] flex cursor-zoom-out items-center justify-center bg-black/90 p-4 touch-none overscroll-contain"
           aria-label="Cerrar imagen ampliada"
         >
           <button
