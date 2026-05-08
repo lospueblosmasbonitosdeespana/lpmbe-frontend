@@ -75,8 +75,8 @@ export default function GranEventoRestaurantes({
             <div key={fecha}>
               {/* Etiqueta del día */}
               <div className="mb-5 flex items-center gap-3 border-b border-stone-200 pb-3">
-                <CalendarDays className="h-4 w-4 shrink-0 text-amber-700" />
-                <p className="text-sm font-bold capitalize text-stone-800">
+                <CalendarDays className="h-5 w-5 shrink-0 text-amber-700" />
+                <p className="text-lg font-bold capitalize text-stone-900">
                   {fecha === 'sin-fecha' ? t('sinFecha') : formatFecha(fecha, locale)}
                 </p>
               </div>

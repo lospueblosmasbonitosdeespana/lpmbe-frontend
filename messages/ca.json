@@ -2586,7 +2586,8 @@
       "paraTodosDescripcion": "Totes les delegacions s'allotgen juntes en aquest hotel aquesta nit.",
       "pendienteTitulo": "Per assignar",
       "pendienteDescripcion": "L'hotel per a aquests hostes encara s'està confirmant. Us ho actualitzarem tan aviat com tinguem més informació.",
-      "sinAsignaciones": "Encara no s'ha assignat cap membre del personal a aquest hotel."
+      "sinAsignaciones": "Encara no s'ha assignat cap membre del personal a aquest hotel.",
+      "nochesRange": "Nits {des de}–{fins a}"
     },
     "album": {
       "volver": "Tornar a l'esdeveniment",

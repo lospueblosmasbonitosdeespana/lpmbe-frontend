@@ -2586,7 +2586,8 @@
       "paraTodosDescripcion": "Questa notte tutte le delegazioni soggiornano insieme in questo hotel.",
       "pendienteTitulo": "Da assegnare",
       "pendienteDescripcion": "L'hotel per queste persone è ancora in fase di conferma. Aggiorneremo non appena le informazioni saranno disponibili.",
-      "sinAsignaciones": "Non ci sono ancora persone assegnate a questo hotel."
+      "sinAsignaciones": "Non ci sono ancora persone assegnate a questo hotel.",
+      "nochesRange": "Notti {da}-{fino a}"
     },
     "album": {
       "volver": "Torna all'evento",

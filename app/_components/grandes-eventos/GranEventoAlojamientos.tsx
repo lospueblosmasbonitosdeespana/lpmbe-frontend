@@ -125,15 +125,12 @@ function NocheGroup({
   return (
     <div>
       <div className="mb-5 flex items-baseline gap-3 border-b border-stone-200 pb-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
-          {t('nocheNum', { n: indexNoche })}
+        <p className="text-sm font-bold uppercase tracking-[0.18em] text-amber-700">
+          {noches > 1
+            ? t('nochesRange', { desde: indexNoche, hasta: indexNoche + noches - 1 })
+            : t('nocheNum', { n: indexNoche })}
         </p>
         <p className="text-sm font-semibold text-stone-700">{dateRangeLabel}</p>
-        {noches > 1 ? (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-800">
-            {t('numNoches', { n: noches })}
-          </span>
-        ) : null}
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {hoteles.map((h) => (

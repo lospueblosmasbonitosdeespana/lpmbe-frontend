@@ -2368,6 +2368,7 @@
       "intro": "Consulta el hotel asignado a cada delegación y persona durante los días del evento. Toca en \"Cómo llegar\" para abrir el hotel en Google Maps desde tu móvil.",
       "buscarPlaceholder": "Busca tu nombre, delegación u hotel…",
       "nocheNum": "Noche {n}",
+      "nochesRange": "Noches {desde}–{hasta}",
       "numNoches": "{n} noches",
       "comoLlegar": "Cómo llegar",
       "web": "Web del hotel",

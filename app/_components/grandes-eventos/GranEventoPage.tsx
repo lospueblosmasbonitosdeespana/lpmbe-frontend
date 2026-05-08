@@ -295,7 +295,7 @@ function ProgramaTimeline({
         return (
           <div key={dia.id} className="relative">
             <div className="mb-6 border-b border-stone-200 pb-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">{label}</p>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-amber-700">{label}</p>
               <h3 className="mt-1.5 text-xl font-bold text-stone-900 sm:text-2xl">{titulo}</h3>
             </div>
             <ol className="relative space-y-5 border-l-2 border-amber-200/70 pl-6">

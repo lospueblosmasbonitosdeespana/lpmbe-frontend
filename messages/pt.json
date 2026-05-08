@@ -2586,7 +2586,8 @@
       "paraTodosDescripcion": "Esta noite, todas as delegações ficam juntas neste hotel.",
       "pendienteTitulo": "A atribuir",
       "pendienteDescripcion": "O hotel para estas pessoas ainda está a ser confirmado. Actualizaremos a informação assim que estiver disponível.",
-      "sinAsignaciones": "Ainda não há pessoas afectas a este hotel."
+      "sinAsignaciones": "Ainda não há pessoas afectas a este hotel.",
+      "nochesRange": "Noites {de}-{até}"
     },
     "album": {
       "volver": "Voltar ao evento",

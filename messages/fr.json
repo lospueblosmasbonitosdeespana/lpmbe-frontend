@@ -2586,7 +2586,8 @@
       "paraTodosDescripcion": "Ce soir, toutes les délégations sont logées ensemble dans cet hôtel.",
       "pendienteTitulo": "A attribuer",
       "pendienteDescripcion": "L'hôtel pour ces personnes est encore en cours de confirmation. Nous mettrons à jour les informations dès qu'elles seront disponibles.",
-      "sinAsignaciones": "Il n'y a pas encore de personnes affectées à cet hôtel."
+      "sinAsignaciones": "Il n'y a pas encore de personnes affectées à cet hôtel.",
+      "nochesRange": "Nuits {du}-{jusqu'au}"
     },
     "album": {
       "volver": "Retour à l'événement",

@@ -2586,7 +2586,8 @@
       "paraTodosDescripcion": "Heute Abend übernachten alle Delegationen gemeinsam in diesem Hotel.",
       "pendienteTitulo": "Zuzuordnen",
       "pendienteDescripcion": "Das Hotel für diese Personen wird noch bestätigt. Wir aktualisieren, sobald Informationen verfügbar sind.",
-      "sinAsignaciones": "Diesem Hotel sind noch keine Personen zugeordnet."
+      "sinAsignaciones": "Diesem Hotel sind noch keine Personen zugeordnet.",
+      "nochesRange": "Nächte {von}-{bis}"
     },
     "album": {
       "volver": "Zurück zur Veranstaltung",
