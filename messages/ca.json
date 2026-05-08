@@ -2534,7 +2534,8 @@
       "viewProgram": "Veure el programa",
       "downloadPdf": "Descarrega el programa (PDF)",
       "viewAlojamientos": "Allotjament",
-      "viewAlbum": "Àlbum de fotos"
+      "viewAlbum": "Àlbum de fotos",
+      "viewRestaurantes": "Restaurants"
     },
     "sections": {
       "program": "Programa oficial",
@@ -2593,6 +2594,16 @@
       "foto": "foto",
       "vacio": "Encara no hi ha fotos a l'àlbum.",
       "titulo": "Àlbum de fotos"
+    },
+    "restaurantes": {
+      "kicker": "On menja cada delegació",
+      "titulo": "Restaurants d'esdeveniments",
+      "intro": "Comprova quin restaurant acull cada dinar o sopar. Toca \"Indicacions\" per obrir-ho a Google Maps.",
+      "comida": "Menjar",
+      "cena": "Sopar",
+      "comoLlegar": "Com arribar-hi",
+      "web": "Lloc web",
+      "sinFecha": "No s'ha assignat cap data"
     }
   }
 }

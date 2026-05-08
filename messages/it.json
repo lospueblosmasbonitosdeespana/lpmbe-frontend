@@ -2534,7 +2534,8 @@
       "viewProgram": "Vedi programma",
       "downloadPdf": "Scarica il programma (PDF)",
       "viewAlojamientos": "Sistemazione",
-      "viewAlbum": "Album fotografico"
+      "viewAlbum": "Album fotografico",
+      "viewRestaurantes": "Ristoranti"
     },
     "sections": {
       "program": "Programma ufficiale",
@@ -2593,6 +2594,16 @@
       "foto": "foto",
       "vacio": "Non ci sono ancora foto pubblicate nell'album.",
       "titulo": "Album fotografico"
+    },
+    "restaurantes": {
+      "kicker": "Dove mangia ogni delegazione",
+      "titulo": "Ristoranti presenti all'evento",
+      "intro": "Controllare il ristorante in cui si tiene ogni pranzo o cena. Toccare \"Come arrivare\" per aprirlo su Google Maps.",
+      "comida": "Cibo",
+      "cena": "Cena",
+      "comoLlegar": "Come arrivare",
+      "web": "Web",
+      "sinFecha": "Nessuna data assegnata"
     }
   }
 }

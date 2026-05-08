@@ -2534,7 +2534,8 @@
       "viewProgram": "See program",
       "downloadPdf": "Download program (PDF)",
       "viewAlojamientos": "Accommodations",
-      "viewAlbum": "Photo Album"
+      "viewAlbum": "Photo Album",
+      "viewRestaurantes": "Restaurants"
     },
     "sections": {
       "program": "Official program",
@@ -2593,6 +2594,16 @@
       "foto": "photo",
       "vacio": "There are no photos published in the album yet.",
       "titulo": "Photo Album"
+    },
+    "restaurantes": {
+      "kicker": "Where each delegation eats",
+      "titulo": "Restaurants at the event",
+      "intro": "Check the restaurant where each lunch or dinner is held. Tap on \"How to get there\" to open it on Google Maps.",
+      "comida": "Food",
+      "cena": "Dinner",
+      "comoLlegar": "How to get there",
+      "web": "Web",
+      "sinFecha": "No date assigned"
     }
   }
 }

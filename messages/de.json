@@ -2534,7 +2534,8 @@
       "viewProgram": "Siehe Programm",
       "downloadPdf": "Programm herunterladen (PDF)",
       "viewAlojamientos": "Unterkunft",
-      "viewAlbum": "Fotoalbum"
+      "viewAlbum": "Fotoalbum",
+      "viewRestaurantes": "Restaurants"
     },
     "sections": {
       "program": "Offizielles Programm",
@@ -2593,6 +2594,16 @@
       "foto": "Foto",
       "vacio": "Es sind noch keine Fotos im Album veröffentlicht.",
       "titulo": "Fotoalbum"
+    },
+    "restaurantes": {
+      "kicker": "Wo jede Delegation isst",
+      "titulo": "Restaurants auf der Veranstaltung",
+      "intro": "Überprüfen Sie das Restaurant, in dem das jeweilige Mittag- oder Abendessen stattfindet. Tippen Sie auf \"Anfahrtsbeschreibung\", um es auf Google Maps zu öffnen.",
+      "comida": "Lebensmittel",
+      "cena": "Abendessen",
+      "comoLlegar": "Wie man dorthin kommt",
+      "web": "Web",
+      "sinFecha": "Kein Datum zugewiesen"
     }
   }
 }

@@ -2,12 +2,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble, Images } from 'lucide-react';
+import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble, Images, UtensilsCrossed, ExternalLink } from 'lucide-react';
 import { getGranEventoBySlug, pickI18n } from '@/lib/grandes-eventos';
+import type { GranEventoRestaurante } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
 import GranEventoMapa from './GranEventoMapa';
 import GranEventoAlojamientos from './GranEventoAlojamientos';
+import GranEventoRestaurantes from './GranEventoRestaurantes';
 
 /**
  * Página pública de un Gran Evento (asambleas, encuentros internacionales).
@@ -135,6 +137,15 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
                 {t('actions.viewAlojamientos')}
               </a>
             ) : null}
+            {(evento.restaurantes?.length ?? 0) > 0 ? (
+              <a
+                href="#restaurantes"
+                className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
+              >
+                <UtensilsCrossed className="h-4 w-4" />
+                {t('actions.viewRestaurantes')}
+              </a>
+            ) : null}
             {albumHref ? (
               <Link
                 href={albumHref}
@@ -158,7 +169,12 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
               </p>
               <div className="mt-3 inline-flex h-1 w-12 rounded-full bg-amber-700" />
             </div>
-            <ProgramaTimeline dias={evento.dias} locale={locale} />
+            <ProgramaTimeline
+              dias={evento.dias}
+              locale={locale}
+              fechaInicio={evento.fechaInicio}
+              restaurantes={evento.restaurantes ?? []}
+            />
           </div>
         </section>
       ) : null}
@@ -204,6 +220,11 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
         <GranEventoAlojamientos alojamientos={evento.alojamientos} />
       ) : null}
 
+      {/* RESTAURANTES */}
+      {(evento.restaurantes?.length ?? 0) > 0 ? (
+        <GranEventoRestaurantes restaurantes={evento.restaurantes} />
+      ) : null}
+
       {/* LOGÍSTICA */}
       <LogisticaSection evento={evento} locale={locale} />
 
@@ -229,18 +250,52 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
   );
 }
 
+/** Detecta si un texto de acto hace referencia a una comida o cena. */
+function detectTipoComida(texto: string): 'comida' | 'cena' | null {
+  const t = texto.toLowerCase();
+  if (/\b(almuerzo|comida|lunch|pranzo|almoço|mittagessen|déjeuner|dinar)\b/.test(t)) return 'comida';
+  if (/\b(cena|dîner|abendessen|dinner|jantar|sopar)\b/.test(t)) return 'cena';
+  return null;
+}
+
 function ProgramaTimeline({
   dias,
   locale,
+  fechaInicio,
+  restaurantes,
 }: {
   dias: import('@/lib/grandes-eventos').GranEventoDia[];
   locale: string;
+  fechaInicio?: string | null;
+  restaurantes: GranEventoRestaurante[];
 }) {
+  // Calcula la fecha de cada día a partir de fechaInicio y el índice (orden)
+  const diasOrdenados = [...dias].sort((a, b) => a.orden - b.orden);
+  const diaFechas = new Map<number, string>(); // diaId → YYYY-MM-DD
+  if (fechaInicio) {
+    const base = new Date(fechaInicio);
+    diasOrdenados.forEach((dia, idx) => {
+      const d = new Date(base);
+      d.setUTCDate(d.getUTCDate() + idx);
+      diaFechas.set(dia.id, d.toISOString().slice(0, 10));
+    });
+  }
+
+  // Indexa restaurantes por fecha+tipo para búsqueda rápida
+  const restPorFechaTipo = new Map<string, GranEventoRestaurante>();
+  for (const r of restaurantes) {
+    if (r.fecha && r.tipo) {
+      restPorFechaTipo.set(`${r.fecha.slice(0, 10)}-${r.tipo}`, r);
+    }
+  }
+
   return (
     <div className="space-y-12">
-      {dias.map((dia) => {
+      {diasOrdenados.map((dia) => {
         const label = pickI18n(dia.label_es, dia.label_i18n, locale);
         const titulo = pickI18n(dia.titulo_es, dia.titulo_i18n, locale);
+        const diaFecha = diaFechas.get(dia.id);
+
         return (
           <div key={dia.id} className="relative">
             <div className="mb-6 border-b border-stone-200 pb-4">
@@ -250,6 +305,12 @@ function ProgramaTimeline({
             <ol className="relative space-y-5 border-l-2 border-amber-200/70 pl-6">
               {dia.actos.map((acto) => {
                 const texto = pickI18n(acto.texto_es, acto.texto_i18n, locale);
+                // Buscar restaurante vinculado a este acto
+                const tipoComida = detectTipoComida(acto.texto_es);
+                const restauranteVinculado = diaFecha && tipoComida
+                  ? restPorFechaTipo.get(`${diaFecha}-${tipoComida}`)
+                  : undefined;
+
                 return (
                   <li key={acto.id} className="relative">
                     <span
@@ -258,11 +319,23 @@ function ProgramaTimeline({
                     >
                       <span className="block h-1.5 w-1.5 rounded-full bg-amber-700" />
                     </span>
-                    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:gap-4">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
                       <p className="shrink-0 text-sm font-bold tabular-nums text-amber-800 sm:w-28">
                         {acto.hora}
                       </p>
-                      <p className="text-[15px] leading-relaxed text-stone-700">{texto}</p>
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <p className="text-[15px] leading-relaxed text-stone-700">{texto}</p>
+                        {restauranteVinculado && (
+                          <a
+                            href={`#restaurante-${restauranteVinculado.id}`}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800 ring-1 ring-amber-200 transition hover:bg-amber-100 hover:ring-amber-400"
+                          >
+                            <UtensilsCrossed className="h-3 w-3" />
+                            {restauranteVinculado.nombre}
+                            <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </li>
                 );

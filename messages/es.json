@@ -2316,6 +2316,7 @@
       "viewProgram": "Ver programa",
       "downloadPdf": "Descargar programa (PDF)",
       "viewAlojamientos": "Alojamientos",
+      "viewRestaurantes": "Restaurantes",
       "viewAlbum": "Álbum de Fotos"
     },
     "album": {
@@ -2375,6 +2376,19 @@
       "pendienteTitulo": "Pendiente de asignar",
       "pendienteDescripcion": "Aún se está confirmando el hotel para estas personas. Se actualizará en cuanto haya información.",
       "sinAsignaciones": "Aún no hay personas asignadas a este hotel."
+    },
+    "restaurantes": {
+      "kicker": "Dónde come cada delegación",
+      "titulo": "Restaurantes del evento",
+      "intro": "Consulta el restaurante donde se celebra cada comida o cena. Toca en \"Cómo llegar\" para abrirlo en Google Maps.",
+      "comida": "Comida",
+      "cena": "Cena",
+      "comoLlegar": "Cómo llegar",
+      "web": "Web",
+      "sinFecha": "Sin fecha asignada"
+    },
+    "actions": {
+      "viewRestaurantes": "Restaurantes"
     }
   },
   "rencontres2026": {
