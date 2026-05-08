@@ -110,7 +110,7 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
       delete payload.pdfUrl;
       await adminFetch(`/${evento.id}`, { method: 'PATCH', json: payload });
       await reload();
-      setMsg('Guardado. Las traducciones a 7 idiomas se generaron automáticamente.');
+      setMsg('Guardado y traducido a 7 idiomas.');
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : 'Error');
     } finally {

@@ -22,15 +22,21 @@ export default function TabFotos({
 
   const uploadFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+    const fileArr = Array.from(files);
     setUploading(true);
     setError(null);
-    setProgress({ done: 0, total: files.length });
-    try {
-      let done = 0;
-      for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.append('file', file);
-        if (pieFoto.trim()) formData.append('pieFoto_es', pieFoto.trim());
+    setProgress({ done: 0, total: fileArr.length });
+
+    // Subida en paralelo con concurrencia máx. 3 para no saturar la conexión móvil.
+    const CONCURRENCY = 3;
+    let done = 0;
+    const errors: string[] = [];
+
+    const uploadOne = async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (pieFoto.trim()) formData.append('pieFoto_es', pieFoto.trim());
+      try {
         const res = await fetch(`/api/admin/grandes-eventos/${evento.id}/fotos/upload`, {
           method: 'POST',
           credentials: 'include',
@@ -38,26 +44,33 @@ export default function TabFotos({
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error((data as { error?: string }).error || 'Error subiendo foto');
+          errors.push((data as { error?: string }).error || `Error en ${file.name}`);
         }
+      } catch {
+        errors.push(`Sin conexión al subir ${file.name}`);
+      } finally {
         done += 1;
-        setProgress({ done, total: files.length });
+        setProgress({ done, total: fileArr.length });
       }
-      setPieFoto('');
-      await reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error');
-    } finally {
-      setUploading(false);
-      setProgress(null);
+    };
+
+    // Procesar en chunks de CONCURRENCY
+    for (let i = 0; i < fileArr.length; i += CONCURRENCY) {
+      await Promise.all(fileArr.slice(i, i + CONCURRENCY).map(uploadOne));
     }
+
+    if (errors.length > 0) setError(errors.join(' · '));
+    setPieFoto('');
+    await reload();
+    setUploading(false);
+    setProgress(null);
   };
 
   return (
     <div className="space-y-5">
       <p className="text-sm text-stone-600">
-        Sube las fotos del evento desde el móvil o el ordenador. Aparecen en la galería pública en tiempo real (poll cada
-        60s). Optimizado para uso desde móvil durante el evento.
+        Sube las fotos del evento desde el móvil o el ordenador. Aparecen en la galería pública en tiempo real (poll cada 60s).
+        Puedes seleccionar <strong>varias fotos a la vez</strong> desde la galería — se suben de 3 en 3 en paralelo.
       </p>
 
       {/* Uploader */}
@@ -90,7 +103,7 @@ export default function TabFotos({
             className="flex items-center justify-center gap-2 rounded-2xl border-2 border-amber-300 bg-white px-4 py-4 text-base font-semibold text-amber-800 shadow-sm transition hover:border-amber-500 hover:bg-amber-50 disabled:opacity-50"
           >
             <ImageIcon className="h-5 w-5" />
-            Elegir de la galería
+            Galería (varias a la vez)
           </button>
         </div>
 
