@@ -61,6 +61,22 @@ export type GranEventoFoto = {
   createdAt: string;
 };
 
+export type GranEventoRestaurante = {
+  id: number;
+  eventoId: number;
+  orden: number;
+  nombre: string;
+  direccion: string | null;
+  ciudad: string | null;
+  lat: number | null;
+  lng: number | null;
+  telefono: string | null;
+  web: string | null;
+  fotoUrl: string | null;
+  notas_es: string | null;
+  notas_i18n: Record<string, string> | null;
+};
+
 export type GranEventoAlojamientoAsignacion = {
   id: number;
   alojamientoId: number;
@@ -161,6 +177,7 @@ export type GranEvento = {
   pueblos: GranEventoPueblo[];
   paradas: GranEventoParada[];
   alojamientos: GranEventoAlojamiento[];
+  restaurantes: GranEventoRestaurante[];
 };
 
 /**

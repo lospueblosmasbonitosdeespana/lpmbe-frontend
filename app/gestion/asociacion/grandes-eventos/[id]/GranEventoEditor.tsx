@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ClipboardList, CalendarDays, Map, Bell, ImageIcon, Trash2, BedDouble } from 'lucide-react';
+import { ClipboardList, CalendarDays, Map, Bell, ImageIcon, Trash2, BedDouble, UtensilsCrossed } from 'lucide-react';
 import TabDatos from './_tabs/TabDatos';
 import TabPrograma from './_tabs/TabPrograma';
 import TabRuta from './_tabs/TabRuta';
 import TabAvisos from './_tabs/TabAvisos';
 import TabFotos from './_tabs/TabFotos';
 import TabAlojamientos from './_tabs/TabAlojamientos';
+import TabRestaurantes from './_tabs/TabRestaurantes';
 
 export type EventoEditDetail = {
   id: number;
@@ -89,6 +90,19 @@ export type EventoEditDetail = {
     notas_es: string | null;
     asignaciones: Array<{ id: number; delegacion: string; persona: string; notas: string | null; orden: number }>;
   }>;
+  restaurantes: Array<{
+    id: number;
+    orden: number;
+    nombre: string;
+    direccion: string | null;
+    ciudad: string | null;
+    lat: number | null;
+    lng: number | null;
+    telefono: string | null;
+    web: string | null;
+    fotoUrl: string | null;
+    notas_es: string | null;
+  }>;
   avisos: Array<{
     id: number;
     importancia: 'info' | 'warning' | 'critical';
@@ -107,7 +121,7 @@ export type EventoEditDetail = {
   }>;
 };
 
-type Tab = 'datos' | 'programa' | 'ruta' | 'alojamientos' | 'avisos' | 'fotos';
+type Tab = 'datos' | 'programa' | 'ruta' | 'alojamientos' | 'restaurantes' | 'avisos' | 'fotos';
 
 export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
   const router = useRouter();
@@ -164,6 +178,7 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
     { id: 'programa', label: 'Programa', count: evento.dias.length, Icon: CalendarDays },
     { id: 'ruta', label: 'Ruta', count: evento.pueblos.length + (evento.paradas?.length ?? 0), Icon: Map },
     { id: 'alojamientos', label: 'Alojamientos', count: evento.alojamientos?.length ?? 0, Icon: BedDouble },
+    { id: 'restaurantes', label: 'Restaurantes', count: evento.restaurantes?.length ?? 0, Icon: UtensilsCrossed },
     { id: 'avisos', label: 'Avisos', count: evento.avisos.filter((a) => a.activo).length, Icon: Bell },
     { id: 'fotos', label: 'Fotos', count: evento.fotos.length, Icon: ImageIcon },
   ];
@@ -242,6 +257,7 @@ export default function GranEventoEditor({ eventoId }: { eventoId: number }) {
         {tab === 'programa' && <TabPrograma evento={evento} reload={reload} />}
         {tab === 'ruta' && <TabRuta evento={evento} reload={reload} />}
         {tab === 'alojamientos' && <TabAlojamientos evento={evento} reload={reload} />}
+        {tab === 'restaurantes' && <TabRestaurantes evento={evento} reload={reload} />}
         {tab === 'avisos' && <TabAvisos evento={evento} reload={reload} />}
         {tab === 'fotos' && <TabFotos evento={evento} reload={reload} />}
       </div>
