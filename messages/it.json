@@ -2606,6 +2606,11 @@
       "web": "Web",
       "sinFecha": "Nessuna data assegnata",
       "proximamente": "I ristoranti dell'evento saranno pubblicati a breve."
+    },
+    "meteo": {
+      "morning": "Domani",
+      "afternoon": "Pomeriggio",
+      "fullForecast": "Vedi le previsioni complete"
     }
   }
 }

@@ -4,12 +4,14 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble, Images, UtensilsCrossed, ExternalLink } from 'lucide-react';
 import { getGranEventoBySlug, pickI18n } from '@/lib/grandes-eventos';
-import type { GranEventoRestaurante } from '@/lib/grandes-eventos';
+import type { GranEventoRestaurante, GranEventoPueblo } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
 import GranEventoMapa from './GranEventoMapa';
 import GranEventoAlojamientos from './GranEventoAlojamientos';
 import GranEventoRestaurantes from './GranEventoRestaurantes';
+import ProgramaDiaMeteo from './ProgramaDiaMeteo';
+import type { MeteoSlot } from './ProgramaDiaMeteo';
 
 /**
  * Página pública de un Gran Evento (asambleas, encuentros internacionales).
@@ -172,6 +174,7 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
               locale={locale}
               fechaInicio={evento.fechaInicio}
               restaurantes={evento.restaurantes ?? []}
+              pueblos={evento.pueblos}
             />
           </div>
         </section>
@@ -246,6 +249,92 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
   );
 }
 
+/**
+ * Analiza los actos del día y los pueblos del evento para determinar qué
+ * pueblos se visitan por la mañana (antes de 15:00) y por la tarde (15:00+).
+ * Devuelve MeteoSlots para el componente ProgramaDiaMeteo.
+ */
+function buildMeteoSlots(
+  dia: import('@/lib/grandes-eventos').GranEventoDia,
+  pueblos: GranEventoPueblo[],
+  _diaFecha: string,
+): MeteoSlot[] {
+  if (pueblos.length === 0) return [];
+
+  const normalize = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  const actosOrdenados = [...dia.actos].sort((a, b) => a.orden - b.orden);
+
+  const morningPueblos = new Set<number>();
+  const afternoonPueblos = new Set<number>();
+
+  for (const acto of actosOrdenados) {
+    const textoNorm = normalize(acto.texto_es ?? '');
+    const hour = parseInt(acto.hora?.split(':')[0] ?? '12', 10);
+    const isMorning = hour < 15;
+
+    for (const ep of pueblos) {
+      const nombreNorm = normalize(ep.pueblo.nombre);
+      if (textoNorm.includes(nombreNorm)) {
+        if (isMorning) morningPueblos.add(ep.pueblo.id);
+        else afternoonPueblos.add(ep.pueblo.id);
+      }
+    }
+  }
+
+  // Also check the day's title for pueblo names
+  const tituloNorm = normalize(dia.titulo_es ?? '');
+  for (const ep of pueblos) {
+    const nombreNorm = normalize(ep.pueblo.nombre);
+    if (tituloNorm.includes(nombreNorm)) {
+      if (!morningPueblos.has(ep.pueblo.id) && !afternoonPueblos.has(ep.pueblo.id)) {
+        morningPueblos.add(ep.pueblo.id);
+      }
+    }
+  }
+
+  const toPuebloRef = (pid: number) => {
+    const ep = pueblos.find((p) => p.pueblo.id === pid);
+    return ep ? { id: ep.pueblo.id, slug: ep.pueblo.slug, nombre: ep.pueblo.nombre } : null;
+  };
+
+  // If same pueblos morning and afternoon, just show "allday"
+  const allMorning = [...morningPueblos];
+  const allAfternoon = [...afternoonPueblos].filter((id) => !morningPueblos.has(id));
+
+  if (allMorning.length === 0 && allAfternoon.length === 0) {
+    // Fallback: try first pueblo in title order
+    const tituloCheck = normalize(dia.titulo_es ?? '');
+    for (const ep of pueblos) {
+      if (tituloCheck.includes(normalize(ep.pueblo.nombre))) {
+        return [{ pueblo: { id: ep.pueblo.id, slug: ep.pueblo.slug, nombre: ep.pueblo.nombre }, label: 'allday' }];
+      }
+    }
+    return [];
+  }
+
+  const slots: MeteoSlot[] = [];
+
+  if (allAfternoon.length === 0) {
+    for (const pid of allMorning) {
+      const ref = toPuebloRef(pid);
+      if (ref) slots.push({ pueblo: ref, label: 'allday' });
+    }
+  } else {
+    for (const pid of allMorning) {
+      const ref = toPuebloRef(pid);
+      if (ref) slots.push({ pueblo: ref, label: 'morning' });
+    }
+    for (const pid of allAfternoon) {
+      const ref = toPuebloRef(pid);
+      if (ref) slots.push({ pueblo: ref, label: 'afternoon' });
+    }
+  }
+
+  return slots;
+}
+
 /** Detecta si un texto de acto hace referencia a una comida o cena. */
 function detectTipoComida(texto: string): 'comida' | 'cena' | null {
   const t = texto.toLowerCase();
@@ -259,15 +348,16 @@ function ProgramaTimeline({
   locale,
   fechaInicio,
   restaurantes,
+  pueblos,
 }: {
   dias: import('@/lib/grandes-eventos').GranEventoDia[];
   locale: string;
   fechaInicio?: string | null;
   restaurantes: GranEventoRestaurante[];
+  pueblos: GranEventoPueblo[];
 }) {
-  // Calcula la fecha de cada día a partir de fechaInicio y el índice (orden)
   const diasOrdenados = [...dias].sort((a, b) => a.orden - b.orden);
-  const diaFechas = new Map<number, string>(); // diaId → YYYY-MM-DD
+  const diaFechas = new Map<number, string>();
   if (fechaInicio) {
     const base = new Date(fechaInicio);
     diasOrdenados.forEach((dia, idx) => {
@@ -277,7 +367,6 @@ function ProgramaTimeline({
     });
   }
 
-  // Indexa restaurantes por fecha+tipo para búsqueda rápida
   const restPorFechaTipo = new Map<string, GranEventoRestaurante>();
   for (const r of restaurantes) {
     if (r.fecha && r.tipo) {
@@ -292,11 +381,22 @@ function ProgramaTimeline({
         const titulo = pickI18n(dia.titulo_es, dia.titulo_i18n, locale);
         const diaFecha = diaFechas.get(dia.id);
 
+        const meteoSlots = diaFecha
+          ? buildMeteoSlots(dia, pueblos, diaFecha)
+          : [];
+
         return (
           <div key={dia.id} className="relative">
             <div className="mb-6 border-b border-stone-200 pb-4">
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-amber-700">{label}</p>
-              <h3 className="mt-1.5 text-xl font-bold text-stone-900 sm:text-2xl">{titulo}</h3>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-amber-700">{label}</p>
+                  <h3 className="mt-1.5 text-xl font-bold text-stone-900 sm:text-2xl">{titulo}</h3>
+                </div>
+                {diaFecha && meteoSlots.length > 0 && (
+                  <ProgramaDiaMeteo slots={meteoSlots} targetDate={diaFecha} />
+                )}
+              </div>
             </div>
             <ol className="relative space-y-5 border-l-2 border-amber-200/70 pl-6">
               {dia.actos.map((acto) => {

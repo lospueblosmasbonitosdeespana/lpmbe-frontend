@@ -2344,6 +2344,11 @@
       "shareWhatsApp": "Compartir por WhatsApp",
       "dismiss": "Marcar como leído"
     },
+    "meteo": {
+      "morning": "Mañana",
+      "afternoon": "Tarde",
+      "fullForecast": "Ver previsión completa"
+    },
     "galeria": {
       "vacio": "Aún no se han subido fotos.",
       "descargarTodas": "Descargar todas",
