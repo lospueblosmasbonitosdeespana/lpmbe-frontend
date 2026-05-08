@@ -2336,7 +2336,16 @@
       "dismiss": "Marcar como leído"
     },
     "galeria": {
-      "vacio": "Aún no se han subido fotos."
+      "vacio": "Aún no se han subido fotos.",
+      "descargarTodas": "Descargar todas (ZIP)",
+      "seleccionarFotos": "Seleccionar fotos",
+      "cancelarSeleccion": "Cancelar selección",
+      "seleccionadas": "{n} seleccionadas",
+      "todas": "Todas",
+      "ninguna": "Ninguna",
+      "descargarSeleccion": "Descargar selección (ZIP)",
+      "preparandoZip": "Preparando ZIP…",
+      "descargar": "Descargar"
     },
     "alojamientos": {
       "kicker": "Dónde duerme cada delegación",

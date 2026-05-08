@@ -2552,7 +2552,16 @@
       "dismiss": "Marcar como lido"
     },
     "galeria": {
-      "vacio": "Ainda não foram carregadas quaisquer fotografias."
+      "vacio": "Ainda não foram carregadas quaisquer fotografias.",
+      "descargarTodas": "Descarregar tudo (ZIP)",
+      "seleccionarFotos": "Selecionar fotografias",
+      "cancelarSeleccion": "Cancelar seleção",
+      "seleccionadas": "{n} selecionado",
+      "todas": "Todos",
+      "ninguna": "Nenhum",
+      "descargarSeleccion": "Transferir seleção (ZIP)",
+      "preparandoZip": "Preparar o ZIP...",
+      "descargar": "Descarregar"
     },
     "alojamientos": {
       "kicker": "Onde cada delegação dorme",

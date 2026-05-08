@@ -2552,7 +2552,16 @@
       "dismiss": "Marquer comme lu"
     },
     "galeria": {
-      "vacio": "Aucune photo n'a encore été téléchargée."
+      "vacio": "Aucune photo n'a encore été téléchargée.",
+      "descargarTodas": "Télécharger tout (ZIP)",
+      "seleccionarFotos": "Sélectionner des photos",
+      "cancelarSeleccion": "Annuler la sélection",
+      "seleccionadas": "{n} sélectionné",
+      "todas": "Tous",
+      "ninguna": "Aucun",
+      "descargarSeleccion": "Télécharger la sélection (ZIP)",
+      "preparandoZip": "Préparer le ZIP...",
+      "descargar": "Télécharger"
     },
     "alojamientos": {
       "kicker": "Là où chaque délégation dort",

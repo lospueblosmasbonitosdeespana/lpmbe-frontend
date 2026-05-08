@@ -2552,7 +2552,16 @@
       "dismiss": "Segna come letto"
     },
     "galeria": {
-      "vacio": "Non sono ancora state caricate foto."
+      "vacio": "Non sono ancora state caricate foto.",
+      "descargarTodas": "Scarica tutto (ZIP)",
+      "seleccionarFotos": "Selezionare le foto",
+      "cancelarSeleccion": "Annulla la selezione",
+      "seleccionadas": "{n} selezionato",
+      "todas": "Tutti",
+      "ninguna": "Nessuno",
+      "descargarSeleccion": "Scarica la selezione (ZIP)",
+      "preparandoZip": "Preparazione dello ZIP...",
+      "descargar": "Scaricare"
     },
     "alojamientos": {
       "kicker": "Dove dorme ogni delegazione",

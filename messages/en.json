@@ -2552,7 +2552,16 @@
       "dismiss": "Mark as read"
     },
     "galeria": {
-      "vacio": "No photos have been uploaded yet."
+      "vacio": "No photos have been uploaded yet.",
+      "descargarTodas": "Download all (ZIP)",
+      "seleccionarFotos": "Select photos",
+      "cancelarSeleccion": "Cancel selection",
+      "seleccionadas": "{n} selected",
+      "todas": "All",
+      "ninguna": "None",
+      "descargarSeleccion": "Download selection (ZIP)",
+      "preparandoZip": "Preparing ZIP...",
+      "descargar": "Download"
     },
     "alojamientos": {
       "kicker": "Where each delegation sleeps",

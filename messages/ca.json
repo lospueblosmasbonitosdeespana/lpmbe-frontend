@@ -2552,7 +2552,16 @@
       "dismiss": "Marcar com a llegit"
     },
     "galeria": {
-      "vacio": "Encara no s'han pujat cap foto."
+      "vacio": "Encara no s'han pujat cap foto.",
+      "descargarTodas": "Descarrega-ho tot (ZIP)",
+      "seleccionarFotos": "Selecciona fotos",
+      "cancelarSeleccion": "Deseleccionar",
+      "seleccionadas": "{n} seleccionat",
+      "todas": "Tots",
+      "ninguna": "Cap",
+      "descargarSeleccion": "Descàrrega de selecció (ZIP)",
+      "preparandoZip": "ZIP s'està creant…",
+      "descargar": "Descarrega"
     },
     "alojamientos": {
       "kicker": "On s'allotja cada delegació",

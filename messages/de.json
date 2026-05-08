@@ -2552,7 +2552,16 @@
       "dismiss": "Als gelesen markieren"
     },
     "galeria": {
-      "vacio": "Es sind noch keine Fotos hochgeladen worden."
+      "vacio": "Es sind noch keine Fotos hochgeladen worden.",
+      "descargarTodas": "Alle herunterladen (ZIP)",
+      "seleccionarFotos": "Fotos auswählen",
+      "cancelarSeleccion": "Auswahl abbrechen",
+      "seleccionadas": "{n} ausgewählt",
+      "todas": "Alle",
+      "ninguna": "Keine",
+      "descargarSeleccion": "Auswahl herunterladen (ZIP)",
+      "preparandoZip": "ZIP vorbereiten...",
+      "descargar": "Herunterladen"
     },
     "alojamientos": {
       "kicker": "Wo jede Delegation schläft",
