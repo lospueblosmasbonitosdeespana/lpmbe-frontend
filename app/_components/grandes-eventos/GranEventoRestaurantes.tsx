@@ -119,7 +119,7 @@ function RestauranteCard({
   return (
     <div
       id={`restaurante-${r.id}`}
-      className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md"
+      className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:shadow-md scroll-mt-24"
     >
       {/* Foto */}
       {r.fotoUrl ? (
