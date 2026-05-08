@@ -268,7 +268,7 @@ function HotelCard({
           <div className="mt-4 space-y-3 border-t border-stone-100 pt-4">
             {matchedAsignaciones.map(([deleg, personas]) => (
               <div key={deleg}>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">{deleg}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-orange-700">{deleg}</p>
                 <ul className="mt-1 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
                   {personas.map((a) => (
                     <li
