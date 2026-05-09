@@ -5749,10 +5749,33 @@ export default function NotasPrensaNewsletterClient({
                     Sube un PDF para ver la vista previa final del envío en modo PDF.
                   </p>
                 ) : (
-                  <div
-                    className="prose max-w-none text-sm"
-                    dangerouslySetInnerHTML={{ __html: buildSendPreviewHtml() || '<p>Sin contenido</p>' }}
-                  />
+                  <>
+                    <style>{`
+                      .lpmbe-email-preview p { margin: 0 0 14px 0; line-height: 1.6; }
+                      .lpmbe-email-preview h1 { margin: 24px 0 12px 0; line-height: 1.3; font-size: 24px; font-weight: 700; color: #0f172a; }
+                      .lpmbe-email-preview h2 { margin: 22px 0 10px 0; line-height: 1.3; font-size: 20px; font-weight: 700; color: #0f172a; }
+                      .lpmbe-email-preview h3 { margin: 20px 0 8px 0; line-height: 1.35; font-size: 17px; font-weight: 600; color: #0f172a; }
+                      .lpmbe-email-preview ul, .lpmbe-email-preview ol { margin: 0 0 14px 0; padding-left: 24px; line-height: 1.6; }
+                      .lpmbe-email-preview li { margin: 0 0 6px 0; }
+                      .lpmbe-email-preview blockquote { margin: 0 0 14px 0; padding: 8px 14px; border-left: 3px solid #cbd5e1; color: #475569; font-style: italic; }
+                      .lpmbe-email-preview img { max-width: 100%; height: auto; }
+                      .lpmbe-email-preview a { color: #0f766e; }
+                    `}</style>
+                    <div
+                      className="lpmbe-email-preview"
+                      style={{
+                        maxWidth: 680,
+                        margin: '0 auto',
+                        padding: '8px 4px',
+                        fontFamily:
+                          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+                        fontSize: 15,
+                        lineHeight: 1.6,
+                        color: '#1f2937',
+                      }}
+                      dangerouslySetInnerHTML={{ __html: buildSendPreviewHtml() || '<p>Sin contenido</p>' }}
+                    />
+                  </>
                 )}
               </div>
             ) : null}
