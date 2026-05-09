@@ -2655,6 +2655,78 @@ export default function NotasPrensaNewsletterClient({
     editor.chain().focus().deleteSelection().run();
   }
 
+  // ---------- Subida directa a R2 (evita el límite ~4,5 MB del proxy de Vercel) ----------
+  // Las fotos de móvil suelen pesar 4-10 MB. Si las enviamos a través de
+  // /api/admin/uploads (función serverless de Vercel), el body se rechaza por
+  // tamaño y la subida falla silenciosamente (el botón se queda en "Subir 1
+  // foto" y el contador en "0 subidas").
+  // Solución: pedir un "ticket" JWT corto al backend y subir el archivo
+  // directamente a Railway (sin pasar por Vercel). Si el ticket falla, caemos
+  // al proxy de toda la vida para no romper compatibilidad.
+  async function uploadFileViaTicket(file: File, folder: string): Promise<string> {
+    const ticketRes = await fetch('/api/media/upload-ticket', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    });
+    if (!ticketRes.ok) {
+      const raw = await ticketRes.text().catch(() => '');
+      throw new Error(raw || `No se pudo preparar la subida (status ${ticketRes.status})`);
+    }
+    const ticketData = await ticketRes.json().catch(() => ({} as Record<string, unknown>));
+    const uploadUrl = String(ticketData?.uploadUrl || '');
+    const ticket = String(ticketData?.ticket || '');
+    if (!uploadUrl || !ticket) throw new Error('No se pudo preparar la subida');
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('ticket', ticket);
+    const uploadRes = await fetch(uploadUrl, { method: 'POST', body: fd });
+    if (!uploadRes.ok) {
+      const txt = await uploadRes.text().catch(() => '');
+      throw new Error(`Error subiendo "${file.name}" (status ${uploadRes.status})${txt ? `: ${txt.slice(0, 200)}` : ''}`);
+    }
+    const data = await uploadRes.json().catch(() => ({} as Record<string, unknown>));
+    const publicUrl = String((data as Record<string, unknown>)?.publicUrl || (data as Record<string, unknown>)?.url || '');
+    if (!publicUrl) throw new Error('R2 no devolvió URL pública');
+    return publicUrl;
+  }
+
+  async function uploadFileViaProxy(file: File, folder: string): Promise<string> {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', folder);
+    fd.append('fileNameBase', uploadFileNameBase);
+    const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({} as Record<string, unknown>));
+    if (!res.ok || !(data as Record<string, unknown>)?.url) {
+      throw new Error(
+        String((data as Record<string, unknown>)?.error || (data as Record<string, unknown>)?.message || `Error subiendo "${file.name}"`),
+      );
+    }
+    return String((data as Record<string, unknown>).url);
+  }
+
+  // Sube primero por ticket (sin límite de Vercel). Si el ticket falla por
+  // razones de red/configuración y el archivo es pequeño, intenta el proxy.
+  async function uploadFileSmart(file: File, folder: string): Promise<string> {
+    try {
+      return await uploadFileViaTicket(file, folder);
+    } catch (ticketError) {
+      // Solo intentamos el proxy si el archivo es claramente pequeño (<3 MB),
+      // porque si es grande el proxy también va a fallar y reportaríamos un
+      // error confuso. Para archivos grandes propagamos el error original.
+      if (file.size > 3 * 1024 * 1024) {
+        throw ticketError;
+      }
+      try {
+        return await uploadFileViaProxy(file, folder);
+      } catch {
+        throw ticketError;
+      }
+    }
+  }
+
   async function uploadPressPhotos() {
     if (pressPhotoFiles.length === 0) return [...pressPhotoUrls];
     if (pressPhotoFiles.length + pressPhotoUrls.length > 10) {
@@ -2672,25 +2744,18 @@ export default function NotasPrensaNewsletterClient({
     try {
       const newUrls: string[] = [];
       for (const file of pressPhotoFiles) {
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('folder', 'newsletter/press');
-        fd.append('fileNameBase', uploadFileNameBase);
-        const res = await fetch('/api/admin/uploads', {
-          method: 'POST',
-          body: fd,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data?.url) {
-          throw new Error(data?.error || data?.message || 'Error subiendo una de las fotos');
-        }
-        newUrls.push(String(data.url));
+        const url = await uploadFileSmart(file, 'newsletter/press');
+        newUrls.push(url);
       }
-      const allUrls = [...pressPhotoUrls, ...newUrls];
-      setPressPhotoUrls(allUrls);
+      // setState funcional para evitar perder URLs si el estado cambia entre subidas.
+      let allUrls: string[] = [];
+      setPressPhotoUrls((prev) => {
+        allUrls = [...prev, ...newUrls];
+        return allUrls;
+      });
       setPressPhotoFiles([]);
       if (photosInputRef.current) photosInputRef.current.value = '';
-      return allUrls;
+      return allUrls.length > 0 ? allUrls : [...pressPhotoUrls, ...newUrls];
     } finally {
       setUploadingPhotos(false);
     }
@@ -2721,18 +2786,7 @@ export default function NotasPrensaNewsletterClient({
 
     setUploadingPdf(true);
     try {
-      const fd = new FormData();
-      fd.append('file', pressPdfFile);
-      fd.append('folder', 'newsletter/press-pdf');
-      const res = await fetch('/api/admin/uploads', {
-        method: 'POST',
-        body: fd,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.url) {
-        throw new Error(data?.error || data?.message || 'Error subiendo PDF');
-      }
-      const url = String(data.url);
+      const url = await uploadFileSmart(pressPdfFile, 'newsletter/press-pdf');
       setPressPdfUrl(url);
       return url;
     } finally {
@@ -2768,17 +2822,14 @@ export default function NotasPrensaNewsletterClient({
     if (file.size > 12 * 1024 * 1024) {
       throw new Error('El adjunto supera el límite máximo de 12MB para envío por email');
     }
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('folder', 'newsletter/press-attachments');
-    const res = await fetch('/api/admin/uploads/press-attachment', { method: 'POST', body: fd });
-    const data = await res.json().catch(() => ({})) as Record<string, unknown>;
-    if (!res.ok || !data?.url) throw new Error(String(data?.error ?? data?.message ?? 'Error subiendo archivo'));
+    // Misma estrategia que las fotos y el PDF: subida directa a Railway por
+    // ticket para no toparnos con el límite de body de Vercel (~4,5 MB).
+    const url = await uploadFileSmart(file, 'newsletter/press-attachments');
     return {
-      url: String(data.url),
-      name: String(data.originalName ?? file.name),
-      contentType: String(data.contentType ?? file.type ?? 'application/octet-stream'),
-      size: Number(data.size ?? file.size),
+      url,
+      name: file.name,
+      contentType: file.type || 'application/octet-stream',
+      size: file.size,
     };
   }
 
@@ -5606,10 +5657,36 @@ export default function NotasPrensaNewsletterClient({
                         </>
                       )}
                     </button>
+                    {pressPhotoFiles.length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPressPhotoFiles([]);
+                          if (photosInputRef.current) photosInputRef.current.value = '';
+                          setError(null);
+                        }}
+                        disabled={uploadingPhotos || loading}
+                        className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-50"
+                      >
+                        Cancelar selección
+                      </button>
+                    ) : null}
                     <span className="text-xs font-medium text-muted-foreground">
                       {pressPhotoFiles.length} seleccionadas · {pressPhotoUrls.length} subidas
                     </span>
                   </div>
+                  {pressPhotoFiles.length > 0 ? (
+                    <ul className="rounded-md border border-sky-200 bg-sky-50/50 px-3 py-2 text-xs text-sky-900 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-100">
+                      {pressPhotoFiles.map((f, i) => (
+                        <li key={`${f.name}-${i}`} className="flex items-center justify-between gap-2 py-0.5">
+                          <span className="truncate">{f.name}</span>
+                          <span className="shrink-0 text-[10px] font-mono text-sky-700 dark:text-sky-300">
+                            {(f.size / (1024 * 1024)).toFixed(1)} MB
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                   {pressPhotoUrls.length > 0 ? (
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-slate-50 px-3 py-2">
