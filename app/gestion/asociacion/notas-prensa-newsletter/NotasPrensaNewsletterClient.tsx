@@ -147,6 +147,12 @@ type NewsletterDraftPayload = {
   selectedProvincias?: string[];
   pressPdfUrl?: string;
   pressPhotoUrls?: string[];
+  pressAttachments?: Array<{
+    name: string;
+    url: string;
+    contentType: string;
+    size: number;
+  }>;
   insertedPhotoUrls?: string[];
   webGallerySelection?: string[];
   webContentKind?: 'NOTICIA' | 'ARTICULO';
@@ -1217,6 +1223,7 @@ export default function NotasPrensaNewsletterClient({
       selectedProvincias,
       pressPdfUrl,
       pressPhotoUrls,
+      pressAttachments,
       insertedPhotoUrls,
       webGallerySelection,
       webContentKind,
@@ -1252,6 +1259,20 @@ export default function NotasPrensaNewsletterClient({
     }
     if (typeof payload.pressPdfUrl === 'string') setPressPdfUrl(payload.pressPdfUrl);
     if (Array.isArray(payload.pressPhotoUrls)) setPressPhotoUrls(payload.pressPhotoUrls.map(String));
+    if (Array.isArray(payload.pressAttachments)) {
+      setPressAttachments(
+        payload.pressAttachments
+          .filter((a) => a && typeof a === 'object' && typeof a.url === 'string' && a.url.trim())
+          .map((a) => ({
+            name: String(a.name || a.url.split('/').pop()?.split('?')[0] || 'archivo'),
+            url: String(a.url),
+            contentType: String(a.contentType || 'application/octet-stream'),
+            size: Number.isFinite(a.size) ? Number(a.size) : 0,
+          })),
+      );
+    } else {
+      setPressAttachments([]);
+    }
     if (Array.isArray(payload.insertedPhotoUrls)) setInsertedPhotoUrls(payload.insertedPhotoUrls.map(String));
     if (Array.isArray(payload.webGallerySelection)) {
       setWebGallerySelection(payload.webGallerySelection.map(String));
@@ -2809,9 +2830,17 @@ export default function NotasPrensaNewsletterClient({
 
   const loadSharedDraft = useCallback(
     (draft: SharedDraftRow) => {
+      let payloadAttachmentsPresent = false;
+      let payloadPdfUrl = '';
+      let payloadPhotoUrls: string[] = [];
       try {
         const payload = draft.blocksJson as any;
         if (payload && typeof payload === 'object') {
+          payloadAttachmentsPresent = Array.isArray(payload.pressAttachments);
+          payloadPdfUrl = typeof payload.pressPdfUrl === 'string' ? payload.pressPdfUrl : '';
+          payloadPhotoUrls = Array.isArray(payload.pressPhotoUrls)
+            ? payload.pressPhotoUrls.map(String)
+            : [];
           applyDraftPayload(payload);
         } else {
           setCampaignForm((prev) => ({
@@ -2828,6 +2857,29 @@ export default function NotasPrensaNewsletterClient({
           html: draft.contentHtml || prev.html,
         }));
       }
+
+      // Compatibilidad con borradores antiguos: si el payload no traía la lista
+      // de "Adjuntos adicionales" pero el borrador sí tiene attachmentUrls en BD,
+      // deducimos los adjuntos restando PDF y fotos ya gestionados aparte.
+      // Así el usuario ve qué archivos hay realmente en el borrador y puede
+      // borrarlos o cambiarlos en lugar de duplicarlos.
+      if (!payloadAttachmentsPresent && Array.isArray(draft.attachmentUrls) && draft.attachmentUrls.length > 0) {
+        const photoSet = new Set(payloadPhotoUrls);
+        const inferred = draft.attachmentUrls
+          .filter((a) => a && typeof a.url === 'string' && a.url.trim())
+          .filter((a) => a.url !== payloadPdfUrl)
+          .filter((a) => !photoSet.has(a.url))
+          .map((a) => ({
+            name: String(a.filename || a.url.split('/').pop()?.split('?')[0] || 'archivo'),
+            url: String(a.url),
+            contentType: String(a.contentType || 'application/octet-stream'),
+            size: 0,
+          }));
+        if (inferred.length > 0) {
+          setPressAttachments(inferred);
+        }
+      }
+
       if (typeof window !== 'undefined') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
