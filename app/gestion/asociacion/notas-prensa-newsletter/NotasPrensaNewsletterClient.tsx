@@ -147,6 +147,7 @@ type NewsletterDraftPayload = {
   selectedProvincias?: string[];
   pressPdfUrl?: string;
   pressPhotoUrls?: string[];
+  pressPhotoSizes?: Record<string, number>;
   pressAttachments?: Array<{
     name: string;
     url: string;
@@ -1075,6 +1076,7 @@ export default function NotasPrensaNewsletterClient({
   const [pressSendMode, setPressSendMode] = useState<PressSendMode>('editor');
   const [pressPhotoFiles, setPressPhotoFiles] = useState<File[]>([]);
   const [pressPhotoUrls, setPressPhotoUrls] = useState<string[]>([]);
+  const [pressPhotoSizes, setPressPhotoSizes] = useState<Record<string, number>>({});
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [pressPdfFile, setPressPdfFile] = useState<File | null>(null);
   const [pressPdfUrl, setPressPdfUrl] = useState('');
@@ -1232,6 +1234,7 @@ export default function NotasPrensaNewsletterClient({
       selectedProvincias,
       pressPdfUrl,
       pressPhotoUrls,
+      pressPhotoSizes,
       pressAttachments,
       insertedPhotoUrls,
       webGallerySelection,
@@ -1268,6 +1271,13 @@ export default function NotasPrensaNewsletterClient({
     }
     if (typeof payload.pressPdfUrl === 'string') setPressPdfUrl(payload.pressPdfUrl);
     if (Array.isArray(payload.pressPhotoUrls)) setPressPhotoUrls(payload.pressPhotoUrls.map(String));
+    if (payload.pressPhotoSizes && typeof payload.pressPhotoSizes === 'object') {
+      const sizes: Record<string, number> = {};
+      for (const [k, v] of Object.entries(payload.pressPhotoSizes as Record<string, unknown>)) {
+        if (typeof v === 'number' && v > 0) sizes[k] = v;
+      }
+      setPressPhotoSizes(sizes);
+    }
     if (Array.isArray(payload.pressAttachments)) {
       setPressAttachments(
         payload.pressAttachments
@@ -2663,7 +2673,9 @@ export default function NotasPrensaNewsletterClient({
   // Solución: pedir un "ticket" JWT corto al backend y subir el archivo
   // directamente a Railway (sin pasar por Vercel). Si el ticket falla, caemos
   // al proxy de toda la vida para no romper compatibilidad.
-  async function uploadFileViaTicket(file: File, folder: string): Promise<string> {
+  type UploadResult = { url: string; sizeBytes: number };
+
+  async function uploadFileViaTicket(file: File, folder: string): Promise<UploadResult> {
     const ticketRes = await fetch('/api/media/upload-ticket', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2687,35 +2699,32 @@ export default function NotasPrensaNewsletterClient({
       throw new Error(`Error subiendo "${file.name}" (status ${uploadRes.status})${txt ? `: ${txt.slice(0, 200)}` : ''}`);
     }
     const data = await uploadRes.json().catch(() => ({} as Record<string, unknown>));
-    const publicUrl = String((data as Record<string, unknown>)?.publicUrl || (data as Record<string, unknown>)?.url || '');
+    const d = data as Record<string, unknown>;
+    const publicUrl = String(d?.publicUrl || d?.url || '');
     if (!publicUrl) throw new Error('R2 no devolvió URL pública');
-    return publicUrl;
+    const sizeBytes = Number(d?.optimizedSizeBytes || d?.originalSizeBytes || 0);
+    return { url: publicUrl, sizeBytes };
   }
 
-  async function uploadFileViaProxy(file: File, folder: string): Promise<string> {
+  async function uploadFileViaProxy(file: File, folder: string): Promise<UploadResult> {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('folder', folder);
     fd.append('fileNameBase', uploadFileNameBase);
     const res = await fetch('/api/admin/uploads', { method: 'POST', body: fd });
     const data = await res.json().catch(() => ({} as Record<string, unknown>));
-    if (!res.ok || !(data as Record<string, unknown>)?.url) {
-      throw new Error(
-        String((data as Record<string, unknown>)?.error || (data as Record<string, unknown>)?.message || `Error subiendo "${file.name}"`),
-      );
+    const d = data as Record<string, unknown>;
+    if (!res.ok || !d?.url) {
+      throw new Error(String(d?.error || d?.message || `Error subiendo "${file.name}"`));
     }
-    return String((data as Record<string, unknown>).url);
+    const sizeBytes = Number(d?.optimizedSizeBytes || d?.originalSizeBytes || 0);
+    return { url: String(d.url), sizeBytes };
   }
 
-  // Sube primero por ticket (sin límite de Vercel). Si el ticket falla por
-  // razones de red/configuración y el archivo es pequeño, intenta el proxy.
-  async function uploadFileSmart(file: File, folder: string): Promise<string> {
+  async function uploadFileSmart(file: File, folder: string): Promise<UploadResult> {
     try {
       return await uploadFileViaTicket(file, folder);
     } catch (ticketError) {
-      // Solo intentamos el proxy si el archivo es claramente pequeño (<3 MB),
-      // porque si es grande el proxy también va a fallar y reportaríamos un
-      // error confuso. Para archivos grandes propagamos el error original.
       if (file.size > 3 * 1024 * 1024) {
         throw ticketError;
       }
@@ -2743,16 +2752,18 @@ export default function NotasPrensaNewsletterClient({
     setUploadingPhotos(true);
     try {
       const newUrls: string[] = [];
+      const newSizes: Record<string, number> = {};
       for (const file of pressPhotoFiles) {
-        const url = await uploadFileSmart(file, 'newsletter/press');
-        newUrls.push(url);
+        const result = await uploadFileSmart(file, 'newsletter/press');
+        newUrls.push(result.url);
+        if (result.sizeBytes > 0) newSizes[result.url] = result.sizeBytes;
       }
-      // setState funcional para evitar perder URLs si el estado cambia entre subidas.
       let allUrls: string[] = [];
       setPressPhotoUrls((prev) => {
         allUrls = [...prev, ...newUrls];
         return allUrls;
       });
+      setPressPhotoSizes((prev) => ({ ...prev, ...newSizes }));
       setPressPhotoFiles([]);
       if (photosInputRef.current) photosInputRef.current.value = '';
       return allUrls.length > 0 ? allUrls : [...pressPhotoUrls, ...newUrls];
@@ -2786,9 +2797,9 @@ export default function NotasPrensaNewsletterClient({
 
     setUploadingPdf(true);
     try {
-      const url = await uploadFileSmart(pressPdfFile, 'newsletter/press-pdf');
-      setPressPdfUrl(url);
-      return url;
+      const result = await uploadFileSmart(pressPdfFile, 'newsletter/press-pdf');
+      setPressPdfUrl(result.url);
+      return result.url;
     } finally {
       setUploadingPdf(false);
     }
@@ -2822,14 +2833,12 @@ export default function NotasPrensaNewsletterClient({
     if (file.size > 12 * 1024 * 1024) {
       throw new Error('El adjunto supera el límite máximo de 12MB para envío por email');
     }
-    // Misma estrategia que las fotos y el PDF: subida directa a Railway por
-    // ticket para no toparnos con el límite de body de Vercel (~4,5 MB).
-    const url = await uploadFileSmart(file, 'newsletter/press-attachments');
+    const result = await uploadFileSmart(file, 'newsletter/press-attachments');
     return {
-      url,
+      url: result.url,
       name: file.name,
       contentType: file.type || 'application/octet-stream',
-      size: file.size,
+      size: result.sizeBytes > 0 ? result.sizeBytes : file.size,
     };
   }
 
@@ -5611,9 +5620,23 @@ export default function NotasPrensaNewsletterClient({
                         Máximo 10 imágenes (JPG, PNG, WEBP). Se enviarán como adjuntos del email.
                       </p>
                     </div>
-                    <span className="shrink-0 self-start rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-bold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950 dark:text-sky-200 dark:ring-sky-800">
-                      {pressPhotoUrls.length}/10
-                    </span>
+                    <div className="flex shrink-0 flex-col items-end gap-0.5 self-start">
+                      <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-bold text-sky-700 ring-1 ring-sky-200 dark:bg-sky-950 dark:text-sky-200 dark:ring-sky-800">
+                        {pressPhotoUrls.length}/10
+                      </span>
+                      {(() => {
+                        const totalBytes = pressPhotoUrls.reduce((sum, u) => sum + (pressPhotoSizes[u] || 0), 0);
+                        if (totalBytes === 0) return null;
+                        const totalMB = totalBytes / (1024 * 1024);
+                        const isWarning = totalMB > 15;
+                        return (
+                          <span className={`text-[10px] font-semibold ${isWarning ? 'text-amber-600' : 'text-sky-600'}`}>
+                            {totalMB < 1 ? `${Math.round(totalBytes / 1024)} KB` : `${totalMB.toFixed(1)} MB`} total
+                            {isWarning ? ' ⚠️' : ''}
+                          </span>
+                        );
+                      })()}
+                    </div>
                   </div>
                   <input
                     ref={photosInputRef}
@@ -5727,13 +5750,23 @@ export default function NotasPrensaNewsletterClient({
                         ))}
                       </div>
                       <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-                        {pressPhotoUrls.map((url) => (
+                        {pressPhotoUrls.map((url) => {
+                          const sizeBytes = pressPhotoSizes[url];
+                          return (
                           <div key={url} className="space-y-1 relative group">
                             <img src={url} alt="Foto nota de prensa" className="h-24 w-full rounded border object-cover" />
+                            {sizeBytes ? (
+                              <span className="absolute bottom-[3.25rem] right-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-white backdrop-blur-sm">
+                                {sizeBytes >= 1024 * 1024
+                                  ? `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`
+                                  : `${Math.round(sizeBytes / 1024)} KB`}
+                              </span>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => {
                                 setPressPhotoUrls((prev) => prev.filter((u) => u !== url));
+                                setPressPhotoSizes((prev) => { const n = { ...prev }; delete n[url]; return n; });
                                 setPressPhotoFiles((prev) => {
                                   const idx = pressPhotoUrls.indexOf(url);
                                   return idx >= 0 ? prev.filter((_, i) => i !== idx) : prev;
@@ -5754,7 +5787,8 @@ export default function NotasPrensaNewsletterClient({
                               Insertar en contenido
                             </button>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ) : null}

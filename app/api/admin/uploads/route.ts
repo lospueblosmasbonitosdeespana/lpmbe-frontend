@@ -72,6 +72,8 @@ export async function POST(req: Request) {
       ownerType: data.ownerType ?? null,
       ownerId: data.ownerId ?? null,
       order: data.order ?? 0,
+      originalSizeBytes: data.originalSizeBytes ?? null,
+      optimizedSizeBytes: data.optimizedSizeBytes ?? null,
     });
   } catch (error: any) {
     console.error('[proxy POST uploads] error:', error);
