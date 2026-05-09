@@ -1830,6 +1830,37 @@ export default function NotasPrensaNewsletterClient({
     );
   }, [campaignForm.subject, campaignForm.html, campaignForm.preheader, pressPhotoUrls.length, pressBuilderHtml]);
 
+  // Backfill de tamaños: para fotos sin tamaño conocido (subidas antes de
+  // este cambio o cargadas desde un borrador antiguo), preguntamos al servidor
+  // por su Content-Length con un HEAD. Así también vemos los KB/MB sin tener
+  // que volver a subirlas.
+  useEffect(() => {
+    const missing = pressPhotoUrls.filter((u) => !pressPhotoSizes[u]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const updates: Record<string, number> = {};
+      await Promise.all(
+        missing.map(async (url) => {
+          try {
+            const res = await fetch(url, { method: 'HEAD', cache: 'force-cache' });
+            const len = res.headers.get('content-length');
+            const n = len ? Number(len) : 0;
+            if (Number.isFinite(n) && n > 0) updates[url] = n;
+          } catch {
+            // ignoramos errores: no es crítico, solo es información
+          }
+        }),
+      );
+      if (!cancelled && Object.keys(updates).length > 0) {
+        setPressPhotoSizes((prev) => ({ ...prev, ...updates }));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [pressPhotoUrls, pressPhotoSizes]);
+
   useEffect(() => {
     function onBeforeUnload(e: BeforeUnloadEvent) {
       if (hasContentRef.current) {
