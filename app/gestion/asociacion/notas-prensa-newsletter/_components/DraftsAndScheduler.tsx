@@ -105,6 +105,8 @@ export default function DraftsAndScheduler({
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [internalName, setInternalName] = useState<string>('');
+  const [showAllDrafts, setShowAllDrafts] = useState(false);
+  const [bulkDeletingOld, setBulkDeletingOld] = useState(false);
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const defaultScheduledLocal = useMemo(() => {
@@ -371,6 +373,74 @@ export default function DraftsAndScheduler({
     setMessage('Editor reiniciado. Los siguientes «Guardar» crearán un borrador nuevo.');
   }
 
+  // Reordenamos cliente-side para mantener la lista ordenada y limpia:
+  //  · SCHEDULED arriba (por fecha de envío programado, próximos primero)
+  //  · DRAFT después, sólo los 2 más recientes por defecto (newest first)
+  //  · FAILED al final (newest first)
+  // Los borradores antiguos siguen disponibles con "Ver borradores antiguos".
+  const groups = useMemo(() => {
+    const scheduled = items
+      .filter((d) => d.status === 'SCHEDULED')
+      .sort(
+        (a, b) =>
+          new Date(a.scheduledAt || a.updatedAt).getTime() -
+          new Date(b.scheduledAt || b.updatedAt).getTime(),
+      );
+    const drafts = items
+      .filter((d) => d.status === 'DRAFT' || d.status === 'SENDING')
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+    const failed = items
+      .filter((d) => d.status === 'FAILED')
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+    return { scheduled, drafts, failed };
+  }, [items]);
+
+  const visibleDrafts = showAllDrafts ? groups.drafts : groups.drafts.slice(0, 2);
+  const hiddenOldDrafts = groups.drafts.slice(2);
+  const displayItems = [...groups.scheduled, ...visibleDrafts, ...groups.failed];
+
+  async function bulkDeleteOldDrafts() {
+    if (hiddenOldDrafts.length === 0) return;
+    if (
+      !window.confirm(
+        `¿Eliminar ${hiddenOldDrafts.length} borradores antiguos? Sólo se conservarán los 2 más recientes y los programados/fallidos. Esta acción no se puede deshacer.`,
+      )
+    ) {
+      return;
+    }
+    setBulkDeletingOld(true);
+    setError(null);
+    setMessage(null);
+    let deleted = 0;
+    let errors = 0;
+    for (const d of hiddenOldDrafts) {
+      try {
+        const res = await fetch(`/api/admin/newsletter/drafts/${d.id}`, {
+          method: 'DELETE',
+        });
+        if (res.ok) deleted += 1;
+        else errors += 1;
+      } catch {
+        errors += 1;
+      }
+    }
+    setBulkDeletingOld(false);
+    setMessage(
+      `Limpieza completada: ${deleted} borradores eliminados${errors ? `, ${errors} errores` : ''}.`,
+    );
+    if (editingId && hiddenOldDrafts.some((d) => d.id === editingId)) {
+      setEditingId(null);
+      setInternalName('');
+    }
+    await load();
+  }
+
   return (
     <section
       className={[
@@ -481,7 +551,7 @@ export default function DraftsAndScheduler({
                 </td>
               </tr>
             ) : (
-              items.map((d) => {
+              displayItems.map((d) => {
                 const isEditing = editingId === d.id;
                 return (
                   <tr
@@ -591,6 +661,36 @@ export default function DraftsAndScheduler({
           </tbody>
         </table>
       </div>
+
+      {hiddenOldDrafts.length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50/60 px-3 py-2 text-xs">
+          <span className="text-amber-900">
+            {showAllDrafts
+              ? `Mostrando los ${groups.drafts.length} borradores. Sólo los 2 más recientes son los que necesitas habitualmente.`
+              : `Hay ${hiddenOldDrafts.length} borradores antiguos ocultos. Sólo se muestran los 2 más recientes.`}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setShowAllDrafts((v) => !v)}
+              className="rounded-md border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-50"
+            >
+              {showAllDrafts ? 'Ocultar antiguos' : `Ver ${hiddenOldDrafts.length} antiguos`}
+            </button>
+            <button
+              type="button"
+              onClick={bulkDeleteOldDrafts}
+              disabled={bulkDeletingOld}
+              className="rounded-md border border-red-300 bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
+              title="Borrar de golpe los borradores antiguos (mantiene los 2 más recientes y los programados/fallidos)"
+            >
+              {bulkDeletingOld
+                ? 'Limpiando…'
+                : `Limpiar ${hiddenOldDrafts.length} antiguos`}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {showScheduleModal ? (
         <div
