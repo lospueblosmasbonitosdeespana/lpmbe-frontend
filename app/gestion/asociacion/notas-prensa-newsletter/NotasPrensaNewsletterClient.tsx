@@ -171,6 +171,10 @@ type SavedNewsletterDraft = {
     filename?: string;
     contentType?: string;
   }>;
+  // Filtros canónicos guardados en el campo `filters` del borrador (en BD).
+  // Se usan como fallback para recuperar destinatarios (ccaas, provincias,
+  // includeNational, source, ...) si el payload de blocksJson no los trae.
+  filters?: Record<string, unknown>;
   status?: string;
   scheduledAt?: string | null;
   createdByUserId?: number | null;
@@ -1336,6 +1340,10 @@ export default function NotasPrensaNewsletterClient({
     const updatedAt = String(row?.updatedAt ?? row?.createdAt ?? new Date().toISOString());
     const name = internalName || subject || `Borrador #${id}`;
     const rawAttachments = Array.isArray(row?.attachmentUrls) ? row.attachmentUrls : [];
+    const rawFilters =
+      row?.filters && typeof row.filters === 'object' && !Array.isArray(row.filters)
+        ? (row.filters as Record<string, unknown>)
+        : undefined;
     return {
       id,
       name,
@@ -1345,6 +1353,7 @@ export default function NotasPrensaNewsletterClient({
       attachmentUrls: rawAttachments.filter(
         (a: any) => a && typeof a.url === 'string' && a.url.trim(),
       ),
+      filters: rawFilters,
       status: row?.status,
       scheduledAt: row?.scheduledAt ?? null,
       createdByUserId: row?.createdByUserId ?? null,
@@ -1375,7 +1384,37 @@ export default function NotasPrensaNewsletterClient({
   }, [mode]);
 
   async function saveNlDraft() {
-    const payload = buildDraftPayload();
+    // Auto-confirma cualquier texto en los autocompletes que el usuario haya
+    // escrito pero NO haya pulsado Enter / "+". Antes esto se perdía y al
+    // cargar el borrador faltaba "Castilla y León", "Burgos", etc.
+    const committed = commitPendingFilterInputs();
+    // Auto-sube fotos / PDF pendientes para que el borrador conserve los
+    // archivos también si el usuario los seleccionó pero no llegó a pulsar
+    // "Subir". Si la subida falla avisamos y abortamos para no guardar a medias.
+    let effectivePhotoUrls = pressPhotoUrls;
+    let effectivePdfUrl = pressPdfUrl;
+    if (mode === 'press') {
+      try {
+        if (pressPhotoFiles.length > 0 && pressPhotoUrls.length === 0) {
+          effectivePhotoUrls = await uploadPressPhotos();
+        }
+        if (pressSendMode === 'pdf' && pressPdfFile && !pressPdfUrl.trim()) {
+          effectivePdfUrl = await uploadPressPdf();
+        }
+      } catch (e: any) {
+        setError(`No se pudo subir un archivo del borrador (${e?.message || 'error'}).`);
+        return;
+      }
+    }
+    const payload = {
+      ...buildDraftPayload(),
+      // Sustituimos los arrays por los recién auto-confirmados / auto-subidos
+      // para que los setState pendientes no se nos cuelen en el snapshot.
+      selectedCcaas: committed.ccaas,
+      selectedProvincias: committed.provincias,
+      pressPhotoUrls: effectivePhotoUrls,
+      pressPdfUrl: effectivePdfUrl,
+    };
     const now = new Date();
     const label = campaignForm.subject.trim()
       || `Borrador ${now.toLocaleString('es-ES', { hour12: false })}`;
@@ -1388,20 +1427,20 @@ export default function NotasPrensaNewsletterClient({
     // los archivos (PDFs, Word, Excel, fotos) sigan ahí y no se dupliquen.
     const draftAttachmentUrls: Array<{ url: string; filename?: string; contentType?: string }> = [];
     if (mode === 'press') {
-      if (pressSendMode === 'pdf' && pressPdfUrl) {
+      if (pressSendMode === 'pdf' && effectivePdfUrl) {
         const pdfFilename =
           pressPdfFile?.name ||
-          pressPdfUrl.split('/').pop()?.split('?')[0] ||
+          effectivePdfUrl.split('/').pop()?.split('?')[0] ||
           `nota-prensa-${Date.now()}.pdf`;
         draftAttachmentUrls.push({
-          url: pressPdfUrl,
+          url: effectivePdfUrl,
           filename: pdfFilename.toLowerCase().endsWith('.pdf')
             ? pdfFilename
             : `${pdfFilename}.pdf`,
           contentType: 'application/pdf',
         });
-      } else if (Array.isArray(pressPhotoUrls) && pressPhotoUrls.length > 0) {
-        pressPhotoUrls.forEach((u, i) => {
+      } else if (Array.isArray(effectivePhotoUrls) && effectivePhotoUrls.length > 0) {
+        effectivePhotoUrls.forEach((u, i) => {
           const fname = u.split('/').pop()?.split('?')[0] || `foto-${i + 1}.jpg`;
           draftAttachmentUrls.push({
             url: u,
@@ -1416,6 +1455,19 @@ export default function NotasPrensaNewsletterClient({
         );
       }
     }
+    // Filtros canónicos para el envío (lo que la API usa para resolver
+    // destinatarios). Usamos los chips ya auto-confirmados para no
+    // depender del setState que React procesa después.
+    const draftFilters =
+      mode === 'press'
+        ? {
+            includeNational: campaignForm.includeNational,
+            includeInternational: campaignForm.includeInternational,
+            ccaas: committed.ccaas,
+            provincias: committed.provincias,
+            puebloSlug: resolvePuebloSlug(campaignForm.puebloSlug),
+          }
+        : { source: campaignForm.source };
     try {
       const body = {
         kind: draftKindForCurrentMode(),
@@ -1423,7 +1475,7 @@ export default function NotasPrensaNewsletterClient({
         subject: campaignForm.subject || '',
         contentHtml: campaignForm.html || '',
         blocksJson: payload,
-        filters: mode === 'press' ? buildPressFilters() : { source: campaignForm.source },
+        filters: draftFilters,
         tags: [],
         attachmentUrls: draftAttachmentUrls,
       };
@@ -1453,15 +1505,22 @@ export default function NotasPrensaNewsletterClient({
     let payloadAttachmentsPresent = false;
     let payloadPdfUrl = '';
     let payloadPhotoUrls: string[] = [];
+    let payloadHadCcaas = false;
+    let payloadHadProvincias = false;
+    let payloadHadIncludeNational = false;
+    let payloadHadSource = false;
     if (target.payload && typeof target.payload === 'object') {
-      payloadAttachmentsPresent = Array.isArray((target.payload as any).pressAttachments);
-      payloadPdfUrl =
-        typeof (target.payload as any).pressPdfUrl === 'string'
-          ? (target.payload as any).pressPdfUrl
-          : '';
-      payloadPhotoUrls = Array.isArray((target.payload as any).pressPhotoUrls)
-        ? (target.payload as any).pressPhotoUrls.map(String)
-        : [];
+      const p = target.payload as any;
+      payloadAttachmentsPresent = Array.isArray(p.pressAttachments);
+      payloadPdfUrl = typeof p.pressPdfUrl === 'string' ? p.pressPdfUrl : '';
+      payloadPhotoUrls = Array.isArray(p.pressPhotoUrls) ? p.pressPhotoUrls.map(String) : [];
+      payloadHadCcaas = Array.isArray(p.selectedCcaas) && p.selectedCcaas.length > 0;
+      payloadHadProvincias =
+        Array.isArray(p.selectedProvincias) && p.selectedProvincias.length > 0;
+      payloadHadIncludeNational =
+        p.campaignForm && typeof p.campaignForm.includeNational === 'boolean';
+      payloadHadSource =
+        p.campaignForm && typeof p.campaignForm.source === 'string';
       applyDraftPayload(target.payload);
       try { localStorage.setItem(getDraftStorageKey(), JSON.stringify(target.payload)); } catch {}
     } else {
@@ -1471,6 +1530,18 @@ export default function NotasPrensaNewsletterClient({
         subject: target.subject || prev.subject,
       }));
     }
+
+    // Fallback ROBUSTO: lee los filtros desde el campo `filters` del borrador
+    // (siempre se rellena al guardar/programar/enviar). Así, aunque blocksJson
+    // no traiga selectedCcaas/selectedProvincias por la razón que sea, los
+    // destinatarios siguen apareciendo al cargar el borrador.
+    restoreFiltersFromDraftField(
+      target.filters,
+      payloadHadCcaas,
+      payloadHadProvincias,
+      payloadHadIncludeNational,
+      payloadHadSource,
+    );
 
     // Compatibilidad con borradores antiguos sin pressAttachments en el payload:
     // deducimos los adjuntos restantes (Word, Excel, etc.) del campo
@@ -1939,6 +2010,66 @@ export default function NotasPrensaNewsletterClient({
       provincias: selectedProvincias,
       puebloSlug: resolvePuebloSlug(campaignForm.puebloSlug),
     };
+  }
+
+  // Auto-confirma cualquier CCAA/provincia/source escrita pero todavía no
+  // añadida como chip al pulsar Guardar/Programar/Enviar. Así el destinatario
+  // queda registrado aunque el usuario olvide pulsar Enter o "+".
+  function commitPendingFilterInputs() {
+    const ccaaPending = ccaaInput.trim();
+    if (ccaaPending) {
+      setSelectedCcaas((prev) => (prev.includes(ccaaPending) ? prev : [...prev, ccaaPending]));
+      setCcaaInput('');
+    }
+    const provinciaPending = provinciaInput.trim();
+    if (provinciaPending) {
+      setSelectedProvincias((prev) =>
+        prev.includes(provinciaPending) ? prev : [...prev, provinciaPending],
+      );
+      setProvinciaInput('');
+    }
+    return {
+      ccaas: ccaaPending && !selectedCcaas.includes(ccaaPending)
+        ? [...selectedCcaas, ccaaPending]
+        : selectedCcaas,
+      provincias: provinciaPending && !selectedProvincias.includes(provinciaPending)
+        ? [...selectedProvincias, provinciaPending]
+        : selectedProvincias,
+    };
+  }
+
+  // Restaura los filtros (ccaas, provincias, includeNational, source...) del
+  // campo `filters` del borrador en BD. Se llama tras applyDraftPayload como
+  // fallback robusto: si el blocksJson no traía esa info por cualquier razón
+  // (borradores antiguos, payload corrupto, etc.), recuperamos los
+  // destinatarios para que el usuario no tenga que reconfigurarlos.
+  function restoreFiltersFromDraftField(
+    filters: Record<string, unknown> | undefined,
+    payloadHadCcaas: boolean,
+    payloadHadProvincias: boolean,
+    payloadHadIncludeNational: boolean,
+    payloadHadSource: boolean,
+  ) {
+    if (!filters || typeof filters !== 'object') return;
+    if (!payloadHadCcaas && Array.isArray((filters as any).ccaas)) {
+      setSelectedCcaas(((filters as any).ccaas as unknown[]).map(String));
+    }
+    if (!payloadHadProvincias && Array.isArray((filters as any).provincias)) {
+      setSelectedProvincias(((filters as any).provincias as unknown[]).map(String));
+    }
+    if (!payloadHadIncludeNational && typeof (filters as any).includeNational === 'boolean') {
+      setCampaignForm((prev) => ({
+        ...prev,
+        includeNational: (filters as any).includeNational,
+        includeInternational:
+          typeof (filters as any).includeInternational === 'boolean'
+            ? (filters as any).includeInternational
+            : prev.includeInternational,
+      }));
+    }
+    if (!payloadHadSource && typeof (filters as any).source === 'string') {
+      setCampaignForm((prev) => ({ ...prev, source: (filters as any).source as string }));
+    }
   }
 
   function addNewsletterBlock(type: NewsletterBlockType) {
@@ -2822,10 +2953,23 @@ export default function NotasPrensaNewsletterClient({
 
   // ------- Borradores + Programación (DraftsAndScheduler) -------
   const getSharedSnapshot = useCallback(async (): Promise<SharedDraftSnapshot> => {
-    const payload = buildDraftPayload();
+    // Auto-confirma cualquier autocomplete que el usuario haya escrito pero
+    // no haya añadido aún como chip (Castilla y León, Burgos, ...).
+    const committed = commitPendingFilterInputs();
+    const payload = {
+      ...buildDraftPayload(),
+      selectedCcaas: committed.ccaas,
+      selectedProvincias: committed.provincias,
+    };
     const filters =
       mode === 'press'
-        ? buildPressFilters()
+        ? {
+            includeNational: campaignForm.includeNational,
+            includeInternational: campaignForm.includeInternational,
+            ccaas: committed.ccaas,
+            provincias: committed.provincias,
+            puebloSlug: resolvePuebloSlug(campaignForm.puebloSlug),
+          }
         : { source: campaignForm.source };
 
     const attachmentUrls: Array<{
@@ -2912,6 +3056,10 @@ export default function NotasPrensaNewsletterClient({
       let payloadAttachmentsPresent = false;
       let payloadPdfUrl = '';
       let payloadPhotoUrls: string[] = [];
+      let payloadHadCcaas = false;
+      let payloadHadProvincias = false;
+      let payloadHadIncludeNational = false;
+      let payloadHadSource = false;
       try {
         const payload = draft.blocksJson as any;
         if (payload && typeof payload === 'object') {
@@ -2920,6 +3068,14 @@ export default function NotasPrensaNewsletterClient({
           payloadPhotoUrls = Array.isArray(payload.pressPhotoUrls)
             ? payload.pressPhotoUrls.map(String)
             : [];
+          payloadHadCcaas =
+            Array.isArray(payload.selectedCcaas) && payload.selectedCcaas.length > 0;
+          payloadHadProvincias =
+            Array.isArray(payload.selectedProvincias) && payload.selectedProvincias.length > 0;
+          payloadHadIncludeNational =
+            payload.campaignForm && typeof payload.campaignForm.includeNational === 'boolean';
+          payloadHadSource =
+            payload.campaignForm && typeof payload.campaignForm.source === 'string';
           applyDraftPayload(payload);
         } else {
           setCampaignForm((prev) => ({
@@ -2936,6 +3092,18 @@ export default function NotasPrensaNewsletterClient({
           html: draft.contentHtml || prev.html,
         }));
       }
+
+      // Fallback ROBUSTO de filtros desde el campo `filters` del borrador en BD.
+      // Aunque blocksJson no traiga selectedCcaas/selectedProvincias (borradores
+      // antiguos o payload incompleto), recuperamos los destinatarios para que el
+      // usuario no tenga que reseleccionar regiones cada vez.
+      restoreFiltersFromDraftField(
+        draft.filters && typeof draft.filters === 'object' ? draft.filters : undefined,
+        payloadHadCcaas,
+        payloadHadProvincias,
+        payloadHadIncludeNational,
+        payloadHadSource,
+      );
 
       // Compatibilidad con borradores antiguos: si el payload no traía la lista
       // de "Adjuntos adicionales" pero el borrador sí tiene attachmentUrls en BD,
