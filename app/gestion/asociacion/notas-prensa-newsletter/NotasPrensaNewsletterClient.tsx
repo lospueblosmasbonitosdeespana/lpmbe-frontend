@@ -166,6 +166,11 @@ type SavedNewsletterDraft = {
   subject: string;
   savedAt: string; // updatedAt del backend
   payload: NewsletterDraftPayload | null;
+  attachmentUrls?: Array<{
+    url: string;
+    filename?: string;
+    contentType?: string;
+  }>;
   status?: string;
   scheduledAt?: string | null;
   createdByUserId?: number | null;
@@ -1330,12 +1335,16 @@ export default function NotasPrensaNewsletterClient({
     const internalName = String(row?.internalName ?? '').trim();
     const updatedAt = String(row?.updatedAt ?? row?.createdAt ?? new Date().toISOString());
     const name = internalName || subject || `Borrador #${id}`;
+    const rawAttachments = Array.isArray(row?.attachmentUrls) ? row.attachmentUrls : [];
     return {
       id,
       name,
       subject,
       savedAt: updatedAt,
       payload,
+      attachmentUrls: rawAttachments.filter(
+        (a: any) => a && typeof a.url === 'string' && a.url.trim(),
+      ),
       status: row?.status,
       scheduledAt: row?.scheduledAt ?? null,
       createdByUserId: row?.createdByUserId ?? null,
@@ -1374,6 +1383,39 @@ export default function NotasPrensaNewsletterClient({
     if (typeof window !== 'undefined') {
       try { localStorage.setItem(getDraftStorageKey(), JSON.stringify(payload)); } catch {}
     }
+    // Construimos la lista de adjuntos a guardar en BD, igual que hace
+    // el panel "Borradores y programados", para que al recargar el borrador
+    // los archivos (PDFs, Word, Excel, fotos) sigan ahí y no se dupliquen.
+    const draftAttachmentUrls: Array<{ url: string; filename?: string; contentType?: string }> = [];
+    if (mode === 'press') {
+      if (pressSendMode === 'pdf' && pressPdfUrl) {
+        const pdfFilename =
+          pressPdfFile?.name ||
+          pressPdfUrl.split('/').pop()?.split('?')[0] ||
+          `nota-prensa-${Date.now()}.pdf`;
+        draftAttachmentUrls.push({
+          url: pressPdfUrl,
+          filename: pdfFilename.toLowerCase().endsWith('.pdf')
+            ? pdfFilename
+            : `${pdfFilename}.pdf`,
+          contentType: 'application/pdf',
+        });
+      } else if (Array.isArray(pressPhotoUrls) && pressPhotoUrls.length > 0) {
+        pressPhotoUrls.forEach((u, i) => {
+          const fname = u.split('/').pop()?.split('?')[0] || `foto-${i + 1}.jpg`;
+          draftAttachmentUrls.push({
+            url: u,
+            filename: fname,
+            contentType: inferImageContentType(fname),
+          });
+        });
+      }
+      if (Array.isArray(pressAttachments) && pressAttachments.length > 0) {
+        pressAttachments.forEach((a) =>
+          draftAttachmentUrls.push({ url: a.url, filename: a.name, contentType: a.contentType }),
+        );
+      }
+    }
     try {
       const body = {
         kind: draftKindForCurrentMode(),
@@ -1383,7 +1425,7 @@ export default function NotasPrensaNewsletterClient({
         blocksJson: payload,
         filters: mode === 'press' ? buildPressFilters() : { source: campaignForm.source },
         tags: [],
-        attachmentUrls: [],
+        attachmentUrls: draftAttachmentUrls,
       };
       const res = await fetch('/api/admin/newsletter/drafts', {
         method: 'POST',
@@ -1408,7 +1450,18 @@ export default function NotasPrensaNewsletterClient({
   async function loadNlDraft(id: number) {
     const target = nlDrafts.find((d) => d.id === id);
     if (!target) return;
+    let payloadAttachmentsPresent = false;
+    let payloadPdfUrl = '';
+    let payloadPhotoUrls: string[] = [];
     if (target.payload && typeof target.payload === 'object') {
+      payloadAttachmentsPresent = Array.isArray((target.payload as any).pressAttachments);
+      payloadPdfUrl =
+        typeof (target.payload as any).pressPdfUrl === 'string'
+          ? (target.payload as any).pressPdfUrl
+          : '';
+      payloadPhotoUrls = Array.isArray((target.payload as any).pressPhotoUrls)
+        ? (target.payload as any).pressPhotoUrls.map(String)
+        : [];
       applyDraftPayload(target.payload);
       try { localStorage.setItem(getDraftStorageKey(), JSON.stringify(target.payload)); } catch {}
     } else {
@@ -1418,6 +1471,32 @@ export default function NotasPrensaNewsletterClient({
         subject: target.subject || prev.subject,
       }));
     }
+
+    // Compatibilidad con borradores antiguos sin pressAttachments en el payload:
+    // deducimos los adjuntos restantes (Word, Excel, etc.) del campo
+    // attachmentUrls del borrador en BD, descartando PDF y fotos ya gestionados
+    // por su propio estado. Así el usuario VE qué hay y puede borrar/cambiar.
+    if (
+      !payloadAttachmentsPresent &&
+      Array.isArray(target.attachmentUrls) &&
+      target.attachmentUrls.length > 0
+    ) {
+      const photoSet = new Set(payloadPhotoUrls);
+      const inferred = target.attachmentUrls
+        .filter((a) => a && typeof a.url === 'string' && a.url.trim())
+        .filter((a) => a.url !== payloadPdfUrl)
+        .filter((a) => !photoSet.has(a.url))
+        .map((a) => ({
+          name: String(a.filename || a.url.split('/').pop()?.split('?')[0] || 'archivo'),
+          url: String(a.url),
+          contentType: String(a.contentType || 'application/octet-stream'),
+          size: 0,
+        }));
+      if (inferred.length > 0) {
+        setPressAttachments(inferred);
+      }
+    }
+
     setHasStoredDraft(true);
     setMessage(`Borrador "${target.name}" cargado.`);
     setShowNlDraftsModal(false);
