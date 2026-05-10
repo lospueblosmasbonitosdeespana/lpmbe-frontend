@@ -36,16 +36,40 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
 
   const ejecutarAhora = async () => {
     if (!agente.implementado) return;
-    if (!confirm(`¿Ejecutar "${agente.titulo}" ahora? Llamará a la IA y consumirá tokens.`)) {
+
+    // Para los agentes de pre-carga IA permitimos elegir un pueblo concreto
+    // (modo piloto) o ejecutar el barrido vacío. El backend acepta puebloId
+    // numérico en `input.puebloId`.
+    let input: Record<string, unknown> = {};
+    const esPrecarga =
+      agente.nombre === 'precarga-recursos-turisticos' ||
+      agente.nombre === 'precarga-recursos-naturales';
+    if (esPrecarga) {
+      const respuesta = window.prompt(
+        `Ejecutar "${agente.titulo}":\n\n` +
+          'Escribe el ID del pueblo para hacer un PILOTO en uno solo (ej. 37 = Aínsa).\n' +
+          'Deja vacío para el barrido completo (hasta 10 pueblos por defecto).\n\n' +
+          'Tip: añade "dry" después del id para no escribir en BD (ej. "37 dry").',
+        '',
+      );
+      if (respuesta === null) return; // cancel
+      const partes = respuesta.trim().split(/\s+/).filter(Boolean);
+      const id = Number(partes[0] ?? '');
+      if (Number.isFinite(id) && id > 0) input.puebloId = id;
+      if (partes.includes('dry')) input.dryRun = true;
+    } else if (
+      !confirm(`¿Ejecutar "${agente.titulo}" ahora? Llamará a la IA y consumirá tokens.`)
+    ) {
       return;
     }
+
     setError(null);
     setBusy('run');
     try {
       const res = await fetch(`/api/admin/agentes/${agente.nombre}/ejecutar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ input }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
