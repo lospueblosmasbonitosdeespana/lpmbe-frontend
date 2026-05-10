@@ -315,6 +315,8 @@ const ICONS = {
   sparkles: <I><path d="M12 3l1.8 4.6 4.6 1.8-4.6 1.8L12 15.8l-1.8-4.6L5.6 9.4l4.6-1.8z" /><path d="M19 16l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z" /></I>,
   /** Cabeza de "agente" (robot estilizado) — usado en /gestion/asociacion → Agentes IA. */
   agentBot: <I><rect x="5" y="8" width="14" height="11" rx="2.5" /><path d="M9 13h.01M15 13h.01" /><path d="M12 4v4M9 19v2M15 19v2M2 13h3M19 13h3" /></I>,
+  /** Pila de monedas con símbolo €. Sección "Subvenciones asociación" (output del Sabueso). */
+  coins: <I><ellipse cx="9" cy="7" rx="6" ry="3" /><path d="M3 7v4c0 1.7 2.7 3 6 3s6-1.3 6-3V7" /><path d="M3 11v4c0 1.7 2.7 3 6 3s6-1.3 6-3v-4" /><path d="M19 14a3 3 0 100-6M19 12h-2.2M19 10h-2.2" /></I>,
 };
 
 export type ModernIconKey = keyof typeof ICONS;

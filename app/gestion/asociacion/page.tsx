@@ -88,6 +88,7 @@ const SECCIONES: Seccion[] = [
     tone: 'violet',
     items: [
       { href: '/gestion/agentes', title: 'Agentes IA', description: 'Centro de control: registry de agentes, ejecuciones, presupuesto, bandeja de pendientes y costes.', iconKey: 'agentBot', tone: 'violet', badge: 'Nuevo' },
+      { href: '/gestion/asociacion/subvenciones', title: 'Subvenciones asociación', description: 'Convocatorias del Estado y europeas detectadas por el Sabueso de Subvenciones · filtro IA, plazos, importes y estado de tramitación.', iconKey: 'coins', tone: 'amber', badge: 'Nuevo' },
     ],
   },
   {
