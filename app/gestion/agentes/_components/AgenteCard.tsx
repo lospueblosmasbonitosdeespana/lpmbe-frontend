@@ -131,7 +131,7 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
         />
         <Field
           label="Gasto mes"
-          value={`${agente.gastoMesActualEur.toFixed(2)} €`}
+          value={formatGasto(agente.gastoMesActualEur)}
           tone={
             agente.gastoMesActualEur >= agente.presupuestoMensualEur * 0.8
               ? 'red'
@@ -188,6 +188,14 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
       </div>
     </article>
   );
+}
+
+/** Formatea el gasto mensual mostrando "<0,01 €" cuando hay sub-céntimo y >0,
+ *  para no quedarnos siempre en "0,00 €" cuando un agente apenas ha consumido. */
+function formatGasto(eur: number): string {
+  if (!Number.isFinite(eur) || eur <= 0) return '0.00 €';
+  if (eur < 0.01) return '<0,01 €';
+  return `${eur.toFixed(2)} €`;
 }
 
 function Field({
