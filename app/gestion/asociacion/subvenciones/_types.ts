@@ -74,5 +74,7 @@ export interface SubvencionListResponse {
     media: number;
     enPreparacion: number;
     solicitadas: number;
+    /** Convocatorias ALTA detectadas en los últimos 7 días (badge "novedad"). */
+    nuevasAlta7d: number;
   };
 }

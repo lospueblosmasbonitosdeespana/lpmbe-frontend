@@ -194,6 +194,15 @@ export function SubvencionesClient({
 function KpiBar({ kpis }: { kpis: SubvencionListResponse['kpis'] }) {
   const cards = [
     { label: 'Total detectadas', value: kpis.total, tone: 'bg-slate-50 text-slate-900' },
+    {
+      label: 'Nuevas (7 días)',
+      value: kpis.nuevasAlta7d,
+      tone:
+        kpis.nuevasAlta7d > 0
+          ? 'bg-amber-50 text-amber-900 ring-2 ring-amber-300/70'
+          : 'bg-slate-50 text-slate-900',
+      highlight: kpis.nuevasAlta7d > 0,
+    },
     { label: 'Relevancia alta', value: kpis.alta, tone: 'bg-rose-50 text-rose-900' },
     { label: 'Relevancia media', value: kpis.media, tone: 'bg-amber-50 text-amber-900' },
     {
@@ -208,12 +217,21 @@ function KpiBar({ kpis }: { kpis: SubvencionListResponse['kpis'] }) {
     },
   ];
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
       {cards.map((c) => (
         <div
           key={c.label}
-          className={`rounded-xl border border-border/60 p-4 ${c.tone}`}
+          className={`relative rounded-xl border border-border/60 p-4 ${c.tone}`}
         >
+          {c.highlight ? (
+            <span
+              aria-hidden
+              className="absolute right-3 top-3 inline-flex h-2.5 w-2.5"
+            >
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-600" />
+            </span>
+          ) : null}
           <div className="text-3xl font-bold tabular-nums">{c.value}</div>
           <div className="mt-1 text-xs font-medium uppercase tracking-wide opacity-80">
             {c.label}
@@ -222,6 +240,14 @@ function KpiBar({ kpis }: { kpis: SubvencionListResponse['kpis'] }) {
       ))}
     </div>
   );
+}
+
+/** Una subvención es "novedad" si es ALTA y se detectó en los últimos 7 días. */
+function esNovedad(s: SubvencionRow): boolean {
+  if (s.relevanciaIa !== 'ALTA') return false;
+  const t = new Date(s.createdAt).getTime();
+  if (!Number.isFinite(t)) return false;
+  return Date.now() - t < 7 * 24 * 60 * 60 * 1000;
 }
 
 function SubvencionCard({
@@ -242,11 +268,28 @@ function SubvencionCard({
     year: 'numeric',
   });
 
+  const novedad = esNovedad(s);
+
   return (
-    <li className="rounded-xl border border-border/60 bg-white p-5 shadow-sm transition hover:border-amber-300">
+    <li
+      className={`relative rounded-xl border bg-white p-5 shadow-sm transition hover:border-amber-300 ${
+        novedad
+          ? 'border-amber-400 ring-2 ring-amber-300/60'
+          : 'border-border/60'
+      }`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {novedad ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                </span>
+                Nuevo
+              </span>
+            ) : null}
             <span
               className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${RELEVANCIA_TONO[s.relevanciaIa]}`}
             >

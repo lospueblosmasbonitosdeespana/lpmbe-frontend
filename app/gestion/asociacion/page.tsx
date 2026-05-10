@@ -1,4 +1,6 @@
 import { getMeServer } from '@/lib/me';
+import { getApiUrl } from '@/lib/api';
+import { getToken } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import {
   GestionHubFooterLink,
@@ -120,10 +122,57 @@ const SECCIONES: Seccion[] = [
   },
 ];
 
+/**
+ * Cuenta novedades de subvenciones (relevancia ALTA detectadas en los
+ * últimos 7 días) para mostrar un badge dinámico en la tarjeta.
+ * Falla en silencio: si el backend no responde, simplemente no hay badge.
+ */
+async function fetchNovedadesSubvenciones(): Promise<number> {
+  try {
+    const token = await getToken();
+    if (!token) return 0;
+    const res = await fetch(
+      `${getApiUrl()}/admin/subvenciones/novedades/count`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      },
+    );
+    if (!res.ok) return 0;
+    const json = (await res.json()) as { count?: number };
+    return typeof json.count === 'number' ? json.count : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export default async function GestionAsociacionPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
   if (me.rol !== 'ADMIN' && me.rol !== 'EDITOR') redirect('/mi-cuenta');
+
+  // Solo ADMIN ve novedades de subvenciones (la sección /subvenciones
+  // requiere ADMIN; para EDITOR no tiene sentido teaser-ear el badge).
+  const novedadesSubvenciones =
+    me.rol === 'ADMIN' ? await fetchNovedadesSubvenciones() : 0;
+
+  // Reemplazar el badge fijo "Nuevo" de la tarjeta de subvenciones por uno
+  // dinámico: "X nuevas" cuando hay novedades en los últimos 7 días.
+  const seccionesConNovedades: Seccion[] = SECCIONES.map((sec) => ({
+    ...sec,
+    items: sec.items.map((item) =>
+      item.href === '/gestion/asociacion/subvenciones' &&
+      novedadesSubvenciones > 0
+        ? {
+            ...item,
+            badge:
+              novedadesSubvenciones === 1
+                ? '1 nueva'
+                : `${novedadesSubvenciones} nuevas`,
+          }
+        : item,
+    ),
+  }));
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -132,7 +181,7 @@ export default async function GestionAsociacionPage() {
         subtitle="Herramientas nacionales de la red. Tarjetas con icono propio y código de color para localizar la sección de un vistazo."
       />
 
-      {SECCIONES.map((sec) => (
+      {seccionesConNovedades.map((sec) => (
         <GestionHubSection key={sec.title} title={sec.title} subtitle={sec.subtitle} tone={sec.tone}>
           {sec.items.map((item) => (
             <GestionHubModernCard
