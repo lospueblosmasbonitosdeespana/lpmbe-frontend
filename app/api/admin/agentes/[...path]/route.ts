@@ -35,17 +35,27 @@ async function forward(
     if (raw) body = raw;
   }
 
-  const res = await fetch(upstream, {
-    method,
-    headers,
-    body,
-    cache: 'no-store',
-  });
-  const text = await res.text();
-  return new NextResponse(text || '{}', {
-    status: res.status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  try {
+    const res = await fetch(upstream, {
+      method,
+      headers,
+      body,
+      cache: 'no-store',
+    });
+    const text = await res.text();
+    return new NextResponse(text || '{}', {
+      status: res.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      {
+        message: `Proxy fetch falló al llamar al backend (${method} ${upstream}): ${err?.message || err}`,
+        error: 'BFFProxyError',
+      },
+      { status: 502 },
+    );
+  }
 }
 
 export async function GET(
