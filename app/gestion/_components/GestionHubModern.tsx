@@ -313,6 +313,8 @@ const ICONS = {
   // ── Club: nuevos accesos ───────────────────────────────────────────
   mountain: <I><path d="M3 20l5-9 4 6 3-4 6 7z" /><path d="M9 11l1.5-2L12 11" /></I>,
   sparkles: <I><path d="M12 3l1.8 4.6 4.6 1.8-4.6 1.8L12 15.8l-1.8-4.6L5.6 9.4l4.6-1.8z" /><path d="M19 16l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8z" /></I>,
+  /** Cabeza de "agente" (robot estilizado) — usado en /gestion/asociacion → Agentes IA. */
+  agentBot: <I><rect x="5" y="8" width="14" height="11" rx="2.5" /><path d="M9 13h.01M15 13h.01" /><path d="M12 4v4M9 19v2M15 19v2M2 13h3M19 13h3" /></I>,
 };
 
 export type ModernIconKey = keyof typeof ICONS;

@@ -83,6 +83,14 @@ const SECCIONES: Seccion[] = [
     ],
   },
   {
+    title: 'Inteligencia artificial',
+    subtitle: 'Fábrica de agentes IA conectada a Vercel AI Gateway.',
+    tone: 'violet',
+    items: [
+      { href: '/gestion/agentes', title: 'Agentes IA', description: 'Centro de control: registry de agentes, ejecuciones, presupuesto, bandeja de pendientes y costes.', iconKey: 'agentBot', tone: 'violet', badge: 'Nuevo' },
+    ],
+  },
+  {
     title: 'Archivos, datos y marca',
     subtitle: 'Logos, fototeca, métricas y páginas legales.',
     tone: 'slate',
