@@ -90,17 +90,15 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
   return (
     <>
       {/* Botón flotante (esquina inferior IZQUIERDA para no tapar la barra de Safari iOS) */}
-      <button
-        onClick={() => setOpen(!open)}
-        className={`fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300 ${
-          open
-            ? 'bg-stone-700 text-white hover:bg-stone-800'
-            : 'bg-gradient-to-br from-amber-600 to-amber-800 text-white hover:from-amber-700 hover:to-amber-900'
-        }`}
-        aria-label={open ? 'Cerrar conserje' : 'Abrir conserje'}
-      >
-        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-      </button>
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-600 to-amber-800 text-white shadow-xl transition-all duration-300 hover:from-amber-700 hover:to-amber-900"
+          aria-label="Abrir conserje"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </button>
+      ) : null}
 
       {/* Indicador de disponibilidad */}
       {!open ? (
@@ -112,17 +110,37 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
         </div>
       ) : null}
 
-      {/* Panel del chat */}
+      {/* Backdrop (solo móvil) */}
       {open ? (
-        <div className="fixed bottom-24 left-4 z-50 flex h-[min(520px,75vh)] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl">
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-40 bg-stone-900/30 backdrop-blur-sm sm:hidden"
+        />
+      ) : null}
+
+      {/* Panel del chat: en móvil ocupa casi pantalla completa; en desktop, ventana flotante */}
+      {open ? (
+        <div
+          className="fixed z-50 flex flex-col overflow-hidden border border-stone-200 bg-white shadow-2xl
+            inset-x-2 bottom-2 top-16 rounded-2xl
+            sm:inset-auto sm:left-4 sm:bottom-24 sm:top-auto sm:h-[min(560px,80vh)] sm:w-[380px]"
+          style={{ maxHeight: '100dvh' }}
+        >
           {/* Header */}
           <div className="shrink-0 bg-gradient-to-r from-amber-700 to-amber-800 px-4 py-3 text-white">
             <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5" />
-              <div>
+              <Bot className="h-5 w-5 shrink-0" />
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold">{t('titulo')}</p>
-                <p className="text-[11px] opacity-80">{t('subtitulo')}</p>
+                <p className="text-[11px] opacity-80 truncate">{t('subtitulo')}</p>
               </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="shrink-0 rounded-full p-1.5 text-white/90 hover:bg-white/15"
+                aria-label="Cerrar"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
