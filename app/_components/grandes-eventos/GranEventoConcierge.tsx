@@ -275,7 +275,14 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 }
 
 function ConciergeMessageContent({ content }: { content: string }) {
-  const parts = content.split(/(https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=[^\s)]+)/g);
+  // Limpiar markdown básico que pueda colarse en la respuesta de la IA
+  const cleaned = content
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^#+\s*/gm, '');
+
+  const parts = cleaned.split(/(https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=[^\s)]+)/g);
   return (
     <>
       {parts.map((part, i) =>
