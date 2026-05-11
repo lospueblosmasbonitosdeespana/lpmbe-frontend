@@ -38,7 +38,7 @@ function construirPlantilla(tipo: TipoLista): string {
       ? 'Solo poner en un mostrador el QR que os enviamos en pocos días.'
       : 'Tampoco hay que poner nada físico: la app del socio detecta el sitio por GPS al pasar.';
 
-  return `<p>Estimado/a alcalde/sa de <strong>{NOMBRE_PUEBLO}</strong>,</p>
+  return `<p>Estimado/a alcalde/sa y/o personal del equipo de gobierno de <strong>{NOMBRE_PUEBLO}</strong>,</p>
 
 <p>Para activar el <strong>Club de Amigos de Los Pueblos Más Bonitos de España</strong> en tu municipio, hemos pre-cargado en la web ${queSon}. Hemos detectado <strong>{N_RECURSOS}</strong>.</p>
 
