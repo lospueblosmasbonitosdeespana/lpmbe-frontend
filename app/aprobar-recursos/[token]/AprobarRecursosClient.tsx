@@ -137,9 +137,9 @@ export default function AprobarRecursosClient({
           Si crees que es un error, escribe a{' '}
           <a
             className="text-amber-700 underline"
-            href="mailto:franmestre@lospueblosmasbonitosdeespana.org"
+            href="mailto:ayuntamientos@lospueblosmasbonitosdeespana.org"
           >
-            franmestre@lospueblosmasbonitosdeespana.org
+            ayuntamientos@lospueblosmasbonitosdeespana.org
           </a>
           .
         </p>
@@ -424,9 +424,9 @@ function Layout({
           ¿Dudas? Escribe a{' '}
           <a
             className="text-amber-700 underline"
-            href="mailto:franmestre@lospueblosmasbonitosdeespana.org"
+            href="mailto:ayuntamientos@lospueblosmasbonitosdeespana.org"
           >
-            franmestre@lospueblosmasbonitosdeespana.org
+            ayuntamientos@lospueblosmasbonitosdeespana.org
           </a>
         </p>
       </div>
