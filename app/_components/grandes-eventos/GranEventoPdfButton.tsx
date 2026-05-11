@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileDown, X, Download, ExternalLink } from 'lucide-react';
+import { FileDown, X, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 /**
  * Botón "Descargar programa" que abre el PDF en un modal a pantalla completa
- * dentro de la propia página (con botón de cerrar bien visible).
+ * dentro de la propia página, con un botón "Volver" bien visible.
  *
- * Esto evita el problema de Safari iOS donde al abrir un PDF directamente
- * sustituye la pestaña y el usuario no puede volver al programa.
+ * En móvil (iOS Safari) los iframes con PDFs directos NO funcionan: Safari
+ * muestra una pantalla con "Abrir en Vista Previa". Para solucionarlo
+ * usamos Google Docs Viewer que renderiza el PDF como imágenes embebibles
+ * compatibles con iOS Safari.
  */
 export default function GranEventoPdfButton({
   pdfUrl,
@@ -20,6 +22,14 @@ export default function GranEventoPdfButton({
 }) {
   const t = useTranslations('granEvento');
   const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   // Bloquear scroll del body mientras está abierto
   useEffect(() => {
@@ -31,6 +41,12 @@ export default function GranEventoPdfButton({
       };
     }
   }, [open]);
+
+  // En móvil usamos Google Docs Viewer (funciona en iOS Safari)
+  // En desktop usamos el visor nativo del navegador (más rápido y mejor)
+  const viewerSrc = isMobile
+    ? `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`
+    : `${pdfUrl}#view=FitH`;
 
   return (
     <>
@@ -65,34 +81,26 @@ export default function GranEventoPdfButton({
             <p className="flex-1 truncate text-center text-sm font-medium opacity-90">
               Programa del evento
             </p>
-            <div className="flex items-center gap-1">
-              <a
-                href={pdfUrl}
-                download
-                className="flex items-center gap-1.5 rounded-full bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700 active:bg-amber-800"
-                aria-label="Descargar PDF"
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Descargar</span>
-              </a>
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full bg-white/15 p-2 text-white hover:bg-white/25"
-                aria-label="Abrir en nueva pestaña"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </div>
+            <a
+              href={pdfUrl}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-full bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700 active:bg-amber-800"
+              aria-label="Descargar PDF"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Descargar</span>
+            </a>
           </div>
 
-          {/* Visor PDF */}
-          <div className="flex-1 min-h-0 bg-stone-200">
+          {/* Visor PDF: Google Docs Viewer en móvil, nativo en desktop */}
+          <div className="flex-1 min-h-0 bg-stone-100">
             <iframe
-              src={`${pdfUrl}#view=FitH`}
+              src={viewerSrc}
               title="Programa PDF"
               className="h-full w-full border-0"
+              allow="autoplay"
             />
           </div>
         </div>
