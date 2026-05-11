@@ -24,13 +24,29 @@ type DestinatariosResponse = {
 
 type TipoLista = 'turisticos' | 'naturales';
 
-const PLANTILLA_DEFAULT_TURISTICOS = `<p>Estimado/a alcalde/sa de <strong>{NOMBRE_PUEBLO}</strong>,</p>
+function construirPlantilla(tipo: TipoLista): string {
+  const queSon =
+    tipo === 'turisticos'
+      ? 'los principales recursos turísticos visitables (museos, castillos, iglesias visitables, ermitas con horario, casas-museo, monasterios visitables…)'
+      : 'los principales recursos rurales / naturales accesibles desde el pueblo (cascadas, miradores, parajes, sendas, fuentes, lagunas…)';
+  const validacion =
+    tipo === 'turisticos'
+      ? 'En unos días te enviaremos por correo postal un <strong>QR estático impreso</strong> para colocar en cada uno: cuando un socio del Club lo lea, sumará puntos. <strong>NO HACE FALTA</strong>, si no queréis, utilizar ningún dispositivo para validar. <strong>NO es obligatorio aplicar descuentos</strong>. Esto ha de servir para promocionar vuestros recursos al máximo y para que el socio que los visite se lleve <strong>Puntos de Gamificación</strong> para regalos del Club, etc.'
+      : 'Estos recursos se validan <strong>por GPS</strong> (no necesitan QR físico): cuando un socio del Club pase por allí, su app reconocerá el sitio y le sumará puntos automáticamente. <strong>NO HACE FALTA</strong> ningún dispositivo ni intervención por vuestra parte. <strong>NO es obligatorio aplicar descuentos</strong>. Esto ha de servir para promocionar vuestros recursos al máximo y para que el socio que los visite se lleve <strong>Puntos de Gamificación</strong> para regalos del Club, etc.';
+  const cierreFisico =
+    tipo === 'turisticos'
+      ? 'Solo poner en un mostrador el QR que os enviamos en pocos días.'
+      : 'Tampoco hay que poner nada físico: la app del socio detecta el sitio por GPS al pasar.';
 
-<p>Para activar el <strong>Club de Amigos de Los Pueblos Más Bonitos de España</strong> en tu municipio, hemos pre-cargado en la web los principales recursos turísticos visitables (museos, castillos, iglesias visitables, ermitas con horario, casas-museo, monasterios visitables…). Hemos detectado <strong>{N_RECURSOS}</strong>.</p>
+  return `<p>Estimado/a alcalde/sa de <strong>{NOMBRE_PUEBLO}</strong>,</p>
+
+<p>Para activar el <strong>Club de Amigos de Los Pueblos Más Bonitos de España</strong> en tu municipio, hemos pre-cargado en la web ${queSon}. Hemos detectado <strong>{N_RECURSOS}</strong>.</p>
 
 <p><strong>Quedan inactivos</strong> hasta que tú los apruebes. Si no haces nada, no aparecerán en la web pública ni en la app.</p>
 
-<p>En unos días te enviaremos por correo postal un QR estático impreso para colocar en cada uno: cuando un socio del Club lo lea, sumará puntos.</p>
+<p>${validacion}</p>
+
+<p style="margin-top:20px;padding:14px 16px;background:#fef3c7;border-left:4px solid #d97706;border-radius:4px"><strong>Importante:</strong> En breve también se ofrecerá a todos los hoteles, restaurantes, casas rurales, etc., del municipio que se <strong>unan al Club</strong> (podrán hacerlo de manera gratuita y de pago, ellos deciden). Esto también va a ser una gran promoción de sus negocios. El sistema es de última generación tecnológica y va a ser una herramienta brutal para todo el ecosistema de nuestros pueblos. Es importante que los municipios estén integrados en el Club con los negocios e ir todos a una. <strong>Hasta que no se activen vuestros recursos NO podremos activar vuestros negocios particulares.</strong> Por ello es importante responder este email. Para ello se ha hecho de la manera más sencilla: no hace falta ni que entréis en la web (aunque recomendamos poner al menos una foto del recurso). Con sólo darle al botón, el recurso pasará a estar activo. No hace falta personal. No hace falta leer nada. ${cierreFisico}</p>
 
 <p style="margin-top:20px;font-weight:600;color:#854d0e">Recursos detectados:</p>
 {LISTA_RECURSOS_HTML}
@@ -48,24 +64,18 @@ const PLANTILLA_DEFAULT_TURISTICOS = `<p>Estimado/a alcalde/sa de <strong>{NOMBR
 </table>
 
 <p style="margin:16px 0">
-  <a href="{URL_REVISAR}" style="color:#854d0e;text-decoration:underline;font-size:14px">
+  <a href="{URL_REVISAR}" style="color:#c2410c;text-decoration:underline;font-size:14px;font-weight:600">
     ✏️ Prefiero revisarlos uno a uno (puedo descartar los que no encajen)
   </a>
 </p>
 
-<p style="margin-top:24px;color:#57534e;font-size:14px">Una vez aprobados, podrás <strong>editar la foto, el descuento, un regalo o los horarios</strong> entrando con tu cuenta a tu panel de gestión, igual que cualquier recurso que hubieras subido tú a mano.</p>
+<p style="margin-top:24px;color:#57534e;font-size:14px">Una vez aprobados, podrás <strong>editar la foto, el descuento (si lo hay), un regalo o los horarios</strong> entrando con tu cuenta a tu panel de gestión, igual que cualquier recurso que hubieras subido tú a mano.</p>
 
 <p style="margin-top:16px;color:#78716c;font-size:13px">Si crees que alguno de los recursos detectados está mal o falta alguno importante, también puedes responder a este email y lo ajustamos a mano antes de publicarlo.</p>`;
+}
 
-const PLANTILLA_DEFAULT_NATURALES = PLANTILLA_DEFAULT_TURISTICOS
-  .replace(
-    'los principales recursos turísticos visitables (museos, castillos, iglesias visitables, ermitas con horario, casas-museo, monasterios visitables…)',
-    'los principales recursos rurales / naturales accesibles desde el pueblo (cascadas, miradores, parajes, sendas, fuentes, lagunas…)',
-  )
-  .replace(
-    'En unos días te enviaremos por correo postal un QR estático impreso para colocar en cada uno: cuando un socio del Club lo lea, sumará puntos.',
-    'Estos recursos se validan por GPS (no necesitan QR físico): cuando un socio del Club pase por allí, su app reconocerá el sitio y le sumará puntos automáticamente.',
-  );
+const PLANTILLA_DEFAULT_TURISTICOS = construirPlantilla('turisticos');
+const PLANTILLA_DEFAULT_NATURALES = construirPlantilla('naturales');
 
 export default function ValidarConAlcaldeModal({
   pueblo,
