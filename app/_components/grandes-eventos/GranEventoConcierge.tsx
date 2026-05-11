@@ -132,11 +132,11 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 
   return (
     <>
-      {/* Botón flotante: esquina inferior izquierda para no tapar recarga Safari */}
+      {/* Botón flotante: esquina inferior DERECHA */}
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-600 to-amber-800 text-white shadow-xl"
+          className="fixed bottom-6 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-600 to-amber-800 text-white shadow-xl"
           aria-label="Abrir conserje"
         >
           <MessageCircle className="h-6 w-6" />
@@ -145,7 +145,7 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 
       {/* Badge "Conserje IA" */}
       {!open ? (
-        <div className="fixed bottom-[84px] left-5 z-50 animate-bounce pointer-events-none">
+        <div className="fixed bottom-[84px] right-5 z-50 animate-bounce pointer-events-none">
           <div className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg border border-stone-200">
             <Sparkles className="mr-1 inline h-3 w-3 text-amber-600" />
             {t('disponible')}
@@ -161,8 +161,8 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
             'flex flex-col overflow-hidden border border-stone-200 bg-white shadow-2xl rounded-2xl',
             // Móvil (<sm): lo posicionamos con JS (panelStyle); clases CSS solo de fallback
             'fixed inset-x-2 top-10 bottom-2',
-            // Desktop (sm+): ventana flotante
-            'sm:inset-auto sm:left-4 sm:bottom-24 sm:top-auto sm:h-[min(560px,80vh)] sm:w-[380px]',
+            // Desktop (sm+): ventana flotante a la derecha
+            'sm:inset-auto sm:right-4 sm:bottom-24 sm:left-auto sm:top-auto sm:h-[min(560px,80vh)] sm:w-[380px]',
           ].join(' ')}
           style={{ zIndex: 50, ...panelStyle }}
         >
