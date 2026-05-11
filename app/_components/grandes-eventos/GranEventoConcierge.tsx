@@ -89,22 +89,22 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 
   return (
     <>
-      {/* Botón flotante */}
+      {/* Botón flotante (esquina inferior IZQUIERDA para no tapar la barra de Safari iOS) */}
       <button
         onClick={() => setOpen(!open)}
-        className={`fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300 ${
+        className={`fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-all duration-300 ${
           open
             ? 'bg-stone-700 text-white hover:bg-stone-800'
             : 'bg-gradient-to-br from-amber-600 to-amber-800 text-white hover:from-amber-700 hover:to-amber-900'
         }`}
-        aria-label={open ? 'Cerrar concierge' : 'Abrir concierge'}
+        aria-label={open ? 'Cerrar conserje' : 'Abrir conserje'}
       >
         {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </button>
 
       {/* Indicador de disponibilidad */}
       {!open ? (
-        <div className="fixed bottom-[76px] right-5 z-50 animate-bounce">
+        <div className="fixed bottom-[76px] left-5 z-50 animate-bounce">
           <div className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg border border-stone-200">
             <Sparkles className="mr-1 inline h-3 w-3 text-amber-600" />
             {t('disponible')}
@@ -114,7 +114,7 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 
       {/* Panel del chat */}
       {open ? (
-        <div className="fixed bottom-24 right-4 z-50 flex h-[min(520px,75vh)] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl">
+        <div className="fixed bottom-24 left-4 z-50 flex h-[min(520px,75vh)] w-[min(380px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl">
           {/* Header */}
           <div className="shrink-0 bg-gradient-to-r from-amber-700 to-amber-800 px-4 py-3 text-white">
             <div className="flex items-center gap-2">
