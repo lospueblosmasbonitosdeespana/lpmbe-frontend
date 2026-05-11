@@ -2368,8 +2368,8 @@
       "fotos": "fotos"
     },
     "concierge": {
-      "disponible": "Concierge IA",
-      "titulo": "Concierge del evento",
+      "disponible": "Conserje IA",
+      "titulo": "Conserje del evento",
       "subtitulo": "Pregúntame en tu idioma",
       "bienvenida": "¡Hola! Soy el asistente virtual del evento. Puedo ayudarte con el programa, los hoteles, el transporte, el tiempo... Pregúntame lo que necesites en tu idioma.",
       "sugerenciasLabel": "Preguntas frecuentes",

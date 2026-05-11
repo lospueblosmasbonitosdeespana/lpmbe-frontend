@@ -300,9 +300,9 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
         </FieldGrid>
       </Section>
 
-      <Section title="Concierge IA" hint="Asistente virtual integrado en la página pública. Los asistentes pueden consultar programa, hoteles, avisos y más en su idioma.">
+      <Section title="Conserje IA" hint="Asistente virtual integrado en la página pública. Los asistentes pueden consultar programa, hoteles, avisos y más en su idioma.">
         <FieldGrid>
-          <Field label="Activar concierge" full>
+          <Field label="Activar conserje" full>
             <label className="flex items-center gap-3 cursor-pointer">
               <div
                 role="switch"
