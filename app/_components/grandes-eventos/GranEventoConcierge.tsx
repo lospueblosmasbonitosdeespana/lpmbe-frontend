@@ -132,11 +132,11 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 
   return (
     <>
-      {/* Botón flotante: derecha, elevado en móvil para no tapar la barra de Safari iOS */}
+      {/* Botón flotante: pegado al borde derecho, justo encima del reload de Safari */}
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-32 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-600 to-amber-800 text-white shadow-xl sm:bottom-6"
+          className="fixed bottom-24 right-2 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-600 to-amber-800 text-white shadow-xl sm:bottom-6 sm:right-5"
           aria-label="Abrir conserje"
         >
           <MessageCircle className="h-6 w-6" />
@@ -145,7 +145,7 @@ export default function GranEventoConcierge({ slug }: { slug: string }) {
 
       {/* Badge "Conserje IA" */}
       {!open ? (
-        <div className="fixed bottom-[188px] right-5 z-50 animate-bounce pointer-events-none sm:bottom-[84px]">
+        <div className="fixed bottom-[160px] right-2 z-50 animate-bounce pointer-events-none sm:bottom-[84px] sm:right-5">
           <div className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg border border-stone-200">
             <Sparkles className="mr-1 inline h-3 w-3 text-amber-600" />
             {t('disponible')}

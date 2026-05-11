@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { Calendar, FileDown, Plane, Hotel, Languages, Phone, BedDouble, Images, UtensilsCrossed, ExternalLink } from 'lucide-react';
+import { Calendar, Plane, Hotel, Languages, Phone, BedDouble, Images, UtensilsCrossed, ExternalLink } from 'lucide-react';
 import { getGranEventoBySlug, pickI18n } from '@/lib/grandes-eventos';
 import type { GranEventoRestaurante, GranEventoPueblo } from '@/lib/grandes-eventos';
 import GranEventoBannerAvisos from './GranEventoBannerAvisos';
@@ -10,6 +10,7 @@ import GranEventoPueblos from './GranEventoPueblos';
 import GranEventoMapa from './GranEventoMapa';
 import GranEventoAlojamientos from './GranEventoAlojamientos';
 import GranEventoConcierge from './GranEventoConcierge';
+import GranEventoPdfButton from './GranEventoPdfButton';
 import GranEventoRestaurantes from './GranEventoRestaurantes';
 import ProgramaDiaMeteo from './ProgramaDiaMeteo';
 import type { MeteoSlot } from './ProgramaDiaMeteo';
@@ -120,17 +121,7 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
                 {t('actions.viewProgram')}
               </a>
             ) : null}
-            {evento.pdfUrl ? (
-              <a
-                href={evento.pdfUrl}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-800 shadow-sm transition hover:border-amber-700 hover:text-amber-800 hover:shadow-md"
-              >
-                <FileDown className="h-4 w-4" />
-                {t('actions.downloadPdf')}
-              </a>
-            ) : null}
+            {evento.pdfUrl ? <GranEventoPdfButton pdfUrl={evento.pdfUrl} /> : null}
             {(evento.alojamientos?.length ?? 0) > 0 ? (
               <a
                 href="#alojamientos"
