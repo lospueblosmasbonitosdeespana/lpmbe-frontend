@@ -178,6 +178,7 @@ export type GranEvento = {
   mapIntro_i18n: Record<string, string> | null;
   publicado: boolean;
   noindex: boolean;
+  conciergeActivo: boolean;
   dias: GranEventoDia[];
   pueblos: GranEventoPueblo[];
   paradas: GranEventoParada[];

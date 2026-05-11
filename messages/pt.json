@@ -2611,6 +2611,18 @@
       "morning": "Manhã",
       "afternoon": "Tarde",
       "fullForecast": "Ver previsão completa"
+    },
+    "concierge": {
+      "disponible": "Concierge IA",
+      "titulo": "Concierge de eventos",
+      "subtitulo": "Pergunte-me na sua língua",
+      "bienvenida": "Olá! Sou a assistente virtual do evento. Posso ajudar-vos com o programa, hotéis, transportes, meteorologia, etc. .... Perguntem-me tudo o que precisarem na vossa língua.",
+      "sugerenciasLabel": "Perguntas mais frequentes",
+      "sugerencia1": "Qual é o programa de amanhã?",
+      "sugerencia2": "Em que hotel é que vou dormir esta noite?",
+      "sugerencia3": "Vai chover amanhã?",
+      "placeholder": "Escreva a sua pergunta...",
+      "errorRespuesta": "Desculpe, não consegui responder. Por favor, tente novamente dentro de alguns segundos."
     }
   }
 }

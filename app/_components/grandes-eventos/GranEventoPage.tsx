@@ -9,6 +9,7 @@ import GranEventoBannerAvisos from './GranEventoBannerAvisos';
 import GranEventoPueblos from './GranEventoPueblos';
 import GranEventoMapa from './GranEventoMapa';
 import GranEventoAlojamientos from './GranEventoAlojamientos';
+import GranEventoConcierge from './GranEventoConcierge';
 import GranEventoRestaurantes from './GranEventoRestaurantes';
 import ProgramaDiaMeteo from './ProgramaDiaMeteo';
 import type { MeteoSlot } from './ProgramaDiaMeteo';
@@ -245,6 +246,9 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
           </div>
         </footer>
       ) : null}
+
+      {/* CONCIERGE IA */}
+      {evento.conciergeActivo ? <GranEventoConcierge slug={evento.slug} /> : null}
     </main>
   );
 }

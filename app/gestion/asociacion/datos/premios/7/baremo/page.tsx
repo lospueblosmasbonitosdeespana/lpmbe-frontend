@@ -86,7 +86,7 @@ const BONUS: FilaBaremo[] = [
   {
     accion: 'Tener al menos 1 recurso propio del pueblo',
     puntos: '+5',
-    nota: 'Único e independiente del número de recursos (pago aparte → va al P10).',
+    nota: 'Solo cuentan recursos cargados por el ayuntamiento (creadoPor=ALCALDE). Lo que cargue el admin o la IA NO suma. Único e independiente del nº de recursos.',
   },
   {
     accion: 'Tener al menos 6 servicios en el mapa del pueblo',

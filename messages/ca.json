@@ -2611,6 +2611,18 @@
       "morning": "Matí",
       "afternoon": "Tarda",
       "fullForecast": "Veure la previsió completa"
+    },
+    "concierge": {
+      "disponible": "Conserge d'IA",
+      "titulo": "Conserge d'esdeveniments",
+      "subtitulo": "Pregunta'm en la teva llengua",
+      "bienvenida": "Hola! Sóc l'assistent virtual de l'esdeveniment. Puc ajudar-te amb el programa, els hotels, el transport, el temps… Només pregunta'm qualsevol cosa que necessitis en la teva pròpia llengua.",
+      "sugerenciasLabel": "Preguntes freqüents",
+      "sugerencia1": "Què hi ha demà?",
+      "sugerencia2": "En quin hotel m'allotjo aquesta nit?",
+      "sugerencia3": "Plourà demà?",
+      "placeholder": "Escriviu la vostra pregunta…",
+      "errorRespuesta": "Ho sento, no he pogut respondre. Si us plau, torneu a provar d'aquí a uns segons."
     }
   }
 }

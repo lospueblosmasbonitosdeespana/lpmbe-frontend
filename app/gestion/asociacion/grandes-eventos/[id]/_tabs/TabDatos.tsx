@@ -30,6 +30,9 @@ type Form = {
   logisticaIdiomasTexto_es: string;
   villagesIntro_es: string;
   mapIntro_es: string;
+  conciergeActivo: boolean;
+  conciergeModelo: string;
+  conciergeSystemPrompt_es: string;
 };
 
 function toLocalDate(iso: string | null): string {
@@ -63,6 +66,9 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
     logisticaIdiomasTexto_es: evento.logisticaIdiomasTexto_es ?? '',
     villagesIntro_es: evento.villagesIntro_es ?? '',
     mapIntro_es: evento.mapIntro_es ?? '',
+    conciergeActivo: evento.conciergeActivo ?? false,
+    conciergeModelo: evento.conciergeModelo ?? 'anthropic/claude-haiku-4.5',
+    conciergeSystemPrompt_es: evento.conciergeSystemPrompt_es ?? '',
   }));
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -94,6 +100,9 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
       logisticaIdiomasTexto_es: evento.logisticaIdiomasTexto_es ?? '',
       villagesIntro_es: evento.villagesIntro_es ?? '',
       mapIntro_es: evento.mapIntro_es ?? '',
+      conciergeActivo: evento.conciergeActivo ?? false,
+      conciergeModelo: evento.conciergeModelo ?? 'anthropic/claude-haiku-4.5',
+      conciergeSystemPrompt_es: evento.conciergeSystemPrompt_es ?? '',
     });
   }, [evento]);
 
@@ -287,6 +296,45 @@ export default function TabDatos({ evento, reload }: { evento: EventoEditDetail;
           </Field>
           <Field label="Teléfono (con prefijo internacional)">
             <input value={form.contactoTelefono} onChange={(e) => setForm({ ...form, contactoTelefono: e.target.value })} className={input} placeholder="+34 633 000 000" />
+          </Field>
+        </FieldGrid>
+      </Section>
+
+      <Section title="Concierge IA" hint="Asistente virtual integrado en la página pública. Los asistentes pueden consultar programa, hoteles, avisos y más en su idioma.">
+        <FieldGrid>
+          <Field label="Activar concierge" full>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div
+                role="switch"
+                aria-checked={form.conciergeActivo}
+                onClick={() => setForm({ ...form, conciergeActivo: !form.conciergeActivo })}
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${form.conciergeActivo ? 'bg-amber-600' : 'bg-stone-300'}`}
+              >
+                <span className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow transition-transform ${form.conciergeActivo ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+              </div>
+              <span className="text-sm text-stone-700">{form.conciergeActivo ? 'Activo — visible para los asistentes' : 'Desactivado'}</span>
+            </label>
+          </Field>
+          <Field label="Modelo de IA" full>
+            <select
+              value={form.conciergeModelo}
+              onChange={(e) => setForm({ ...form, conciergeModelo: e.target.value })}
+              className={input}
+            >
+              <option value="anthropic/claude-haiku-4.5">Claude Haiku 4.5 (rápido y económico)</option>
+              <option value="openai/gpt-5.4-mini">GPT-5.4 Mini (económico)</option>
+              <option value="anthropic/claude-sonnet-4.5">Claude Sonnet 4.5 (mayor calidad)</option>
+              <option value="openai/gpt-5.4">GPT-5.4 (mayor calidad)</option>
+            </select>
+          </Field>
+          <Field label="Instrucciones adicionales (opcional)" full>
+            <textarea
+              value={form.conciergeSystemPrompt_es}
+              onChange={(e) => setForm({ ...form, conciergeSystemPrompt_es: e.target.value })}
+              rows={3}
+              className={input}
+              placeholder="Ej: &quot;Los autobuses salen desde la plaza principal. No den teléfonos personales.&quot;"
+            />
           </Field>
         </FieldGrid>
       </Section>

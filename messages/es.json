@@ -2367,6 +2367,18 @@
       "foto": "foto",
       "fotos": "fotos"
     },
+    "concierge": {
+      "disponible": "Concierge IA",
+      "titulo": "Concierge del evento",
+      "subtitulo": "Pregúntame en tu idioma",
+      "bienvenida": "¡Hola! Soy el asistente virtual del evento. Puedo ayudarte con el programa, los hoteles, el transporte, el tiempo... Pregúntame lo que necesites en tu idioma.",
+      "sugerenciasLabel": "Preguntas frecuentes",
+      "sugerencia1": "¿Cuál es el programa de mañana?",
+      "sugerencia2": "¿En qué hotel duermo esta noche?",
+      "sugerencia3": "¿Va a llover mañana?",
+      "placeholder": "Escribe tu pregunta…",
+      "errorRespuesta": "Lo siento, no he podido responder. Inténtalo de nuevo en unos segundos."
+    },
     "alojamientos": {
       "kicker": "Dónde duerme cada delegación",
       "titulo": "Alojamientos del evento",

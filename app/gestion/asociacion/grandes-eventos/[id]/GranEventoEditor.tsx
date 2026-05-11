@@ -40,6 +40,9 @@ export type EventoEditDetail = {
   logisticaIdiomasTexto_es: string | null;
   villagesIntro_es: string | null;
   mapIntro_es: string | null;
+  conciergeActivo: boolean;
+  conciergeModelo: string | null;
+  conciergeSystemPrompt_es: string | null;
   dias: Array<{
     id: number;
     orden: number;

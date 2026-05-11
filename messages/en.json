@@ -2611,6 +2611,18 @@
       "morning": "Morning",
       "afternoon": "Afternoon",
       "fullForecast": "See complete forecast"
+    },
+    "concierge": {
+      "disponible": "Concierge IA",
+      "titulo": "Event Concierge",
+      "subtitulo": "Ask me in your language",
+      "bienvenida": "Hello! I am the virtual assistant of the event. I can help you with the program, hotels, transportation, weather.... Ask me whatever you need in your language.",
+      "sugerenciasLabel": "Frequently Asked Questions",
+      "sugerencia1": "What is tomorrow's program?",
+      "sugerencia2": "Which hotel do I sleep in tonight?",
+      "sugerencia3": "Is it going to rain tomorrow?",
+      "placeholder": "Write your question...",
+      "errorRespuesta": "Sorry, I was unable to respond. Please try again in a few seconds."
     }
   }
 }
