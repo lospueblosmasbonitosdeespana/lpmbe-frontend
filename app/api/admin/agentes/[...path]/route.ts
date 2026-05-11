@@ -3,14 +3,16 @@ import { getToken } from '@/lib/auth';
 import { getApiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 /**
  * Proxy genérico para endpoints del backend `/admin/agentes/...`.
  * Soporta GET / POST / PUT / DELETE y conserva query strings.
  *
- * El timeout es generoso (120 s en POST) porque "ejecutar ahora" puede llamar
- * a la IA y esperar hasta que el agente termine.
+ * El timeout es muy generoso (300 s = 5 min en POST) porque "ejecutar ahora"
+ * para los agentes de pre-carga puede iterar varios pueblos consecutivos
+ * (cada uno tarda 30–60 s entre Perplexity + enriquecimiento + geocoding).
+ * Con esto caben tandas de hasta ~20 pueblos por ejecución.
  */
 async function forward(
   req: Request,

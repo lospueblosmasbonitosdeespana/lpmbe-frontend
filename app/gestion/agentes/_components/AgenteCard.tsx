@@ -38,8 +38,11 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
     if (!agente.implementado) return;
 
     // Para los agentes de pre-carga IA permitimos elegir un pueblo concreto
-    // (modo piloto) o ejecutar el barrido vacío. El backend acepta puebloId
-    // numérico en `input.puebloId`.
+    // (modo piloto), aumentar el tope de pueblos por tanda, o ejecutar el
+    // barrido por defecto. El backend acepta:
+    //   - input.puebloId   → número, modo piloto sobre ese pueblo
+    //   - input.maxPueblos → número, tope para barrido (default 10)
+    //   - input.dryRun     → boolean, no persiste en BD
     let input: Record<string, unknown> = {};
     const esPrecarga =
       agente.nombre === 'precarga-recursos-turisticos' ||
@@ -47,16 +50,33 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
     if (esPrecarga) {
       const respuesta = window.prompt(
         `Ejecutar "${agente.titulo}":\n\n` +
-          'Escribe el ID del pueblo para hacer un PILOTO en uno solo (ej. 37 = Aínsa).\n' +
-          'Deja vacío para el barrido completo (hasta 10 pueblos por defecto).\n\n' +
-          'Tip: añade "dry" después del id para no escribir en BD (ej. "37 dry").',
+          'OPCIONES:\n' +
+          '  • Vacío → barrido de 10 pueblos sin recursos (default).\n' +
+          '  • "max N" → procesar hasta N pueblos en una tanda (ej. "max 20").\n' +
+          '  • Un número → PILOTO en ese pueblo (ej. 37 = Aínsa).\n' +
+          '  • Añade "dry" para no escribir en BD (ej. "max 5 dry" o "37 dry").\n\n' +
+          'Aviso: cada pueblo tarda ~30–60 s (Perplexity + geocoding).\n' +
+          'El proxy aguanta ~5 min, así que máximo recomendado: "max 20".',
         '',
       );
       if (respuesta === null) return; // cancel
-      const partes = respuesta.trim().split(/\s+/).filter(Boolean);
-      const id = Number(partes[0] ?? '');
-      if (Number.isFinite(id) && id > 0) input.puebloId = id;
-      if (partes.includes('dry')) input.dryRun = true;
+      const tokens = respuesta.trim().split(/\s+/).filter(Boolean);
+      // Parseo tolerante: detecta "max N", número suelto, "dry".
+      for (let i = 0; i < tokens.length; i++) {
+        const tok = tokens[i].toLowerCase();
+        if (tok === 'dry') {
+          input.dryRun = true;
+        } else if (tok === 'max' && i + 1 < tokens.length) {
+          const n = Number(tokens[i + 1]);
+          if (Number.isFinite(n) && n > 0) input.maxPueblos = n;
+          i++; // saltamos el siguiente token (el número)
+        } else {
+          const n = Number(tok);
+          if (Number.isFinite(n) && n > 0 && input.puebloId === undefined) {
+            input.puebloId = n;
+          }
+        }
+      }
     } else if (
       !confirm(`¿Ejecutar "${agente.titulo}" ahora? Llamará a la IA y consumirá tokens.`)
     ) {
