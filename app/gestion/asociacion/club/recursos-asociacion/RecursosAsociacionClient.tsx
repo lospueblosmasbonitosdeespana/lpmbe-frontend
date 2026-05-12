@@ -453,11 +453,30 @@ function ProvinciaGrupo({
  * Extrae el rating verificado del campo `precargadoFuente` que escribe
  * el agente IA. Ej: "perplexity-sonar+google-geocoding+google-places[4.7/1850]"
  * → "★ 4.7 / 1850"
+ *
+ * Marcadores reconocidos:
+ *  - "google-places[X/Y]"
+ *      → Google Places confirmó X★ con Y reseñas. Verificación real.
+ *  - "perplexity-only[X]:google-api-error=STATUS"
+ *      → Google Places falló (REQUEST_DENIED, OVER_QUERY_LIMIT, red…).
+ *        Aceptado vía Perplexity por necesidad. CRÍTICO: el admin debe
+ *        revisar en Google Cloud que la API "Places API" esté habilitada
+ *        en la misma key que Geocoding y que el billing esté activo.
+ *  - "perplexity-only[X]"
+ *      → Google API funcionó pero no encontró el sitio. Aceptado vía
+ *        Perplexity ≥4.5★. Estado normal en sitios poco indexados.
+ *  - "no-verifier[X]"
+ *      → API key de Google Places ausente en el backend. Sin
+ *        verificación. Configurar GOOGLE_GEOCODING_API_KEY en Railway.
  */
 function extraerRating(fuente: string): string {
   const m = fuente.match(/google-places\[([\d.]+)\/(\d+)\]/);
   if (m) return `★ ${m[1]} · ${m[2]} reseñas`;
+  const mErr = fuente.match(/perplexity-only\[([\d.]+)\]:google-api-error=([A-Z_]+)/);
+  if (mErr) return `★ ${mErr[1]} (Google API caída · ${mErr[2]})`;
   const m2 = fuente.match(/perplexity-only\[([\d.]+)\]/);
   if (m2) return `★ ${m2[1]} (solo Perplexity)`;
+  const m3 = fuente.match(/no-verifier\[([\d.?]+)\]/);
+  if (m3) return `★ ${m3[1]} (sin verificar · falta API key)`;
   return '';
 }
