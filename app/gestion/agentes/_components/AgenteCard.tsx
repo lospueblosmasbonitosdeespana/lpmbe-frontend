@@ -12,6 +12,7 @@ interface Props {
 export function AgenteCard({ agente, onConfig, onChange }: Props) {
   const [busy, setBusy] = useState<null | 'toggle' | 'run'>(null);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const toggleActivo = async () => {
     setError(null);
@@ -51,12 +52,13 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
       const respuesta = window.prompt(
         `Ejecutar "${agente.titulo}":\n\n` +
           'OPCIONES:\n' +
-          '  • Vacío → barrido de 10 pueblos sin recursos (default).\n' +
+          '  • Vacío → barrido por defecto (5–10 pueblos).\n' +
           '  • "max N" → procesar hasta N pueblos en una tanda (ej. "max 20").\n' +
           '  • Un número → PILOTO en ese pueblo (ej. 37 = Aínsa).\n' +
           '  • Añade "dry" para no escribir en BD (ej. "max 5 dry" o "37 dry").\n\n' +
-          'Aviso: cada pueblo tarda ~30–60 s (Perplexity + geocoding).\n' +
-          'El proxy aguanta ~5 min, así que máximo recomendado: "max 20".',
+          'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
+          'el agente seguirá trabajando aunque cierres esta pestaña.\n' +
+          'Comprueba el progreso en Bandeja / Histórico cuando quieras.',
         '',
       );
       if (respuesta === null) return; // cancel
@@ -84,6 +86,7 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
     }
 
     setError(null);
+    setInfo(null);
     setBusy('run');
     try {
       const res = await fetch(`/api/admin/agentes/${agente.nombre}/ejecutar`, {
@@ -94,6 +97,16 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error || body?.message || `HTTP ${res.status}`);
+      }
+      const body = await res.json().catch(() => ({} as any));
+      // Si el backend confirmó modo background, avisamos al usuario:
+      // la fila ya se ha creado en EN_CURSO (o se reutilizó una previa
+      // si ya había una corriendo), el agente sigue trabajando y los
+      // resultados aparecerán en Bandeja / Histórico en cuanto termine.
+      if (body?.background) {
+        setInfo(
+          `Lanzado en segundo plano (ejecución #${body.ejecucionId}). El progreso aparecerá en Bandeja / Histórico cuando termine (puede tardar varios minutos). Si ya había una ejecución en curso, se reutiliza esa.`,
+        );
       }
       await onChange();
     } catch (e: any) {
@@ -174,6 +187,12 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
       {error && (
         <p className="mt-2 rounded-md bg-rose-50 px-3 py-1.5 text-[11px] text-rose-800">
           {error}
+        </p>
+      )}
+
+      {info && (
+        <p className="mt-2 rounded-md bg-emerald-50 px-3 py-1.5 text-[11px] text-emerald-800">
+          {info}
         </p>
       )}
 
