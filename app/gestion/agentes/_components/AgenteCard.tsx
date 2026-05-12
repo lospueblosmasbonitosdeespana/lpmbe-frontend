@@ -81,7 +81,7 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
         '    (ej. "huesca", "almeria", "a-coruna", "guipuzcoa", "illes-balears").\n' +
         '  • Añade "dry" para no escribir en BD.\n' +
         '  • Añade "noauto" para NO encadenar tandas automáticamente.\n\n' +
-        'Cada candidato se VERIFICA en Google Places (≥4,5★ con ≥5 reseñas)\n' +
+        'Cada candidato se VERIFICA en Google Places (≥4,3★ con ≥5 reseñas)\n' +
         'antes de persistir. Solo "crème de la crème". El barrido completo\n' +
         '(≈50 provincias × 3 por tanda × ~90 s) tarda ~25 minutos.\n\n' +
         'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
@@ -204,7 +204,7 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
           const esProvincial = agente.nombre === 'precarga-naturales-asociacion';
           setInfo(
             esProvincial
-              ? `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará tandas (≈3 provincias / ~90–120 s cada una) hasta procesar las 50 provincias — total ≈ 25–30 minutos. Cada candidato se verifica en Google Places (≥4,5★) antes de persistir. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`
+              ? `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará tandas (≈3 provincias / ~90–120 s cada una) hasta procesar las 50 provincias — total ≈ 25–30 minutos. Cada candidato se verifica en Google Places (≥4,3★) antes de persistir. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`
               : `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará nuevas tandas (≈10 pueblos / ~80 s cada una) hasta agotar los pueblos pendientes — son ~28 tandas para ~280 pueblos, total ≈ 38 minutos hasta llegar a Zuheros. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`,
           );
         } else {
