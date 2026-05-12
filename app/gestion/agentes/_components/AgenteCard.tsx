@@ -51,9 +51,10 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
       agente.nombre === 'precarga-recursos-turisticos' ||
       agente.nombre === 'precarga-recursos-naturales';
     const esPrecargaProvincias =
-      agente.nombre === 'precarga-naturales-asociacion';
+      agente.nombre === 'precarga-naturales-asociacion' ||
+      agente.nombre === 'precarga-rrtt-asociacion';
     const esPrecarga = esPrecargaPueblos || esPrecargaProvincias;
-    // Soportan auto-chain: el de naturales por pueblos y el nuevo nacional.
+    // Soportan auto-chain: el de naturales por pueblos y los nacionales.
     const soportaAutoChain =
       agente.nombre === 'precarga-recursos-naturales' || esPrecargaProvincias;
     let autoChainPedido = false;
@@ -72,6 +73,11 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
         'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
         'el agente seguirá trabajando aunque cierres esta pestaña.\n' +
         'Comprueba el progreso en Bandeja / Histórico cuando quieras.';
+      // El umbral varía por agente: naturales-asociacion 4,3★ /
+      // rrtt-asociacion 4,5★ (más estricto: aquí queremos solo la
+      // crème de la crème del patrimonio rural).
+      const umbralProvincias =
+        agente.nombre === 'precarga-rrtt-asociacion' ? '4,5' : '4,3';
       const promptTextoProvincias =
         `Ejecutar "${agente.titulo}":\n\n` +
         'OPCIONES:\n' +
@@ -83,7 +89,7 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
         '    (anti-duplicados global evita repetir; añade joyas con nuevo umbral).\n' +
         '  • Añade "dry" para no escribir en BD.\n' +
         '  • Añade "noauto" para NO encadenar tandas automáticamente.\n\n' +
-        'Cada candidato se VERIFICA en Google Places (≥4,3★ con ≥5 reseñas)\n' +
+        `Cada candidato se VERIFICA en Google Places (≥${umbralProvincias}★ con ≥5 reseñas)\n` +
         'antes de persistir. Solo "crème de la crème". El barrido completo\n' +
         '(≈50 provincias × 3 por tanda × ~90 s) tarda ~25 minutos.\n\n' +
         'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
@@ -211,10 +217,14 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
             `Ya hay una ejecución en curso (#${body.ejecucionId}, lleva ${segundos}s). Espera a que termine antes de lanzar otra. El gasto y los recursos creados aparecerán cuando se cierre la fila.`,
           );
         } else if (autoChainPedido) {
-          const esProvincial = agente.nombre === 'precarga-naturales-asociacion';
+          const esProvincial =
+            agente.nombre === 'precarga-naturales-asociacion' ||
+            agente.nombre === 'precarga-rrtt-asociacion';
+          const umbralMsg =
+            agente.nombre === 'precarga-rrtt-asociacion' ? '4,5' : '4,3';
           setInfo(
             esProvincial
-              ? `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará tandas (≈3 provincias / ~90–120 s cada una) hasta procesar las 50 provincias — total ≈ 25–30 minutos. Cada candidato se verifica en Google Places (≥4,3★) antes de persistir. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`
+              ? `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará tandas (≈3 provincias / ~90–120 s cada una) hasta procesar las 50 provincias — total ≈ 25–30 minutos. Cada candidato se verifica en Google Places (≥${umbralMsg}★) antes de persistir. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`
               : `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará nuevas tandas (≈10 pueblos / ~80 s cada una) hasta agotar los pueblos pendientes — son ~28 tandas para ~280 pueblos, total ≈ 38 minutos hasta llegar a Zuheros. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`,
           );
         } else {
