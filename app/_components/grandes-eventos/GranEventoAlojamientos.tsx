@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { BedDouble, MapPin, Phone, Globe, Search, X, Hourglass } from 'lucide-react';
+import { BedDouble, MapPin, Phone, Globe, Search, X, Hourglass, AlertTriangle } from 'lucide-react';
 import type { GranEventoAlojamiento } from '@/lib/grandes-eventos';
 import { pickI18n } from '@/lib/grandes-eventos';
 
@@ -228,7 +228,12 @@ function HotelCard({
         </div>
         {hotel.ciudad ? <p className="mt-0.5 text-xs text-stone-500">{hotel.ciudad}</p> : null}
         {hotel.direccion ? <p className="mt-1 text-sm text-stone-600">{hotel.direccion}</p> : null}
-        {notas ? <p className="mt-2 text-sm italic text-stone-600">{notas}</p> : null}
+        {notas ? (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border-l-4 border-amber-500 bg-amber-50 px-3 py-2.5 shadow-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
+            <p className="text-sm font-semibold leading-snug text-amber-900">{notas}</p>
+          </div>
+        ) : null}
 
         <div className="mt-3 flex flex-wrap gap-2">
           <a
