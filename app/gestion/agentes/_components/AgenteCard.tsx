@@ -99,14 +99,23 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
         throw new Error(body?.error || body?.message || `HTTP ${res.status}`);
       }
       const body = await res.json().catch(() => ({} as any));
-      // Si el backend confirmó modo background, avisamos al usuario:
-      // la fila ya se ha creado en EN_CURSO (o se reutilizó una previa
-      // si ya había una corriendo), el agente sigue trabajando y los
-      // resultados aparecerán en Bandeja / Histórico en cuanto termine.
+      // Distinguimos visualmente dos casos:
+      //   (a) ejecución nueva lanzada en background → aviso normal
+      //   (b) ya había una corriendo y se reutilizó → aviso ámbar
+      //       para que el usuario sepa que su click NO ha lanzado
+      //       nada nuevo (es lo que más confunde: parece que no
+      //       responde y en realidad ya está trabajando otra).
       if (body?.background) {
-        setInfo(
-          `Lanzado en segundo plano (ejecución #${body.ejecucionId}). El progreso aparecerá en Bandeja / Histórico cuando termine (puede tardar varios minutos). Si ya había una ejecución en curso, se reutiliza esa.`,
-        );
+        if (body.reusedExisting) {
+          const segundos = Math.round((body.enCursoDesdeMs || 0) / 1000);
+          setInfo(
+            `Ya hay una ejecución en curso (#${body.ejecucionId}, lleva ${segundos}s). Espera a que termine antes de lanzar otra. El gasto y los recursos creados aparecerán cuando se cierre la fila.`,
+          );
+        } else {
+          setInfo(
+            `Lanzado en segundo plano (ejecución #${body.ejecucionId}). Tarda ~30–90 s en background. El gasto y los recursos NO aparecen hasta que termine. Refresca esta página o ve a Bandeja / Histórico para ver el resultado.`,
+          );
+        }
       }
       await onChange();
     } catch (e: any) {
