@@ -3,6 +3,7 @@
  */
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   uniqueH1ForLocale,
 } from "@/lib/seo";
@@ -25,16 +26,43 @@ interface ClubPageProps {
   locale: string;
 }
 
-function NegocioCard({ negocio, locale, routeSlug, puebloSlug }: { negocio: NegocioPublic; locale: string; routeSlug: string; puebloSlug: string }) {
+function NegocioCard({
+  negocio,
+  locale,
+  routeSlug,
+  puebloSlug,
+  imprescindibleLabel,
+}: {
+  negocio: NegocioPublic;
+  locale: string;
+  routeSlug: string;
+  puebloSlug: string;
+  imprescindibleLabel: string;
+}) {
   const mainImage = negocio.imagenes?.[0]?.url ?? negocio.fotoUrl;
   const href = negocio.slug ? `/${routeSlug}/${puebloSlug}/${negocio.slug}` : undefined;
 
   const inner = (
     <>
       {mainImage && (
-        <div className="aspect-[4/3] overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={mainImage} alt={negocio.nombre} className="h-full w-full object-cover" />
+          {negocio.imprescindible && (
+            <span
+              className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md ring-1 ring-amber-700/20"
+              title={
+                negocio.ratingVerificado?.rating
+                  ? `${imprescindibleLabel} · ★ ${negocio.ratingVerificado.rating}`
+                  : imprescindibleLabel
+              }
+            >
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              {imprescindibleLabel}
+            </span>
+          )}
         </div>
       )}
       <div className="p-4">
@@ -96,6 +124,8 @@ export async function ClubPuebloPage({ slug, puebloSlug, locale }: ClubPageProps
 
   const { pueblo, negocios } = await getNegociosByPuebloSlug(puebloSlug, tipo, locale);
   const puebloNombre = pueblo?.nombre ?? slugToTitle(puebloSlug);
+  const tRecursos = await getTranslations("recursos");
+  const imprescindibleLabel = tRecursos("imprescindible");
 
   if (!pueblo) return notFound();
 
@@ -126,7 +156,14 @@ export async function ClubPuebloPage({ slug, puebloSlug, locale }: ClubPageProps
           {negocios.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {negocios.map((negocio) => (
-                <NegocioCard key={negocio.id} negocio={negocio} locale={locale} routeSlug={slug} puebloSlug={puebloSlug} />
+                <NegocioCard
+                  key={negocio.id}
+                  negocio={negocio}
+                  locale={locale}
+                  routeSlug={slug}
+                  puebloSlug={puebloSlug}
+                  imprescindibleLabel={imprescindibleLabel}
+                />
               ))}
             </div>
           ) : (

@@ -591,7 +591,9 @@
     "description": "Experiências e locais únicos que não pode perder quando percorre as nossas aldeias. Os membros do Club beneficiam de descontos exclusivos.",
     "noRecursos": "De momento, não existem recursos turísticos disponíveis.",
     "noRecursosHint": "Volte mais tarde.",
-    "cerradoTemporal": "Temporariamente encerrado"
+    "cerradoTemporal": "Temporariamente encerrado",
+    "imprescindible": "Essencial",
+    "imprescindibleTooltip": "Obrigatório: classificação do Google Places ≥ 4,7★"
   },
   "puebloPage": {
     "breadcrumbHome": "Início",

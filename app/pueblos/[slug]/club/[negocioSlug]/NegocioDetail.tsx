@@ -44,6 +44,8 @@ type Recurso = {
   localidad?: string | null;
   planNegocio?: PlanNegocio;
   puntosClub?: number | null;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imagenes?: Imagen[];
   horariosSemana?: Array<{
@@ -343,11 +345,14 @@ export default function NegocioDetail({
   puebloSlug,
   backHref,
   backLabel,
+  imprescindibleLabel,
 }: {
   recurso: Recurso;
   puebloSlug: string;
   backHref?: string;
   backLabel?: string;
+  /** Texto traducido para el badge "Imprescindible". Si no se pasa, se omite el badge. */
+  imprescindibleLabel?: string;
 }) {
   const plan: PlanNegocio = (recurso.planNegocio as PlanNegocio) || "FREE";
   const isNegocio = recurso.scope === "NEGOCIO";
@@ -412,6 +417,28 @@ export default function NegocioDetail({
             <h1 className="text-2xl font-bold sm:text-3xl text-foreground">
               {recurso.nombre}
             </h1>
+            {recurso.imprescindible && imprescindibleLabel && (
+              <div className="mt-3">
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-md ring-1 ring-amber-700/20"
+                  title={
+                    recurso.ratingVerificado?.rating
+                      ? `${imprescindibleLabel} · ★ ${recurso.ratingVerificado.rating}${recurso.ratingVerificado.reviews ? ` · ${recurso.ratingVerificado.reviews}` : ""}`
+                      : imprescindibleLabel
+                  }
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  {imprescindibleLabel}
+                  {recurso.ratingVerificado?.rating && (
+                    <span className="ml-1 rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-semibold">
+                      ★ {recurso.ratingVerificado.rating}
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
             <div className="mt-2 flex items-center gap-3 flex-wrap">
               <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
                 {TIPO_LABELS[recurso.tipo] ?? recurso.tipo}

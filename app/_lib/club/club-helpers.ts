@@ -90,6 +90,8 @@ export type NegocioPublic = {
   lng?: number | null;
   cerradoTemporal?: boolean;
   descuentoPorcentaje?: number | null;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
 };
 
 export type NegociosResponse = {

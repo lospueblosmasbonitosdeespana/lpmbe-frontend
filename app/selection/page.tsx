@@ -75,6 +75,8 @@ export default async function SelectionPage() {
   const locale = await getLocale();
   const t = await getTranslations("selection");
   const tSeo = await getTranslations("seo");
+  const tRecursos = await getTranslations("recursos");
+  const imprescindibleLabel = tRecursos("imprescindible");
   const negocios = await fetchSelectionNegocios(locale);
 
   const base = getBaseUrl();
@@ -181,7 +183,7 @@ export default async function SelectionPage() {
             <h2 className="text-2xl font-bold text-foreground mb-6">
               {t("ourEstablishments")}
             </h2>
-            <SelectionGrid negocios={negocios} />
+            <SelectionGrid negocios={negocios} imprescindibleLabel={imprescindibleLabel} />
           </>
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center">

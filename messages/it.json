@@ -591,7 +591,9 @@
     "description": "Esperienze e luoghi unici da non perdere quando si percorrono gli itinerari dei nostri villaggi. I membri del Club godono di sconti esclusivi.",
     "noRecursos": "Al momento non sono disponibili risorse turistiche.",
     "noRecursosHint": "Tornate a trovarci più tardi.",
-    "cerradoTemporal": "Temporaneamente chiuso"
+    "cerradoTemporal": "Temporaneamente chiuso",
+    "imprescindible": "Essenziale",
+    "imprescindibleTooltip": "Must-have: Valutazione di Google Places ≥ 4,7★"
   },
   "puebloPage": {
     "breadcrumbHome": "Casa",

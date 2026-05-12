@@ -591,7 +591,9 @@
     "description": "Experiències i llocs únics que no us podeu perdre quan visiteu els nostres pobles. Els membres del Club gaudeixen de descomptes exclusius.",
     "noRecursos": "En aquests moments no hi ha cap recurs turístic disponible.",
     "noRecursosHint": "Torna més tard.",
-    "cerradoTemporal": "Tancat temporalment"
+    "cerradoTemporal": "Tancat temporalment",
+    "imprescindible": "Essencial",
+    "imprescindibleTooltip": "Essencial: valoració de Google Places d'almenys 4,7★"
   },
   "puebloPage": {
     "breadcrumbHome": "Inici",

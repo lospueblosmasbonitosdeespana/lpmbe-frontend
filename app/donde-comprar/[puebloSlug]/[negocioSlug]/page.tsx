@@ -53,6 +53,8 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
   if (!recurso) return notFound();
 
   const puebloNombre = slugToTitle(puebloSlug);
+  const tRecursos = await getTranslations("recursos");
+  const imprescindibleLabel = tRecursos("imprescindible");
 
   return (
     <main className="min-h-screen bg-background">
@@ -70,7 +72,13 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
         </div>
       </div>
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <NegocioDetail recurso={recurso as any} puebloSlug={puebloSlug} backHref={`/${ROUTE_SLUG}/${puebloSlug}`} backLabel={label} />
+        <NegocioDetail
+          recurso={recurso as any}
+          puebloSlug={puebloSlug}
+          backHref={`/${ROUTE_SLUG}/${puebloSlug}`}
+          backLabel={label}
+          imprescindibleLabel={imprescindibleLabel}
+        />
       </div>
     </main>
   );

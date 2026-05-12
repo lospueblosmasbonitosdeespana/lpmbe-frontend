@@ -13,7 +13,7 @@ import {
   SITE_NAME,
   type SupportedLocale,
 } from "@/lib/seo";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Section } from "@/app/components/ui/section";
 import { Container } from "@/app/components/ui/container";
 import { Lead, Headline } from "@/app/components/ui/typography";
@@ -75,6 +75,8 @@ type RecursoDetail = {
   maxAdultos: number;
   maxMenores: number;
   edadMaxMenor: number;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
 };
 
@@ -540,6 +542,7 @@ export default async function RecursoDetailPage({
   const { slug } = await params;
   const locale = (await getLocale()) as SupportedLocale;
   const t = PAGE_I18N[locale] ?? PAGE_I18N.es;
+  const tRecursos = await getTranslations("recursos");
   const recurso = await getRecursoBySlug(slug, locale);
 
   if (!recurso) notFound();
@@ -679,6 +682,28 @@ export default async function RecursoDetailPage({
           <h1 className="font-serif text-2xl font-bold text-foreground sm:text-3xl md:text-4xl">
             {recurso.nombre}
           </h1>
+          {recurso.imprescindible && (
+            <div className="mt-3">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-md ring-1 ring-amber-700/20 sm:text-sm"
+                title={
+                  recurso.ratingVerificado?.rating
+                    ? `${tRecursos("imprescindible")} · ★ ${recurso.ratingVerificado.rating}${recurso.ratingVerificado.reviews ? ` · ${recurso.ratingVerificado.reviews}` : ""}`
+                    : tRecursos("imprescindible")
+                }
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                {tRecursos("imprescindible")}
+                {recurso.ratingVerificado?.rating && (
+                  <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold sm:text-xs">
+                    ★ {recurso.ratingVerificado.rating}
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {recurso.provincia && <span>{recurso.provincia}</span>}
             {recurso.comunidad && (

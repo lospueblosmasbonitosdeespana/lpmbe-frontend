@@ -19,6 +19,9 @@ type Recurso = {
   fotoUrl?: string | null;
   precargadoFuente?: string | null;
   precargadoPorIa?: boolean | null;
+  // Flag derivado en backend: rating Google Places verificado >= 4,7★.
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
 };
 
 type Grupo = {
@@ -387,8 +390,22 @@ function ProvinciaGrupo({
                           <div className="h-10 w-10 shrink-0 rounded-md bg-muted/40" />
                         )}
                         <div className="min-w-0">
-                          <div className="truncate font-medium text-foreground">
-                            {r.nombre}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="truncate font-medium text-foreground">
+                              {r.nombre}
+                            </span>
+                            {r.imprescindible && (
+                              <span
+                                className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900"
+                                title={
+                                  r.ratingVerificado?.rating
+                                    ? `Imprescindible · Google ${r.ratingVerificado.rating.toFixed(1)}★ (${r.ratingVerificado.reviews ?? 0} reseñas)`
+                                    : 'Imprescindible · Google ≥ 4,7★'
+                                }
+                              >
+                                ⭐ Imprescindible
+                              </span>
+                            )}
                           </div>
                           {r.precargadoFuente && r.precargadoPorIa && (
                             <div className="font-mono text-[10px] text-muted-foreground">

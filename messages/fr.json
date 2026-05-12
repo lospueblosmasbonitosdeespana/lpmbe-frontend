@@ -591,7 +591,9 @@
     "description": "Des expériences et des lieux uniques à ne pas manquer lors de vos itinéraires dans nos villages. Les membres du Club bénéficient de réductions exclusives.",
     "noRecursos": "Il n'y a pas de ressources touristiques disponibles pour le moment.",
     "noRecursosHint": "Revenez plus tard.",
-    "cerradoTemporal": "Fermeture temporaire"
+    "cerradoTemporal": "Fermeture temporaire",
+    "imprescindible": "Essentiel",
+    "imprescindibleTooltip": "Indispensable : note Google Places ≥ 4.7★"
   },
   "puebloPage": {
     "breadcrumbHome": "Accueil",

@@ -32,12 +32,20 @@ type Negocio = {
   comunidad?: string | null;
   pueblo?: { nombre: string; slug: string } | null;
   descuentoPorcentaje?: number | null;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   ofertas?: Array<{ titulo: string; tipoOferta: string }>;
 };
 
 type FilterKey = "all" | "hotel" | "restaurante" | "otro";
 
-export function SelectionGrid({ negocios }: { negocios: Negocio[] }) {
+export function SelectionGrid({
+  negocios,
+  imprescindibleLabel,
+}: {
+  negocios: Negocio[];
+  imprescindibleLabel: string;
+}) {
   const t = useTranslations("selection");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [search, setSearch] = useState("");
@@ -136,6 +144,21 @@ export function SelectionGrid({ negocios }: { negocios: Negocio[] }) {
                     </svg>
                     Selection
                   </div>
+                  {n.imprescindible && (
+                    <div
+                      className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md ring-1 ring-amber-700/20"
+                      title={
+                        n.ratingVerificado?.rating
+                          ? `${imprescindibleLabel} · ★ ${n.ratingVerificado.rating}`
+                          : imprescindibleLabel
+                      }
+                    >
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      {imprescindibleLabel}
+                    </div>
+                  )}
                   {n.descuentoPorcentaje != null && n.descuentoPorcentaje > 0 && (
                     <div className="absolute top-3 right-3 rounded-full bg-primary px-3 py-1 text-[11px] font-bold text-white shadow-lg">
                       {n.descuentoPorcentaje}% dto.

@@ -28,6 +28,8 @@ type Recurso = {
   provincia?: string | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imagenes?: Array<{ id: number; url: string; alt: string | null; orden: number }>;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
 };
 
 async function fetchRecurso(slug: string, locale: string): Promise<Recurso | null> {
@@ -93,6 +95,8 @@ export default async function SelectionDetailPage({
   const locale = await getLocale();
   const t = await getTranslations("selection");
   const tTabs = await getTranslations("tabs");
+  const tRecursos = await getTranslations("recursos");
+  const imprescindibleLabel = tRecursos("imprescindible");
   const recurso = await fetchRecurso(slug, locale);
 
   if (!recurso || recurso.activo === false) {
@@ -176,6 +180,7 @@ export default async function SelectionDetailPage({
           puebloSlug={puebloSlug}
           backHref="/selection"
           backLabel="Club LPMBE Selection"
+          imprescindibleLabel={imprescindibleLabel}
         />
       </div>
     </main>

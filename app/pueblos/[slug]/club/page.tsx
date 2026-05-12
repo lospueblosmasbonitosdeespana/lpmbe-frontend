@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Star } from "lucide-react";
 import { getApiUrl, getPuebloBySlug } from "@/lib/api";
 import {
   getCanonicalUrl,
@@ -123,6 +124,8 @@ type Recurso = {
   horarios?: string | null;
   cerradoTemporal?: boolean;
   planNegocio?: string;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   imagenes?: Array<{ id: number; url: string; alt: string | null; orden: number }>;
   horariosSemana?: Array<{
     diaSemana: number;
@@ -152,7 +155,15 @@ const TIPO_TO_ROUTE: Record<string, string> = {
   TIENDA_ARTESANIA: "donde-comprar",
 };
 
-function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
+function RecursoCard({
+  r,
+  puebloSlug,
+  imprescindibleLabel,
+}: {
+  r: Recurso;
+  puebloSlug: string;
+  imprescindibleLabel: string;
+}) {
   const fotos = r.imagenes && r.imagenes.length > 0 ? r.imagenes : null;
   const mainImage = fotos?.[0]?.url ?? r.fotoUrl;
   const routeSlug = r.scope === "NEGOCIO" ? TIPO_TO_ROUTE[r.tipo] : undefined;
@@ -219,6 +230,19 @@ function RecursoCard({ r, puebloSlug }: { r: Recurso; puebloSlug: string }) {
               )}
             </div>
           )}
+          {r.imprescindible && (
+            <span
+              className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md ring-1 ring-amber-700/20"
+              title={
+                r.ratingVerificado?.rating
+                  ? `${imprescindibleLabel} · ★ ${r.ratingVerificado.rating}`
+                  : imprescindibleLabel
+              }
+            >
+              <Star className="h-3 w-3" fill="currentColor" />
+              {imprescindibleLabel}
+            </span>
+          )}
         </div>
       )}
 
@@ -284,6 +308,8 @@ export default async function ClubPuebloPage({
 }) {
   const { slug } = await params;
   const locale = await getLocale();
+  const tRecursos = await getTranslations("recursos");
+  const imprescindibleLabel = tRecursos("imprescindible");
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
 
@@ -478,7 +504,12 @@ export default async function ClubPuebloPage({
                 </p>
                 <div className="grid gap-6 sm:grid-cols-2">
                   {recursosPueblo.map((r) => (
-                    <RecursoCard key={r.id} r={r} puebloSlug={pueblo.slug} />
+                    <RecursoCard
+                      key={r.id}
+                      r={r}
+                      puebloSlug={pueblo.slug}
+                      imprescindibleLabel={imprescindibleLabel}
+                    />
                   ))}
                 </div>
               </section>
@@ -538,7 +569,12 @@ export default async function ClubPuebloPage({
                       </p>
                       <div className="grid gap-6 sm:grid-cols-2">
                         {g.items.map((r) => (
-                          <RecursoCard key={r.id} r={r} puebloSlug={pueblo.slug} />
+                          <RecursoCard
+                            key={r.id}
+                            r={r}
+                            puebloSlug={pueblo.slug}
+                            imprescindibleLabel={imprescindibleLabel}
+                          />
                         ))}
                       </div>
                     </div>

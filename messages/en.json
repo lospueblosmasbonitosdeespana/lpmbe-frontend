@@ -591,7 +591,9 @@
     "description": "Experiences and unique places that you can not miss when you make routes through our villages. Members of the Club enjoy exclusive discounts.",
     "noRecursos": "No tourism resources are available at this time.",
     "noRecursosHint": "Check back at a later date.",
-    "cerradoTemporal": "Temporarily closed"
+    "cerradoTemporal": "Temporarily closed",
+    "imprescindible": "Essential",
+    "imprescindibleTooltip": "Must-have: Google Places rating ≥ 4.7★"
   },
   "puebloPage": {
     "breadcrumbHome": "Home",

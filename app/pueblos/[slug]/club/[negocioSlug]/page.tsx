@@ -79,6 +79,8 @@ export default async function NegocioDetailPage({
 }) {
   const { slug, negocioSlug } = await params;
   const locale = await getLocale();
+  const tRecursos = await getTranslations("recursos");
+  const imprescindibleLabel = tRecursos("imprescindible");
   const API_BASE = getApiUrl();
   const pueblo = await getPuebloBySlug(slug, locale).catch(() => null);
 
@@ -141,7 +143,11 @@ export default async function NegocioDetailPage({
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <NegocioDetail recurso={recurso} puebloSlug={slug} />
+        <NegocioDetail
+          recurso={recurso}
+          puebloSlug={slug}
+          imprescindibleLabel={imprescindibleLabel}
+        />
       </div>
     </main>
   );

@@ -591,7 +591,9 @@
     "description": "Einzigartige Erlebnisse und Orte, die Sie auf Ihren Touren durch unsere Dörfer nicht verpassen dürfen. Mitglieder des Club erhalten exklusive Rabatte.",
     "noRecursos": "Zurzeit sind keine touristischen Ressourcen verfügbar.",
     "noRecursosHint": "Schauen Sie später wieder vorbei.",
-    "cerradoTemporal": "Vorübergehend geschlossen"
+    "cerradoTemporal": "Vorübergehend geschlossen",
+    "imprescindible": "Wesentlich",
+    "imprescindibleTooltip": "Ein Muss: Google Places-Bewertung ≥ 4.7★"
   },
   "puebloPage": {
     "breadcrumbHome": "Startseite",

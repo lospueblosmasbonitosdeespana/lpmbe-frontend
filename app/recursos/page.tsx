@@ -61,6 +61,8 @@ type RecursoListItem = {
   comunidad: string | null;
   descuentoPorcentaje: number | null;
   cerradoTemporal: boolean;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
 };
 
@@ -76,9 +78,11 @@ async function getRecursos(): Promise<RecursoListItem[]> {
 function RecursoCard({
   r,
   cerradoTemporalLabel,
+  imprescindibleLabel,
 }: {
   r: RecursoListItem;
   cerradoTemporalLabel: string;
+  imprescindibleLabel: string;
 }) {
   const photoUrl = r.fotoUrl?.trim() || null;
   const slug = r.slug || `recurso-${r.id}`;
@@ -112,6 +116,23 @@ function RecursoCard({
               <circle cx="8.5" cy="8.5" r="1.5" />
               <polyline points="21 15 16 10 5 21" />
             </svg>
+          </div>
+        )}
+        {r.imprescindible && (
+          <div className="absolute left-2 top-2">
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-md ring-1 ring-amber-700/20"
+              title={
+                r.ratingVerificado?.rating
+                  ? `${imprescindibleLabel} · ★ ${r.ratingVerificado.rating}`
+                  : imprescindibleLabel
+              }
+            >
+              <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              {imprescindibleLabel}
+            </span>
           </div>
         )}
         <div className="absolute right-2 top-2 flex flex-wrap gap-1">
@@ -192,6 +213,7 @@ export default async function RecursosPage() {
                   key={r.id}
                   r={r}
                   cerradoTemporalLabel={t("cerradoTemporal")}
+                  imprescindibleLabel={t("imprescindible")}
                 />
               ))}
             </div>

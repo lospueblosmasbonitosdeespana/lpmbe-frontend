@@ -39,6 +39,9 @@ type RecursoRural = {
   puebloId: number | null;
   puebloNombre: string | null;
   puebloSlug: string | null;
+  // Flag derivado en backend: rating Google Places verificado >= 4,7★.
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
 };
 
 type ReglaGamif = {
@@ -920,6 +923,18 @@ function CardRecurso({
                 ) : (
                   <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
                     🏘 Pueblo
+                  </span>
+                )}
+                {r.imprescindible && (
+                  <span
+                    className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900"
+                    title={
+                      r.ratingVerificado?.rating
+                        ? `Imprescindible · Google ${r.ratingVerificado.rating.toFixed(1)}★ (${r.ratingVerificado.reviews ?? 0} reseñas)`
+                        : 'Imprescindible · Google ≥ 4,7★'
+                    }
+                  >
+                    ⭐ Imprescindible
                   </span>
                 )}
               </div>
