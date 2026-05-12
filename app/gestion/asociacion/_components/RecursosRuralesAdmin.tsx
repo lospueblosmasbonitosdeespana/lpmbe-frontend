@@ -232,6 +232,41 @@ export default function RecursosRuralesAdmin() {
     }
   }
 
+  async function togglePublicar(r: RecursoRural) {
+    const queremosActivar = !r.activo;
+    if (
+      !confirm(
+        queremosActivar
+          ? `¿Activar y publicar en la web "${r.nombre}"?\n\nSe generarán slug y traducciones a 7 idiomas si faltan.`
+          : `¿Desactivar "${r.nombre}"? Dejará de aparecer en la web pública.`,
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setAviso(null);
+    try {
+      const res = await fetch(`/api/club/recursos-rurales/${r.id}/publicar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: queremosActivar }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? 'Error al publicar');
+        return;
+      }
+      setAviso(
+        queremosActivar
+          ? `"${r.nombre}" publicado en la web.`
+          : `"${r.nombre}" desactivado.`,
+      );
+      await load();
+    } catch {
+      setError('Error de red');
+    }
+  }
+
   const itemsAsociacion = useMemo(() => items.filter((r) => r.scope === 'ASOCIACION'), [items]);
   const itemsPueblos = useMemo(() => items.filter((r) => r.scope === 'PUEBLO'), [items]);
 
@@ -542,6 +577,7 @@ export default function RecursosRuralesAdmin() {
                     puntosNatural={puntosNatural}
                     onEdit={() => startEdit(r)}
                     onDelete={() => eliminar(r)}
+                    onTogglePublicar={() => togglePublicar(r)}
                   />
                 ))}
               </div>
@@ -651,11 +687,14 @@ function CardRecurso({
   puntosNatural,
   onEdit,
   onDelete,
+  onTogglePublicar,
 }: {
   r: RecursoRural;
   puntosNatural: number | null;
   onEdit: () => void;
   onDelete: () => void;
+  /** Botón de publicar/despublicar. Solo se muestra si se pasa la prop. */
+  onTogglePublicar?: () => void;
 }) {
   return (
     <article className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -706,7 +745,7 @@ function CardRecurso({
           </div>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-end gap-2">
+      <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
         <button
           type="button"
           onClick={onDelete}
@@ -714,6 +753,24 @@ function CardRecurso({
         >
           <Trash2 className="h-3.5 w-3.5" /> Eliminar
         </button>
+        {onTogglePublicar && (
+          <button
+            type="button"
+            onClick={onTogglePublicar}
+            className={
+              r.activo
+                ? 'inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-50'
+                : 'inline-flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-600'
+            }
+            title={
+              r.activo
+                ? 'Quitar de la web pública'
+                : 'Activar y publicar en la web (genera slug y 7 idiomas si faltan)'
+            }
+          >
+            {r.activo ? 'Desactivar' : 'Activar y publicar'}
+          </button>
+        )}
         <button
           type="button"
           onClick={onEdit}
