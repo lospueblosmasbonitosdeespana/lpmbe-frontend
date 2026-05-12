@@ -79,6 +79,8 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
         '  • "max N" → N provincias por tanda (ej. "max 5").\n' +
         '  • Un slug de provincia → PILOTO en esa provincia\n' +
         '    (ej. "huesca", "almeria", "a-coruna", "guipuzcoa", "illes-balears").\n' +
+        '  • "complementar" → barrido COMPLETO incluso de provincias ya hechas\n' +
+        '    (anti-duplicados global evita repetir; añade joyas con nuevo umbral).\n' +
         '  • Añade "dry" para no escribir en BD.\n' +
         '  • Añade "noauto" para NO encadenar tandas automáticamente.\n\n' +
         'Cada candidato se VERIFICA en Google Places (≥4,3★ con ≥5 reseñas)\n' +
@@ -102,6 +104,14 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
           input.dryRun = true;
         } else if (tok === 'noauto') {
           noAuto = true;
+        } else if (tok === 'complementar' && esPrecargaProvincias) {
+          // Modo "complementar": pasa por TODAS las provincias incluso
+          // las que ya tienen recursos. El antiduplicado global del
+          // agente (mismo nombre normalizado o < 500m) evita repetir
+          // los recursos buenos ya creados; solo añade nuevas joyas
+          // que cumplan el umbral actualizado (ej. al bajar de 4,5 a
+          // 4,3 entrarán recursos que antes se descartaban).
+          input.umbralProvinciaCompleta = 9999;
         } else if (tok === 'max' && i + 1 < tokens.length) {
           const n = Number(tokens[i + 1]);
           if (Number.isFinite(n) && n > 0) {
