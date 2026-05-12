@@ -30,6 +30,101 @@ const REGIONS: Array<{ code: RegionCode; label: string }> = [
   { code: 'ESTE', label: 'Este' },
 ];
 
+const CCAA: Array<{ code: string; label: string; region: RegionCode }> = [
+  { code: 'Galicia', label: 'Galicia', region: 'NORTE' },
+  { code: 'Asturias', label: 'Asturias', region: 'NORTE' },
+  { code: 'Cantabria', label: 'Cantabria', region: 'NORTE' },
+  { code: 'País Vasco', label: 'País Vasco', region: 'NORTE' },
+  { code: 'La Rioja', label: 'La Rioja', region: 'NORTE' },
+  { code: 'Navarra', label: 'Navarra', region: 'ESTE' },
+  { code: 'Aragón', label: 'Aragón', region: 'ESTE' },
+  { code: 'Cataluña', label: 'Cataluña', region: 'ESTE' },
+  { code: 'Comunidad Valenciana', label: 'C. Valenciana', region: 'ESTE' },
+  { code: 'Baleares', label: 'Baleares', region: 'ESTE' },
+  { code: 'Castilla y León', label: 'Castilla y León', region: 'NORTE' },
+  { code: 'Madrid', label: 'Madrid', region: 'CENTRO' },
+  { code: 'Castilla-La Mancha', label: 'Castilla-La Mancha', region: 'CENTRO' },
+  { code: 'Extremadura', label: 'Extremadura', region: 'CENTRO' },
+  { code: 'Andalucía', label: 'Andalucía', region: 'SUR' },
+  { code: 'Murcia', label: 'Murcia', region: 'SUR' },
+  { code: 'Canarias', label: 'Canarias', region: 'SUR' },
+];
+
+const PROVINCIAS: Array<{ code: string; label: string; ccaa: string }> = [
+  // Galicia
+  { code: 'A Coruña', label: 'A Coruña', ccaa: 'Galicia' },
+  { code: 'Lugo', label: 'Lugo', ccaa: 'Galicia' },
+  { code: 'Ourense', label: 'Ourense', ccaa: 'Galicia' },
+  { code: 'Pontevedra', label: 'Pontevedra', ccaa: 'Galicia' },
+  // Asturias
+  { code: 'Asturias', label: 'Asturias', ccaa: 'Asturias' },
+  // Cantabria
+  { code: 'Cantabria', label: 'Cantabria', ccaa: 'Cantabria' },
+  // País Vasco
+  { code: 'Álava', label: 'Álava', ccaa: 'País Vasco' },
+  { code: 'Gipuzkoa', label: 'Gipuzkoa', ccaa: 'País Vasco' },
+  { code: 'Bizkaia', label: 'Bizkaia', ccaa: 'País Vasco' },
+  // La Rioja
+  { code: 'La Rioja', label: 'La Rioja', ccaa: 'La Rioja' },
+  // Navarra
+  { code: 'Navarra', label: 'Navarra', ccaa: 'Navarra' },
+  // Aragón
+  { code: 'Huesca', label: 'Huesca', ccaa: 'Aragón' },
+  { code: 'Teruel', label: 'Teruel', ccaa: 'Aragón' },
+  { code: 'Zaragoza', label: 'Zaragoza', ccaa: 'Aragón' },
+  // Cataluña
+  { code: 'Barcelona', label: 'Barcelona', ccaa: 'Cataluña' },
+  { code: 'Girona', label: 'Girona', ccaa: 'Cataluña' },
+  { code: 'Lleida', label: 'Lleida', ccaa: 'Cataluña' },
+  { code: 'Tarragona', label: 'Tarragona', ccaa: 'Cataluña' },
+  // Comunidad Valenciana
+  { code: 'Alicante', label: 'Alicante', ccaa: 'Comunidad Valenciana' },
+  { code: 'Castellón', label: 'Castellón', ccaa: 'Comunidad Valenciana' },
+  { code: 'Valencia', label: 'Valencia', ccaa: 'Comunidad Valenciana' },
+  // Baleares
+  { code: 'Baleares', label: 'Baleares', ccaa: 'Baleares' },
+  // Castilla y León
+  { code: 'Ávila', label: 'Ávila', ccaa: 'Castilla y León' },
+  { code: 'Burgos', label: 'Burgos', ccaa: 'Castilla y León' },
+  { code: 'León', label: 'León', ccaa: 'Castilla y León' },
+  { code: 'Palencia', label: 'Palencia', ccaa: 'Castilla y León' },
+  { code: 'Salamanca', label: 'Salamanca', ccaa: 'Castilla y León' },
+  { code: 'Segovia', label: 'Segovia', ccaa: 'Castilla y León' },
+  { code: 'Soria', label: 'Soria', ccaa: 'Castilla y León' },
+  { code: 'Valladolid', label: 'Valladolid', ccaa: 'Castilla y León' },
+  { code: 'Zamora', label: 'Zamora', ccaa: 'Castilla y León' },
+  // Madrid
+  { code: 'Madrid', label: 'Madrid', ccaa: 'Madrid' },
+  // Castilla-La Mancha
+  { code: 'Albacete', label: 'Albacete', ccaa: 'Castilla-La Mancha' },
+  { code: 'Ciudad Real', label: 'Ciudad Real', ccaa: 'Castilla-La Mancha' },
+  { code: 'Cuenca', label: 'Cuenca', ccaa: 'Castilla-La Mancha' },
+  { code: 'Guadalajara', label: 'Guadalajara', ccaa: 'Castilla-La Mancha' },
+  { code: 'Toledo', label: 'Toledo', ccaa: 'Castilla-La Mancha' },
+  // Extremadura
+  { code: 'Badajoz', label: 'Badajoz', ccaa: 'Extremadura' },
+  { code: 'Cáceres', label: 'Cáceres', ccaa: 'Extremadura' },
+  // Andalucía
+  { code: 'Almería', label: 'Almería', ccaa: 'Andalucía' },
+  { code: 'Cádiz', label: 'Cádiz', ccaa: 'Andalucía' },
+  { code: 'Córdoba', label: 'Córdoba', ccaa: 'Andalucía' },
+  { code: 'Granada', label: 'Granada', ccaa: 'Andalucía' },
+  { code: 'Huelva', label: 'Huelva', ccaa: 'Andalucía' },
+  { code: 'Jaén', label: 'Jaén', ccaa: 'Andalucía' },
+  { code: 'Málaga', label: 'Málaga', ccaa: 'Andalucía' },
+  { code: 'Sevilla', label: 'Sevilla', ccaa: 'Andalucía' },
+  // Murcia
+  { code: 'Murcia', label: 'Murcia', ccaa: 'Murcia' },
+  // Canarias
+  { code: 'Las Palmas', label: 'Las Palmas', ccaa: 'Canarias' },
+  { code: 'Santa Cruz de Tenerife', label: 'S. C. Tenerife', ccaa: 'Canarias' },
+  // Ceuta y Melilla
+  { code: 'Ceuta', label: 'Ceuta', ccaa: 'Ceuta' },
+  { code: 'Melilla', label: 'Melilla', ccaa: 'Melilla' },
+];
+
+type GeoFilterMode = 'region' | 'ccaa' | 'provincia';
+
 const ROLES: Array<{ code: string; label: string }> = [
   { code: 'ALCALDE', label: 'Alcaldes' },
   { code: 'ALCALDESA', label: 'Alcaldesas' },
@@ -97,6 +192,9 @@ export default function AyuntamientosComposerClient() {
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
 
   const [selectedRegions, setSelectedRegions] = useState<Set<RegionCode>>(new Set());
+  const [selectedCcaa, setSelectedCcaa] = useState<Set<string>>(new Set());
+  const [selectedProvincias, setSelectedProvincias] = useState<Set<string>>(new Set());
+  const [geoFilterMode, setGeoFilterMode] = useState<GeoFilterMode>('region');
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
   const [includeAlcaldesUser, setIncludeAlcaldesUser] = useState(true);
   const [includeInstitutional, setIncludeInstitutional] = useState(true);
@@ -187,6 +285,27 @@ export default function AyuntamientosComposerClient() {
     });
   };
 
+  const toggleCcaa = (code: string) => {
+    setSelectedCcaa((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  };
+
+  const toggleProvincia = (code: string) => {
+    setSelectedProvincias((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  };
+
+  const selectAllCcaa = () => setSelectedCcaa(new Set(CCAA.map((c) => c.code)));
+  const selectAllProvincias = () => setSelectedProvincias(new Set(PROVINCIAS.map((p) => p.code)));
+
   const toggleRole = (code: string) => {
     setSelectedRoles((prev) => {
       const next = new Set(prev);
@@ -198,12 +317,14 @@ export default function AyuntamientosComposerClient() {
 
   const filters = useMemo(
     () => ({
-      regions: Array.from(selectedRegions),
+      regions: geoFilterMode === 'region' ? Array.from(selectedRegions) : [],
+      comunidades: geoFilterMode === 'ccaa' ? Array.from(selectedCcaa) : [],
+      provincias: geoFilterMode === 'provincia' ? Array.from(selectedProvincias) : [],
       roles: Array.from(selectedRoles),
       includeAlcaldesUser,
       includeInstitutional,
     }),
-    [selectedRegions, selectedRoles, includeAlcaldesUser, includeInstitutional],
+    [selectedRegions, selectedCcaa, selectedProvincias, geoFilterMode, selectedRoles, includeAlcaldesUser, includeInstitutional],
   );
 
   const getSnapshot = useCallback(
@@ -225,8 +346,15 @@ export default function AyuntamientosComposerClient() {
     }
     const f = (draft.filters || {}) as Record<string, unknown>;
     const regs = Array.isArray(f.regions) ? (f.regions as RegionCode[]) : [];
+    const ccaas = Array.isArray(f.comunidades) ? (f.comunidades as string[]) : [];
+    const provs = Array.isArray(f.provincias) ? (f.provincias as string[]) : [];
     const roles = Array.isArray(f.roles) ? (f.roles as string[]) : [];
     setSelectedRegions(new Set(regs));
+    setSelectedCcaa(new Set(ccaas));
+    setSelectedProvincias(new Set(provs));
+    if (ccaas.length > 0) setGeoFilterMode('ccaa');
+    else if (provs.length > 0) setGeoFilterMode('provincia');
+    else setGeoFilterMode('region');
     setSelectedRoles(new Set(roles));
     if (typeof f.includeAlcaldesUser === 'boolean')
       setIncludeAlcaldesUser(f.includeAlcaldesUser);
@@ -508,10 +636,15 @@ export default function AyuntamientosComposerClient() {
       setError('Selecciona al menos una fuente de destinatarios.');
       return;
     }
-    const confirmMsg =
-      selectedRegions.size === 0
-        ? '¿Enviar a TODOS los alcaldes/institucionales (sin filtro de región)?'
-        : `¿Enviar a las regiones seleccionadas (${Array.from(selectedRegions).join(', ')})?`;
+    let geoDesc = 'TODOS (sin filtro geográfico)';
+    if (geoFilterMode === 'region' && selectedRegions.size > 0) {
+      geoDesc = `regiones: ${Array.from(selectedRegions).join(', ')}`;
+    } else if (geoFilterMode === 'ccaa' && selectedCcaa.size > 0) {
+      geoDesc = `CCAA: ${Array.from(selectedCcaa).join(', ')}`;
+    } else if (geoFilterMode === 'provincia' && selectedProvincias.size > 0) {
+      geoDesc = `provincias: ${Array.from(selectedProvincias).join(', ')}`;
+    }
+    const confirmMsg = `¿Enviar a ${geoDesc}?`;
     if (!window.confirm(confirmMsg)) return;
 
     setSending(true);
@@ -877,42 +1010,213 @@ export default function AyuntamientosComposerClient() {
             </label>
           </div>
 
+          {/* Filtro geográfico con selector de modo */}
           <div className="rounded-lg border border-border bg-background p-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Regiones (opcional)
-            </h3>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {REGIONS.map((r) => {
-                const active = selectedRegions.has(r.code);
-                return (
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Filtro geográfico
+              </h3>
+              <div className="flex rounded-lg border border-border overflow-hidden text-[11px] font-medium">
+                {(['region', 'ccaa', 'provincia'] as GeoFilterMode[]).map((mode) => (
                   <button
-                    key={r.code}
+                    key={mode}
                     type="button"
-                    onClick={() => toggleRegion(r.code)}
+                    onClick={() => setGeoFilterMode(mode)}
                     className={[
-                      'rounded-full border px-3 py-1.5 text-xs font-medium transition',
-                      active
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-background hover:border-primary/40',
+                      'px-2.5 py-1 transition',
+                      geoFilterMode === mode
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background hover:bg-muted',
                     ].join(' ')}
                   >
-                    {r.label}
+                    {mode === 'region' ? 'Región' : mode === 'ccaa' ? 'CCAA' : 'Provincia'}
                   </button>
-                );
-              })}
-              {selectedRegions.size > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setSelectedRegions(new Set())}
-                  className="text-xs text-muted-foreground underline"
-                >
-                  Limpiar
-                </button>
-              ) : null}
+                ))}
+              </div>
             </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Si no seleccionas ninguna, se envía a todas las regiones.
-            </p>
+
+            {/* Modo: Región */}
+            {geoFilterMode === 'region' && (
+              <div className="mt-3">
+                <div className="flex flex-wrap gap-2">
+                  {REGIONS.map((r) => {
+                    const active = selectedRegions.has(r.code);
+                    return (
+                      <button
+                        key={r.code}
+                        type="button"
+                        onClick={() => toggleRegion(r.code)}
+                        className={[
+                          'rounded-full border px-3 py-1.5 text-xs font-medium transition',
+                          active
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-background hover:border-primary/40',
+                        ].join(' ')}
+                      >
+                        {r.label}
+                      </button>
+                    );
+                  })}
+                  {selectedRegions.size > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRegions(new Set())}
+                      className="text-xs text-muted-foreground underline"
+                    >
+                      Limpiar
+                    </button>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  Sin selección → todas las regiones.
+                </p>
+              </div>
+            )}
+
+            {/* Modo: CCAA */}
+            {geoFilterMode === 'ccaa' && (
+              <div className="mt-3">
+                <div className="mb-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllCcaa}
+                    className="text-xs text-primary underline"
+                  >
+                    Todas
+                  </button>
+                  {selectedCcaa.size > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCcaa(new Set())}
+                      className="text-xs text-muted-foreground underline"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+                {/* Agrupadas por región */}
+                {(['NORTE', 'CENTRO', 'SUR', 'ESTE'] as RegionCode[]).map((reg) => {
+                  const ccaasInReg = CCAA.filter((c) => c.region === reg);
+                  return (
+                    <div key={reg} className="mb-2">
+                      <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">
+                        {reg}
+                      </span>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {ccaasInReg.map((c) => {
+                          const active = selectedCcaa.has(c.code);
+                          return (
+                            <button
+                              key={c.code}
+                              type="button"
+                              onClick={() => toggleCcaa(c.code)}
+                              className={[
+                                'rounded-full border px-2.5 py-1 text-[11px] font-medium transition',
+                                active
+                                  ? 'border-primary bg-primary text-primary-foreground'
+                                  : 'border-border bg-background hover:border-primary/40',
+                              ].join(' ')}
+                            >
+                              {c.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {selectedCcaa.size === 0
+                    ? 'Sin selección → todas las CCAA.'
+                    : `${selectedCcaa.size} CCAA seleccionada${selectedCcaa.size === 1 ? '' : 's'}.`}
+                </p>
+              </div>
+            )}
+
+            {/* Modo: Provincia */}
+            {geoFilterMode === 'provincia' && (
+              <div className="mt-3">
+                <div className="mb-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllProvincias}
+                    className="text-xs text-primary underline"
+                  >
+                    Todas
+                  </button>
+                  {selectedProvincias.size > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedProvincias(new Set())}
+                      className="text-xs text-muted-foreground underline"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+                {/* Agrupadas por CCAA */}
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                  {CCAA.map((c) => {
+                    const provsInCcaa = PROVINCIAS.filter((p) => p.ccaa === c.code);
+                    if (provsInCcaa.length === 0) return null;
+                    return (
+                      <div key={c.code}>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">
+                            {c.label}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedProvincias((prev) => {
+                                const next = new Set(prev);
+                                const allSelected = provsInCcaa.every((p) => prev.has(p.code));
+                                if (allSelected) {
+                                  provsInCcaa.forEach((p) => next.delete(p.code));
+                                } else {
+                                  provsInCcaa.forEach((p) => next.add(p.code));
+                                }
+                                return next;
+                              })
+                            }
+                            className="text-[10px] text-primary/80 underline"
+                          >
+                            {provsInCcaa.every((p) => selectedProvincias.has(p.code))
+                              ? 'Quitar todas'
+                              : 'Seleccionar todas'}
+                          </button>
+                        </div>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          {provsInCcaa.map((p) => {
+                            const active = selectedProvincias.has(p.code);
+                            return (
+                              <button
+                                key={p.code}
+                                type="button"
+                                onClick={() => toggleProvincia(p.code)}
+                                className={[
+                                  'rounded-full border px-2.5 py-1 text-[11px] font-medium transition',
+                                  active
+                                    ? 'border-primary bg-primary text-primary-foreground'
+                                    : 'border-border bg-background hover:border-primary/40',
+                                ].join(' ')}
+                              >
+                                {p.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  {selectedProvincias.size === 0
+                    ? 'Sin selección → todas las provincias.'
+                    : `${selectedProvincias.size} provincia${selectedProvincias.size === 1 ? '' : 's'} seleccionada${selectedProvincias.size === 1 ? '' : 's'}.`}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="rounded-lg border border-border bg-background p-4 md:col-span-2">
