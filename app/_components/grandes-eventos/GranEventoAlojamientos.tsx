@@ -36,6 +36,26 @@ export default function GranEventoAlojamientos({
       .map(([fecha, hoteles]) => ({ fecha, hoteles }));
   }, [alojamientos]);
 
+  /**
+   * Para auto-linking de notas: lista de todos los hoteles del evento con
+   * coordenadas (orden por longitud de nombre desc para evitar que
+   * "Convento" eclipse a "Hotel Convento San Francisco").
+   */
+  const hotelesEnlazables = useMemo(
+    () =>
+      alojamientos
+        .filter((h) => (h.lat != null && h.lng != null) || h.nombre)
+        .map((h) => ({
+          id: h.id,
+          nombre: h.nombre,
+          lat: h.lat,
+          lng: h.lng,
+          ciudad: h.ciudad,
+        }))
+        .sort((a, b) => b.nombre.length - a.nombre.length),
+    [alojamientos],
+  );
+
   const q = query.trim().toLowerCase();
   const matches = (text: string) => text.toLowerCase().includes(q);
 
@@ -92,12 +112,21 @@ export default function GranEventoAlojamientos({
               matches={matches}
               locale={locale}
               t={t}
+              hotelesEnlazables={hotelesEnlazables}
             />
           ))}
         </div>
       </div>
     </section>
   );
+}
+
+interface HotelEnlazable {
+  id: number;
+  nombre: string;
+  lat: number | null;
+  lng: number | null;
+  ciudad: string | null;
 }
 
 function NocheGroup({
@@ -109,6 +138,7 @@ function NocheGroup({
   matches,
   locale,
   t,
+  hotelesEnlazables,
 }: {
   indexNoche: number;
   fechaCheckIn: string;
@@ -118,6 +148,7 @@ function NocheGroup({
   matches: (s: string) => boolean;
   locale: string;
   t: (k: string, params?: Record<string, string | number>) => string;
+  hotelesEnlazables: HotelEnlazable[];
 }) {
   const dateRangeLabel = formatDateRange(fechaCheckIn, fechaCheckOut, locale);
   const noches = countNights(fechaCheckIn, fechaCheckOut);
@@ -134,7 +165,15 @@ function NocheGroup({
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {hoteles.map((h) => (
-          <HotelCard key={h.id} hotel={h} query={query} matches={matches} locale={locale} t={t} />
+          <HotelCard
+            key={h.id}
+            hotel={h}
+            query={query}
+            matches={matches}
+            locale={locale}
+            t={t}
+            hotelesEnlazables={hotelesEnlazables}
+          />
         ))}
       </div>
     </div>
@@ -147,12 +186,14 @@ function HotelCard({
   matches,
   locale,
   t,
+  hotelesEnlazables,
 }: {
   hotel: GranEventoAlojamiento;
   query: string;
   matches: (s: string) => boolean;
   locale: string;
   t: (k: string, params?: Record<string, string | number>) => string;
+  hotelesEnlazables: HotelEnlazable[];
 }) {
   const notas = pickI18n(hotel.notas_es, hotel.notas_i18n, locale);
   const asignacionesAgrupadas = groupByDelegacion(hotel.asignaciones);
@@ -231,7 +272,9 @@ function HotelCard({
         {notas ? (
           <div className="mt-3 flex items-start gap-2 rounded-xl border-l-4 border-amber-500 bg-amber-50 px-3 py-2.5 shadow-sm">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-700" />
-            <p className="text-sm font-semibold leading-snug text-amber-900">{notas}</p>
+            <p className="text-sm font-semibold leading-snug text-amber-900">
+              <NotaConEnlaces texto={notas} hotelActualId={hotel.id} hoteles={hotelesEnlazables} />
+            </p>
           </div>
         ) : null}
 
@@ -293,6 +336,90 @@ function HotelCard({
       </div>
     </div>
   );
+}
+
+/**
+ * Renderiza el texto de una nota detectando menciones a otros hoteles del
+ * mismo evento y convirtiéndolas en enlaces a Google Maps con sus
+ * coordenadas. Útil para notas tipo "se desayuna en el Hotel X".
+ *
+ * - Funciona en cualquier idioma (los nombres propios no se traducen).
+ * - No se enlaza el propio hotel (no tiene sentido).
+ * - Hace match case-insensitive con el `nombre` exacto del hotel; si no
+ *   se encuentra, intenta un match parcial removiendo la palabra "Hotel"
+ *   delante o detrás (variaciones de redacción habituales).
+ */
+function NotaConEnlaces({
+  texto,
+  hotelActualId,
+  hoteles,
+}: {
+  texto: string;
+  hotelActualId: number;
+  hoteles: HotelEnlazable[];
+}) {
+  const candidatos = hoteles.filter((h) => h.id !== hotelActualId);
+  if (candidatos.length === 0) return <>{texto}</>;
+
+  const matches: Array<{ start: number; end: number; hotel: HotelEnlazable }> = [];
+  for (const h of candidatos) {
+    const variantes = uniq([
+      h.nombre,
+      h.nombre.replace(/^Hotel\s+/i, ''),
+      `Hotel ${h.nombre.replace(/^Hotel\s+/i, '')}`,
+    ]);
+    for (const v of variantes) {
+      const re = new RegExp(escapeRegex(v), 'gi');
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(texto)) !== null) {
+        const start = m.index;
+        const end = m.index + m[0].length;
+        if (matches.some((x) => start < x.end && end > x.start)) continue;
+        matches.push({ start, end, hotel: h });
+      }
+    }
+  }
+
+  if (matches.length === 0) return <>{texto}</>;
+
+  matches.sort((a, b) => a.start - b.start);
+
+  const parts: React.ReactNode[] = [];
+  let cursor = 0;
+  for (let i = 0; i < matches.length; i++) {
+    const m = matches[i];
+    if (m.start > cursor) parts.push(texto.slice(cursor, m.start));
+    const label = texto.slice(m.start, m.end);
+    const url =
+      m.hotel.lat != null && m.hotel.lng != null
+        ? `https://www.google.com/maps/search/?api=1&query=${m.hotel.lat},${m.hotel.lng}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            `${m.hotel.nombre} ${m.hotel.ciudad ?? ''}`.trim(),
+          )}`;
+    parts.push(
+      <a
+        key={`l-${i}-${m.start}`}
+        href={url}
+        target="_blank"
+        rel="noopener"
+        className="inline-flex items-baseline gap-0.5 underline decoration-amber-600 decoration-2 underline-offset-2 hover:text-amber-700"
+      >
+        <MapPin className="h-3 w-3 self-center text-amber-700" />
+        {label}
+      </a>,
+    );
+    cursor = m.end;
+  }
+  if (cursor < texto.length) parts.push(texto.slice(cursor));
+  return <>{parts}</>;
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function uniq<T>(arr: T[]): T[] {
+  return Array.from(new Set(arr));
 }
 
 function groupByDelegacion(
