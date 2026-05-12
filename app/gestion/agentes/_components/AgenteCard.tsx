@@ -41,13 +41,18 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
     // Para los agentes de pre-carga IA permitimos elegir un pueblo concreto
     // (modo piloto), aumentar el tope de pueblos por tanda, o ejecutar el
     // barrido por defecto. El backend acepta:
-    //   - input.puebloId   → número, modo piloto sobre ese pueblo
-    //   - input.maxPueblos → número, tope para barrido (default 10)
-    //   - input.dryRun     → boolean, no persiste en BD
+    //   - input.puebloId      → número, modo piloto sobre ese pueblo
+    //   - input.maxPueblos    → número, tope para barrido (default 10)
+    //   - input.dryRun        → boolean, no persiste en BD
+    //   - input.autoChain     → boolean, encadenar tandas hasta agotar
+    //                           pueblos pendientes (solo agente naturales)
     let input: Record<string, unknown> = {};
     const esPrecarga =
       agente.nombre === 'precarga-recursos-turisticos' ||
       agente.nombre === 'precarga-recursos-naturales';
+    // Solo el agente de naturales soporta auto-chain de momento.
+    const soportaAutoChain = agente.nombre === 'precarga-recursos-naturales';
+    let autoChainPedido = false;
     if (esPrecarga) {
       const respuesta = window.prompt(
         `Ejecutar "${agente.titulo}":\n\n` +
@@ -55,7 +60,11 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
           '  • Vacío → barrido por defecto (5–10 pueblos).\n' +
           '  • "max N" → procesar hasta N pueblos en una tanda (ej. "max 20").\n' +
           '  • Un número → PILOTO en ese pueblo (ej. 37 = Aínsa).\n' +
-          '  • Añade "dry" para no escribir en BD (ej. "max 5 dry" o "37 dry").\n\n' +
+          '  • Añade "dry" para no escribir en BD (ej. "max 5 dry" o "37 dry").\n' +
+          (soportaAutoChain
+            ? '  • Añade "noauto" para NO encadenar tandas automáticamente\n' +
+              '    (por defecto el barrido encadena hasta agotar pueblos pendientes).\n\n'
+            : '\n') +
           'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
           'el agente seguirá trabajando aunque cierres esta pestaña.\n' +
           'Comprueba el progreso en Bandeja / Histórico cuando quieras.',
@@ -63,11 +72,14 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
       );
       if (respuesta === null) return; // cancel
       const tokens = respuesta.trim().split(/\s+/).filter(Boolean);
-      // Parseo tolerante: detecta "max N", número suelto, "dry".
+      let noAuto = false;
+      // Parseo tolerante: detecta "max N", número suelto, "dry", "noauto".
       for (let i = 0; i < tokens.length; i++) {
         const tok = tokens[i].toLowerCase();
         if (tok === 'dry') {
           input.dryRun = true;
+        } else if (tok === 'noauto') {
+          noAuto = true;
         } else if (tok === 'max' && i + 1 < tokens.length) {
           const n = Number(tokens[i + 1]);
           if (Number.isFinite(n) && n > 0) input.maxPueblos = n;
@@ -79,6 +91,22 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
           }
         }
       }
+      // Activar auto-chain por defecto SOLO si:
+      //   - el agente lo soporta,
+      //   - es barrido (no piloto: no se pasó puebloId),
+      //   - no es dryRun (encadenar un dryRun no avanzaría nada),
+      //   - el usuario no pidió "noauto" expresamente.
+      if (
+        soportaAutoChain &&
+        !noAuto &&
+        input.puebloId === undefined &&
+        input.dryRun !== true
+      ) {
+        input.autoChain = true;
+        autoChainPedido = true;
+      } else if (soportaAutoChain) {
+        input.autoChain = false;
+      }
     } else if (
       !confirm(`¿Ejecutar "${agente.titulo}" ahora? Llamará a la IA y consumirá tokens.`)
     ) {
@@ -89,6 +117,29 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
     setInfo(null);
     setBusy('run');
     try {
+      // Si pedimos auto-chain pero el agente está pausado, lo activamos
+      // primero: el runner respeta `config.activo` antes de encadenar
+      // la siguiente tanda, así que sin activar la cadena moriría tras
+      // la primera. El admin podrá luego pulsar "Pausar" para frenar
+      // el barrido cuando quiera.
+      if (autoChainPedido && !agente.activo) {
+        const resAct = await fetch(
+          `/api/admin/agentes/${agente.nombre}/config`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activo: true }),
+          },
+        );
+        if (!resAct.ok) {
+          const body = await resAct.json().catch(() => ({}));
+          throw new Error(
+            `No se pudo activar el agente para encadenar tandas: ${
+              body?.error || body?.message || `HTTP ${resAct.status}`
+            }`,
+          );
+        }
+      }
       const res = await fetch(`/api/admin/agentes/${agente.nombre}/ejecutar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,6 +161,10 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
           const segundos = Math.round((body.enCursoDesdeMs || 0) / 1000);
           setInfo(
             `Ya hay una ejecución en curso (#${body.ejecucionId}, lleva ${segundos}s). Espera a que termine antes de lanzar otra. El gasto y los recursos creados aparecerán cuando se cierre la fila.`,
+          );
+        } else if (autoChainPedido) {
+          setInfo(
+            `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará nuevas tandas (≈10 pueblos / ~80 s cada una) hasta agotar los pueblos pendientes — son ~28 tandas para ~280 pueblos, total ≈ 38 minutos hasta llegar a Zuheros. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`,
           );
         } else {
           setInfo(
