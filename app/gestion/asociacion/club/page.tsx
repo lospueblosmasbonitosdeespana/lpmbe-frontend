@@ -69,21 +69,32 @@ const QUICK_LINKS: QuickLink[] = [
   },
   {
     href: '/gestion/asociacion/club/recursos-asociacion',
-    title: 'Recursos asociación',
-    description: 'Beneficios globales para socios',
+    title: 'Recursos Naturales Asociación',
+    description: 'Cascadas, miradores, parajes · ámbito nacional · gestionados por la asociación',
     tone: 'amber',
     icon: (
       <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <path d="M20 12V8a2 2 0 00-2-2h-2.5L13 3h-2L8.5 6H6a2 2 0 00-2 2v4" />
-        <path d="M4 12v6a2 2 0 002 2h12a2 2 0 002-2v-6" />
-        <path d="M12 11v8M9 14l3-3 3 3" />
+        <path d="M3 20l5-9 4 6 3-4 6 7z" />
+        <path d="M9 11l1.5-2L12 11" />
+      </svg>
+    ),
+  },
+  {
+    href: '/gestion/asociacion/club/rrtt-asociacion',
+    title: 'RRTT Asociación',
+    description: 'Museos, iglesias, castillos, monasterios · ámbito nacional · gestionados por la asociación',
+    tone: 'amber',
+    icon: (
+      <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M3 21h18M5 21V10l7-5 7 5v11" />
+        <path d="M9 21v-7h6v7M10 9h4" />
       </svg>
     ),
   },
   {
     href: '/gestion/asociacion/club/recursos-rurales',
     title: 'Recursos rurales/naturales',
-    description: 'Cascadas, miradores, parajes · validados por GPS',
+    description: 'Cascadas, miradores, parajes · pueblos y asociación · validados por GPS',
     tone: 'emerald',
     icon: (
       <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
