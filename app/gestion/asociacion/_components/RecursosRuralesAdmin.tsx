@@ -13,6 +13,8 @@ import {
   AlertTriangle,
   Sparkles,
   Lock,
+  Search,
+  ChevronDown,
 } from 'lucide-react';
 import Link from 'next/link';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
@@ -268,11 +270,115 @@ export default function RecursosRuralesAdmin() {
   }
 
   const itemsAsociacion = useMemo(() => items.filter((r) => r.scope === 'ASOCIACION'), [items]);
-  const itemsPueblos = useMemo(() => items.filter((r) => r.scope === 'PUEBLO'), [items]);
+
+  // Agrupación jerárquica: CCAA → Provincia → Pueblo
+  const grouped = useMemo(() => {
+    type PuebloGroup = { nombre: string; slug: string | null; items: RecursoRural[] };
+    type ProvGroup = { pueblos: Map<string, PuebloGroup> };
+    type CcaaGroup = { provincias: Map<string, ProvGroup> };
+
+    const ccaaMap = new Map<string, CcaaGroup>();
+
+    for (const r of items) {
+      const ccaa = r.comunidad?.trim() || 'Sin comunidad';
+      const prov = r.provincia?.trim() || 'Sin provincia';
+      const puebloKey =
+        r.scope === 'ASOCIACION'
+          ? '__ASOCIACION__'
+          : String(r.puebloId ?? r.puebloNombre ?? '__NONE__');
+      const puebloNombre = r.scope === 'ASOCIACION' ? '🏛 Asociación' : (r.puebloNombre ?? 'Sin pueblo');
+
+      if (!ccaaMap.has(ccaa)) ccaaMap.set(ccaa, { provincias: new Map() });
+      const cg = ccaaMap.get(ccaa)!;
+      if (!cg.provincias.has(prov)) cg.provincias.set(prov, { pueblos: new Map() });
+      const pg = cg.provincias.get(prov)!;
+      if (!pg.pueblos.has(puebloKey))
+        pg.pueblos.set(puebloKey, { nombre: puebloNombre, slug: r.puebloSlug, items: [] });
+      pg.pueblos.get(puebloKey)!.items.push(r);
+    }
+
+    // Ordenar: CCAA → Provincia → Pueblo
+    return Array.from(ccaaMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b, 'es'))
+      .map(([ccaa, cg]) => ({
+        ccaa,
+        total: Array.from(cg.provincias.values()).reduce(
+          (s, p) => s + Array.from(p.pueblos.values()).reduce((ss, pu) => ss + pu.items.length, 0),
+          0,
+        ),
+        activos: Array.from(cg.provincias.values()).reduce(
+          (s, p) =>
+            s +
+            Array.from(p.pueblos.values()).reduce(
+              (ss, pu) => ss + pu.items.filter((i) => i.activo).length,
+              0,
+            ),
+          0,
+        ),
+        provincias: Array.from(cg.provincias.entries())
+          .sort(([a], [b]) => a.localeCompare(b, 'es'))
+          .map(([prov, pg]) => ({
+            prov,
+            total: Array.from(pg.pueblos.values()).reduce((s, pu) => s + pu.items.length, 0),
+            activos: Array.from(pg.pueblos.values()).reduce(
+              (s, pu) => s + pu.items.filter((i) => i.activo).length,
+              0,
+            ),
+            pueblos: Array.from(pg.pueblos.entries())
+              .sort(([, a], [, b]) => a.nombre.localeCompare(b.nombre, 'es'))
+              .map(([, g]) => g),
+          })),
+      }));
+  }, [items]);
+
+  const [searchText, setSearchText] = useState('');
+  const [openCcaas, setOpenCcaas] = useState<Set<string>>(new Set());
+  const [openProvs, setOpenProvs] = useState<Set<string>>(new Set());
+
+  const toggleCcaa = (ccaa: string) =>
+    setOpenCcaas((prev) => {
+      const n = new Set(prev);
+      n.has(ccaa) ? n.delete(ccaa) : n.add(ccaa);
+      return n;
+    });
+
+  const toggleProv = (key: string) =>
+    setOpenProvs((prev) => {
+      const n = new Set(prev);
+      n.has(key) ? n.delete(key) : n.add(key);
+      return n;
+    });
+
+  const filteredGrouped = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return grouped;
+    return grouped
+      .map((cg) => ({
+        ...cg,
+        provincias: cg.provincias
+          .map((pg) => ({
+            ...pg,
+            pueblos: pg.pueblos
+              .map((pu) => ({
+                ...pu,
+                items: pu.items.filter(
+                  (r) =>
+                    r.nombre.toLowerCase().includes(q) ||
+                    (r.tipo || '').toLowerCase().includes(q) ||
+                    (r.descripcion || '').toLowerCase().includes(q) ||
+                    pu.nombre.toLowerCase().includes(q),
+                ),
+              }))
+              .filter((pu) => pu.items.length > 0),
+          }))
+          .filter((pg) => pg.pueblos.length > 0),
+      }))
+      .filter((cg) => cg.provincias.length > 0);
+  }, [grouped, searchText]);
 
   const pueblosAgrupados = useMemo(() => {
     const map = new Map<number, { nombre: string; slug: string | null; items: RecursoRural[] }>();
-    for (const r of itemsPueblos) {
+    for (const r of items.filter((r) => r.scope === 'PUEBLO')) {
       const pid = r.puebloId ?? 0;
       if (!map.has(pid)) {
         map.set(pid, { nombre: r.puebloNombre ?? 'Sin pueblo', slug: r.puebloSlug, items: [] });
@@ -282,7 +388,7 @@ export default function RecursosRuralesAdmin() {
     return Array.from(map.entries())
       .map(([id, data]) => ({ id, ...data }))
       .sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }, [itemsPueblos]);
+  }, [items]);
 
   const mapCenter: [number, number] = useMemo(() => {
     if (lat != null && lng != null) return [lat, lng];
@@ -552,135 +658,206 @@ export default function RecursosRuralesAdmin() {
         </div>
       ) : (
         <>
-          <section className="mb-8">
-            <h2 className="mb-2 text-base font-semibold text-foreground">
-              Recursos de la asociación{' '}
-              <span className="ml-1 text-xs font-normal text-muted-foreground">
-                ({itemsAsociacion.length})
-              </span>
-            </h2>
-            <p className="mb-3 text-xs text-muted-foreground">
-              Recursos sin pueblo asignado, fuera del mapa de la red. Solo
-              admins pueden crearlos y editarlos.
-            </p>
-            {itemsAsociacion.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">
-                Aún no hay recursos de la asociación. Pulsa{' '}
-                <em>"Añadir recurso de la asociación"</em>.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {itemsAsociacion.map((r) => (
-                  <CardRecurso
-                    key={r.id}
-                    r={r}
-                    puntosNatural={puntosNatural}
-                    onEdit={() => startEdit(r)}
-                    onDelete={() => eliminar(r)}
-                    onTogglePublicar={() => togglePublicar(r)}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
+          {/* Resumen global */}
+          <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
+            <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
+              {items.length} recursos en total
+            </span>
+            <span className="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">
+              {items.filter((r) => r.activo).length} activos
+            </span>
+            <span className="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-700">
+              {items.filter((r) => !r.activo).length} inactivos
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {grouped.length} CCAA · {grouped.reduce((s, c) => s + c.provincias.length, 0)} provincias
+            </span>
+          </div>
 
-          <section>
-            <h2 className="mb-2 text-base font-semibold text-foreground">
-              Recursos rurales por pueblo{' '}
-              <span className="ml-1 text-xs font-normal text-muted-foreground">
-                ({itemsPueblos.length} recursos en {pueblosAgrupados.length} pueblos)
-              </span>
-            </h2>
-            <p className="mb-3 text-xs text-muted-foreground">
-              Se crean por IA (activos directamente) o por los alcaldes. Aquí los
-              admins los ven agrupados por pueblo para revisarlos o desactivarlos.
-            </p>
-            {pueblosAgrupados.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">
-                Aún no hay recursos rurales en ningún pueblo.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {pueblosAgrupados.map((grupo) => (
-                  <PuebloGrupo
-                    key={grupo.id}
-                    grupo={grupo}
-                    puntosNatural={puntosNatural}
-                    onEdit={startEdit}
-                    onDelete={eliminar}
-                  />
-                ))}
-              </div>
+          {/* Buscador */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar por nombre, tipo, descripción o pueblo…"
+              className="w-full rounded-xl border border-border bg-white py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            />
+            {searchText && (
+              <button
+                type="button"
+                onClick={() => setSearchText('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
             )}
-          </section>
+          </div>
+
+          {/* Acciones de expansión */}
+          <div className="mb-3 flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setOpenCcaas(new Set(grouped.map((c) => c.ccaa)));
+                setOpenProvs(
+                  new Set(grouped.flatMap((c) => c.provincias.map((p) => `${c.ccaa}|${p.prov}`))),
+                );
+              }}
+              className="text-xs text-primary underline"
+            >
+              Expandir todo
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOpenCcaas(new Set());
+                setOpenProvs(new Set());
+              }}
+              className="text-xs text-muted-foreground underline"
+            >
+              Colapsar todo
+            </button>
+          </div>
+
+          {filteredGrouped.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-muted/20 p-8 text-center text-sm text-muted-foreground">
+              {searchText ? `Sin resultados para "${searchText}"` : 'Aún no hay recursos rurales.'}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredGrouped.map((cg) => {
+                const ccaaOpen = openCcaas.has(cg.ccaa) || searchText.length > 0;
+                return (
+                  <div
+                    key={cg.ccaa}
+                    className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm"
+                  >
+                    {/* Cabecera CCAA */}
+                    <button
+                      type="button"
+                      onClick={() => toggleCcaa(cg.ccaa)}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-emerald-50/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground">{cg.ccaa}</span>
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                          {cg.activos} activo{cg.activos !== 1 ? 's' : ''}
+                        </span>
+                        {cg.total - cg.activos > 0 && (
+                          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+                            {cg.total - cg.activos} inactivo{cg.total - cg.activos !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                        <span className="text-[11px] text-muted-foreground">
+                          · {cg.provincias.length} prov.
+                        </span>
+                      </div>
+                      <ChevronDown
+                        className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${ccaaOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    {ccaaOpen && (
+                      <div className="border-t border-border bg-muted/5 px-3 pb-3 pt-2 space-y-2">
+                        {cg.provincias.map((pg) => {
+                          const provKey = `${cg.ccaa}|${pg.prov}`;
+                          const provOpen = openProvs.has(provKey) || searchText.length > 0;
+                          return (
+                            <div
+                              key={pg.prov}
+                              className="overflow-hidden rounded-xl border border-border bg-white"
+                            >
+                              {/* Cabecera Provincia */}
+                              <button
+                                type="button"
+                                onClick={() => toggleProv(provKey)}
+                                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                                  <span className="text-sm font-semibold text-foreground">
+                                    {pg.prov}
+                                  </span>
+                                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                    {pg.activos}✓
+                                  </span>
+                                  {pg.total - pg.activos > 0 && (
+                                    <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                                      {pg.total - pg.activos}✗
+                                    </span>
+                                  )}
+                                  <span className="text-[10px] text-muted-foreground">
+                                    · {pg.pueblos.length} pueblo{pg.pueblos.length !== 1 ? 's' : ''}
+                                  </span>
+                                </div>
+                                <ChevronDown
+                                  className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${provOpen ? 'rotate-180' : ''}`}
+                                />
+                              </button>
+
+                              {provOpen && (
+                                <div className="border-t border-border bg-muted/5 p-2 space-y-3">
+                                  {pg.pueblos.map((pueblo) => (
+                                    <div key={pueblo.nombre}>
+                                      {/* Cabecera pueblo (si tiene slug, enlazable) */}
+                                      <div className="mb-1.5 flex items-center gap-2 px-1">
+                                        <Mountain className="h-3.5 w-3.5 text-emerald-600" />
+                                        {pueblo.slug ? (
+                                          <a
+                                            href={`/gestion/alcalde/${pueblo.slug}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs font-bold text-emerald-700 hover:underline"
+                                          >
+                                            {pueblo.nombre}
+                                          </a>
+                                        ) : (
+                                          <span className="text-xs font-bold text-foreground">
+                                            {pueblo.nombre}
+                                          </span>
+                                        )}
+                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+                                          {pueblo.items.length} recurso{pueblo.items.length !== 1 ? 's' : ''}
+                                        </span>
+                                      </div>
+                                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        {pueblo.items.map((r) => (
+                                          <CardRecurso
+                                            key={r.id}
+                                            r={r}
+                                            puntosNatural={puntosNatural}
+                                            onEdit={() => startEdit(r)}
+                                            onDelete={() => eliminar(r)}
+                                            onTogglePublicar={
+                                              r.scope === 'ASOCIACION'
+                                                ? () => togglePublicar(r)
+                                                : undefined
+                                            }
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
   );
 }
 
-function PuebloGrupo({
-  grupo,
-  puntosNatural,
-  onEdit,
-  onDelete,
-}: {
-  grupo: { id: number; nombre: string; slug: string | null; items: RecursoRural[] };
-  puntosNatural: number | null;
-  onEdit: (r: RecursoRural) => void;
-  onDelete: (r: RecursoRural) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const activos = grupo.items.filter((r) => r.activo).length;
-  const inactivos = grupo.items.length - activos;
-
-  return (
-    <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/30"
-      >
-        <div className="flex items-center gap-2">
-          <Mountain className="h-4 w-4 text-emerald-600" />
-          <span className="font-semibold text-foreground">{grupo.nombre}</span>
-          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
-            {activos} activo{activos !== 1 ? 's' : ''}
-          </span>
-          {inactivos > 0 && (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-              {inactivos} inactivo{inactivos !== 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-        <svg
-          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {open && (
-        <div className="border-t border-border bg-muted/10 p-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {grupo.items.map((r) => (
-              <CardRecurso
-                key={r.id}
-                r={r}
-                puntosNatural={puntosNatural}
-                onEdit={() => onEdit(r)}
-                onDelete={() => onDelete(r)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function CardRecurso({
   r,
