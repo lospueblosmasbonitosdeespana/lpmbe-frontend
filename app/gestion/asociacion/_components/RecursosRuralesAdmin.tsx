@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Mountain,
   MapPin,
@@ -67,6 +67,11 @@ export default function RecursosRuralesAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [puntosNatural, setPuntosNatural] = useState<number | null>(null);
+  // Ref al panel del formulario para hacer scroll automático cuando
+  // el admin pulsa "Editar" en un recurso situado al final de la
+  // página: sin esto el form aparece arriba (fuera de la vista) y
+  // parece que el botón no hace nada.
+  const formRef = useRef<HTMLDivElement | null>(null);
 
   // Form state — siempre asociación (puebloId null) desde aquí
   const [nombre, setNombre] = useState('');
@@ -143,6 +148,11 @@ export default function RecursosRuralesAdmin() {
     setProvincia(r.provincia ?? '');
     setComunidad(r.comunidad ?? '');
     setShowForm(true);
+    // Espera al siguiente tick para que React monte el panel antes
+    // de scrollear. Sin requestAnimationFrame el ref aún es null.
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   async function handleUploadFoto(file: File) {
@@ -311,7 +321,10 @@ export default function RecursosRuralesAdmin() {
       </div>
 
       {showForm && (
-        <div className="mb-6 rounded-2xl border-2 border-dashed border-emerald-300 bg-white p-4 sm:p-5">
+        <div
+          ref={formRef}
+          className="mb-6 rounded-2xl border-2 border-dashed border-emerald-300 bg-white p-4 sm:p-5"
+        >
           <h3 className="mb-3 text-base font-semibold text-foreground">
             {editId ? 'Editar recurso rural/natural' : 'Nuevo recurso de la asociación (fuera de pueblos)'}
           </h3>
