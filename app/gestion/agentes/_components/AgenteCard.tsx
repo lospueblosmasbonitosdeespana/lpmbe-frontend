@@ -47,33 +47,55 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
     //   - input.autoChain     → boolean, encadenar tandas hasta agotar
     //                           pueblos pendientes (solo agente naturales)
     let input: Record<string, unknown> = {};
-    const esPrecarga =
+    const esPrecargaPueblos =
       agente.nombre === 'precarga-recursos-turisticos' ||
       agente.nombre === 'precarga-recursos-naturales';
-    // Solo el agente de naturales soporta auto-chain de momento.
-    const soportaAutoChain = agente.nombre === 'precarga-recursos-naturales';
+    const esPrecargaProvincias =
+      agente.nombre === 'precarga-naturales-asociacion';
+    const esPrecarga = esPrecargaPueblos || esPrecargaProvincias;
+    // Soportan auto-chain: el de naturales por pueblos y el nuevo nacional.
+    const soportaAutoChain =
+      agente.nombre === 'precarga-recursos-naturales' || esPrecargaProvincias;
     let autoChainPedido = false;
     if (esPrecarga) {
-      const respuesta = window.prompt(
+      const promptTextoPueblos =
         `Ejecutar "${agente.titulo}":\n\n` +
-          'OPCIONES:\n' +
-          '  • Vacío → barrido por defecto (5–10 pueblos).\n' +
-          '  • "max N" → procesar hasta N pueblos en una tanda (ej. "max 20").\n' +
-          '  • Un número → PILOTO en ese pueblo (ej. 37 = Aínsa).\n' +
-          '  • Añade "dry" para no escribir en BD (ej. "max 5 dry" o "37 dry").\n' +
-          (soportaAutoChain
-            ? '  • Añade "noauto" para NO encadenar tandas automáticamente\n' +
-              '    (por defecto el barrido encadena hasta agotar pueblos pendientes).\n\n'
-            : '\n') +
-          'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
-          'el agente seguirá trabajando aunque cierres esta pestaña.\n' +
-          'Comprueba el progreso en Bandeja / Histórico cuando quieras.',
+        'OPCIONES:\n' +
+        '  • Vacío → barrido por defecto (5–10 pueblos).\n' +
+        '  • "max N" → procesar hasta N pueblos en una tanda (ej. "max 20").\n' +
+        '  • Un número → PILOTO en ese pueblo (ej. 37 = Aínsa).\n' +
+        '  • Añade "dry" para no escribir en BD (ej. "max 5 dry" o "37 dry").\n' +
+        (soportaAutoChain
+          ? '  • Añade "noauto" para NO encadenar tandas automáticamente\n' +
+            '    (por defecto el barrido encadena hasta agotar pueblos pendientes).\n\n'
+          : '\n') +
+        'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
+        'el agente seguirá trabajando aunque cierres esta pestaña.\n' +
+        'Comprueba el progreso en Bandeja / Histórico cuando quieras.';
+      const promptTextoProvincias =
+        `Ejecutar "${agente.titulo}":\n\n` +
+        'OPCIONES:\n' +
+        '  • Vacío → barrido por defecto (3 provincias por tanda; auto-chain hasta 50).\n' +
+        '  • "max N" → N provincias por tanda (ej. "max 5").\n' +
+        '  • Un slug de provincia → PILOTO en esa provincia\n' +
+        '    (ej. "huesca", "almeria", "a-coruna", "guipuzcoa", "illes-balears").\n' +
+        '  • Añade "dry" para no escribir en BD.\n' +
+        '  • Añade "noauto" para NO encadenar tandas automáticamente.\n\n' +
+        'Cada candidato se VERIFICA en Google Places (≥4,5★ con ≥5 reseñas)\n' +
+        'antes de persistir. Solo "crème de la crème". El barrido completo\n' +
+        '(≈50 provincias × 3 por tanda × ~90 s) tarda ~25 minutos.\n\n' +
+        'La ejecución se lanza en SEGUNDO PLANO. Tras pulsar Aceptar\n' +
+        'el agente seguirá trabajando aunque cierres esta pestaña.';
+      const respuesta = window.prompt(
+        esPrecargaProvincias ? promptTextoProvincias : promptTextoPueblos,
         '',
       );
       if (respuesta === null) return; // cancel
       const tokens = respuesta.trim().split(/\s+/).filter(Boolean);
       let noAuto = false;
-      // Parseo tolerante: detecta "max N", número suelto, "dry", "noauto".
+      let pilotoPedido = false;
+      // Parseo tolerante: detecta "max N", "dry", "noauto", número suelto
+      // (puebloId), slug suelto (provinciaSlug).
       for (let i = 0; i < tokens.length; i++) {
         const tok = tokens[i].toLowerCase();
         if (tok === 'dry') {
@@ -82,24 +104,40 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
           noAuto = true;
         } else if (tok === 'max' && i + 1 < tokens.length) {
           const n = Number(tokens[i + 1]);
-          if (Number.isFinite(n) && n > 0) input.maxPueblos = n;
+          if (Number.isFinite(n) && n > 0) {
+            if (esPrecargaProvincias) {
+              input.maxProvincias = n;
+            } else {
+              input.maxPueblos = n;
+            }
+          }
           i++; // saltamos el siguiente token (el número)
         } else {
           const n = Number(tok);
-          if (Number.isFinite(n) && n > 0 && input.puebloId === undefined) {
-            input.puebloId = n;
+          if (Number.isFinite(n) && n > 0 && esPrecargaPueblos) {
+            if (input.puebloId === undefined) {
+              input.puebloId = n;
+              pilotoPedido = true;
+            }
+          } else if (
+            esPrecargaProvincias &&
+            input.provinciaSlug === undefined &&
+            /^[a-z][a-z0-9-]+$/.test(tok)
+          ) {
+            input.provinciaSlug = tok;
+            pilotoPedido = true;
           }
         }
       }
       // Activar auto-chain por defecto SOLO si:
       //   - el agente lo soporta,
-      //   - es barrido (no piloto: no se pasó puebloId),
+      //   - es barrido (no piloto),
       //   - no es dryRun (encadenar un dryRun no avanzaría nada),
       //   - el usuario no pidió "noauto" expresamente.
       if (
         soportaAutoChain &&
         !noAuto &&
-        input.puebloId === undefined &&
+        !pilotoPedido &&
         input.dryRun !== true
       ) {
         input.autoChain = true;
@@ -163,8 +201,11 @@ export function AgenteCard({ agente, onConfig, onChange }: Props) {
             `Ya hay una ejecución en curso (#${body.ejecucionId}, lleva ${segundos}s). Espera a que termine antes de lanzar otra. El gasto y los recursos creados aparecerán cuando se cierre la fila.`,
           );
         } else if (autoChainPedido) {
+          const esProvincial = agente.nombre === 'precarga-naturales-asociacion';
           setInfo(
-            `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará nuevas tandas (≈10 pueblos / ~80 s cada una) hasta agotar los pueblos pendientes — son ~28 tandas para ~280 pueblos, total ≈ 38 minutos hasta llegar a Zuheros. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`,
+            esProvincial
+              ? `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará tandas (≈3 provincias / ~90–120 s cada una) hasta procesar las 50 provincias — total ≈ 25–30 minutos. Cada candidato se verifica en Google Places (≥4,5★) antes de persistir. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`
+              : `Lanzado en segundo plano (ejecución #${body.ejecucionId}) en MODO AUTOMÁTICO: el agente encadenará nuevas tandas (≈10 pueblos / ~80 s cada una) hasta agotar los pueblos pendientes — son ~28 tandas para ~280 pueblos, total ≈ 38 minutos hasta llegar a Zuheros. Cada tanda crea una fila en el histórico. Para detenerlo: pulsa "Pausar" en el agente o pasa "noauto" la próxima vez.`,
           );
         } else {
           setInfo(
