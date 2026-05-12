@@ -1,7 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Search, Landmark } from 'lucide-react';
+import Link from 'next/link';
+import {
+  ChevronDown,
+  ChevronRight,
+  MapPin,
+  Search,
+  Landmark,
+  Phone,
+  Mail,
+  Globe,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 
 type Recurso = {
   id: number;
@@ -21,6 +33,14 @@ type Recurso = {
   precargadoPorIa: boolean | null;
   imprescindible?: boolean;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
+  telefono?: string | null;
+  email?: string | null;
+  web?: string | null;
+  precioCents?: number | null;
+  descuentoPorcentaje?: number | null;
+  lat?: number | null;
+  lng?: number | null;
+  horarios?: string | null;
 };
 
 const SIN_CCAA = 'Sin comunidad asignada';
@@ -30,10 +50,12 @@ export default function RecursosRrttAsociacionClient() {
   const [items, setItems] = useState<Recurso[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
   const [openCcaas, setOpenCcaas] = useState<Set<string>>(new Set());
   const [openProvs, setOpenProvs] = useState<Set<string>>(new Set());
+  const [busyId, setBusyId] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -58,7 +80,73 @@ export default function RecursosRrttAsociacionClient() {
     load();
   }, []);
 
-  // Filtro por búsqueda + estado.
+  async function togglePublicar(r: Recurso) {
+    const queremosActivar = !r.activo;
+    if (
+      !confirm(
+        queremosActivar
+          ? `¿Activar y publicar "${r.nombre}" en la web?`
+          : `¿Desactivar "${r.nombre}"? Dejará de aparecer en la web pública.`,
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setAviso(null);
+    setBusyId(r.id);
+    try {
+      const res = await fetch(`/api/club/recursos/asociacion/${r.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: queremosActivar }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? 'Error al actualizar');
+        return;
+      }
+      setAviso(
+        queremosActivar
+          ? `"${r.nombre}" publicado en la web.`
+          : `"${r.nombre}" desactivado.`,
+      );
+      await load();
+    } catch {
+      setError('Error de red');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function borrar(r: Recurso) {
+    if (
+      !confirm(
+        `¿Borrar "${r.nombre}" definitivamente? Esta acción no se puede deshacer.`,
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    setAviso(null);
+    setBusyId(r.id);
+    try {
+      const res = await fetch(`/api/club/recursos/asociacion/${r.id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? 'Error al borrar');
+        return;
+      }
+      setAviso(`"${r.nombre}" borrado.`);
+      await load();
+    } catch {
+      setError('Error de red');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     return items.filter((r) => {
@@ -76,7 +164,6 @@ export default function RecursosRrttAsociacionClient() {
     });
   }, [items, busqueda, filtroEstado]);
 
-  // Agrupación CCAA → Provincia.
   const grouped = useMemo(() => {
     const map = new Map<string, Map<string, Recurso[]>>();
     for (const r of filtered) {
@@ -125,7 +212,7 @@ export default function RecursosRrttAsociacionClient() {
 
   return (
     <div className="space-y-4">
-      {/* Hero amber: misma paleta que la tarjeta naranja del menú */}
+      {/* Hero amber */}
       <div className="rounded-2xl bg-gradient-to-br from-amber-100 via-amber-50 to-white p-5 border border-amber-200">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white shadow-md">
@@ -143,6 +230,11 @@ export default function RecursosRrttAsociacionClient() {
       {error && (
         <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800 border border-rose-200">
           {error}
+        </div>
+      )}
+      {aviso && (
+        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 border border-emerald-200">
+          {aviso}
         </div>
       )}
 
@@ -297,41 +389,64 @@ export default function RecursosRrttAsociacionClient() {
                                     <th className="px-3 py-2 text-left">Recurso</th>
                                     <th className="px-3 py-2 text-left">Tipo</th>
                                     <th className="px-3 py-2 text-left">Localidad</th>
+                                    <th className="px-3 py-2 text-left">Contacto</th>
+                                    <th className="px-3 py-2 text-left">Precio</th>
                                     <th className="px-3 py-2 text-left">Estado</th>
+                                    <th className="px-3 py-2 text-right">Acciones</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {pg.items.map((r) => (
-                                    <tr key={r.id} className="border-t border-border/60 hover:bg-amber-50/30">
+                                    <tr key={r.id} className="border-t border-border/60 hover:bg-amber-50/30 align-top">
                                       <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-start gap-2">
                                           {r.fotoUrl ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                               src={r.fotoUrl}
                                               alt={r.nombre}
-                                              className="h-8 w-8 rounded object-cover"
+                                              className="h-10 w-10 rounded object-cover shrink-0"
                                             />
                                           ) : (
-                                            <div className="flex h-8 w-8 items-center justify-center rounded bg-amber-50 text-amber-300">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded bg-amber-50 text-amber-300 shrink-0">
                                               <Landmark className="h-4 w-4" />
                                             </div>
                                           )}
-                                          <div>
-                                            <div className="font-medium text-foreground">{r.nombre}</div>
-                                            {r.imprescindible && (
-                                              <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">
-                                                Imprescindible
-                                              </span>
+                                          <div className="min-w-0">
+                                            <div className="flex flex-wrap items-center gap-1">
+                                              <span className="font-medium text-foreground">{r.nombre}</span>
+                                              {r.imprescindible && (
+                                                <span
+                                                  className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900"
+                                                  title={
+                                                    r.ratingVerificado?.rating
+                                                      ? `Imprescindible · Google ${r.ratingVerificado.rating.toFixed(1)}★ (${r.ratingVerificado.reviews ?? 0} reseñas)`
+                                                      : 'Imprescindible · Google ≥ 4,7★'
+                                                  }
+                                                >
+                                                  ⭐ Imprescindible
+                                                </span>
+                                              )}
+                                            </div>
+                                            {r.precargadoFuente && (
+                                              <div className="font-mono text-[10px] text-muted-foreground mt-0.5">
+                                                {extraerRating(r.precargadoFuente)}
+                                              </div>
                                             )}
                                           </div>
                                         </div>
                                       </td>
-                                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                                        {r.tipo?.toLowerCase()}
+                                      <td className="px-3 py-2 text-xs text-muted-foreground capitalize">
+                                        {(r.tipo ?? '—').replace(/_/g, ' ').toLowerCase()}
                                       </td>
                                       <td className="px-3 py-2 text-xs text-muted-foreground">
                                         {r.localidad ?? '—'}
+                                      </td>
+                                      <td className="px-3 py-2 text-xs">
+                                        <ContactoCelda telefono={r.telefono} email={r.email} web={r.web} />
+                                      </td>
+                                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                                        {formatPrecio(r.precioCents)}
                                       </td>
                                       <td className="px-3 py-2">
                                         <span
@@ -343,6 +458,44 @@ export default function RecursosRrttAsociacionClient() {
                                         >
                                           {r.activo ? 'Activo' : 'Inactivo'}
                                         </span>
+                                      </td>
+                                      <td className="px-3 py-2 text-right">
+                                        <div className="inline-flex items-center gap-1">
+                                          <Link
+                                            href={`/gestion/asociacion/club/rrtt-asociacion/${r.id}/editar`}
+                                            className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-50"
+                                            title="Editar todos los datos"
+                                          >
+                                            <Pencil className="h-3 w-3" />
+                                            Editar
+                                          </Link>
+                                          <button
+                                            type="button"
+                                            disabled={busyId === r.id}
+                                            onClick={() => togglePublicar(r)}
+                                            className={
+                                              r.activo
+                                                ? 'inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 disabled:opacity-60'
+                                                : 'inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-60'
+                                            }
+                                            title={
+                                              r.activo
+                                                ? 'Quitar de la web pública'
+                                                : 'Activar y publicar en la web'
+                                            }
+                                          >
+                                            {busyId === r.id ? '…' : r.activo ? 'Desactivar' : 'Activar'}
+                                          </button>
+                                          <button
+                                            type="button"
+                                            disabled={busyId === r.id}
+                                            onClick={() => borrar(r)}
+                                            className="inline-flex items-center gap-1 rounded-md border border-rose-300 bg-white px-2 py-1 text-[11px] font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+                                            title="Borrar definitivamente"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                          </button>
+                                        </div>
                                       </td>
                                     </tr>
                                   ))}
@@ -362,4 +515,74 @@ export default function RecursosRrttAsociacionClient() {
       )}
     </div>
   );
+}
+
+function ContactoCelda({
+  telefono,
+  email,
+  web,
+}: {
+  telefono?: string | null;
+  email?: string | null;
+  web?: string | null;
+}) {
+  if (!telefono && !email && !web) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+  return (
+    <div className="flex flex-col gap-0.5 text-[11px] text-slate-600">
+      {telefono && (
+        <span className="inline-flex items-center gap-1" title={telefono}>
+          <Phone className="h-3 w-3 text-amber-600" />
+          <span className="truncate">{telefono}</span>
+        </span>
+      )}
+      {email && (
+        <span className="inline-flex items-center gap-1" title={email}>
+          <Mail className="h-3 w-3 text-amber-600" />
+          <span className="truncate max-w-[160px]">{email}</span>
+        </span>
+      )}
+      {web && (
+        <span className="inline-flex items-center gap-1" title={web}>
+          <Globe className="h-3 w-3 text-amber-600" />
+          <a
+            href={web}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="truncate max-w-[160px] text-amber-700 hover:underline"
+          >
+            {web.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+          </a>
+        </span>
+      )}
+    </div>
+  );
+}
+
+function formatPrecio(cents: number | null | undefined): string {
+  if (cents == null) return '—';
+  if (cents === 0) return 'Gratis';
+  return `${(cents / 100).toFixed(2).replace('.', ',')} €`;
+}
+
+/**
+ * Lee `precargadoFuente` y devuelve un texto humano con la nota verificada.
+ * Mismas marcas que en `RecursosAsociacionClient`:
+ *  - "google-places[X/Y]" → ★ X · Y reseñas
+ *  - "perplexity-only[X]:google-api-error=STATUS" → ★ X (Google API caída · STATUS)
+ *  - "perplexity-only[X]" → ★ X (solo Perplexity)
+ *  - "no-verifier[X]" → ★ X (sin verificar · falta API key)
+ */
+function extraerRating(fuente: string): string {
+  const m = fuente.match(/google-places\[([\d.]+)\/(\d+)\]/);
+  if (m) return `★ ${m[1]} · ${m[2]} reseñas`;
+  const mErr = fuente.match(/perplexity-only\[([\d.]+)\]:google-api-error=([A-Z_]+)/);
+  if (mErr) return `★ ${mErr[1]} (Google API caída · ${mErr[2]})`;
+  const m2 = fuente.match(/perplexity-only\[([\d.]+)\]/);
+  if (m2) return `★ ${m2[1]} (solo Perplexity)`;
+  const m3 = fuente.match(/no-verifier\[([\d.?]+)\]/);
+  if (m3) return `★ ${m3[1]} (sin verificar · falta API key)`;
+  return '';
 }
