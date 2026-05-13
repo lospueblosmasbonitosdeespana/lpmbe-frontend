@@ -1051,10 +1051,19 @@ export default function RecursosAsociacionClient() {
                             className="rounded border px-3 py-1 text-sm hover:bg-muted/30">
                             Colaboradores
                           </button>
-                          <a href={`/recursos/${r.slug || r.id}`} target="_blank" rel="noopener noreferrer"
-                            className="rounded border px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
-                            Ver pública ↗
-                          </a>
+                          {r.activo ? (
+                            <a href={`/recursos/${r.slug || r.id}`} target="_blank" rel="noopener noreferrer"
+                              className="rounded border px-3 py-1 text-sm text-blue-600 hover:bg-blue-50">
+                              Ver pública ↗
+                            </a>
+                          ) : (
+                            <span
+                              title="Inactivo: la página pública sólo está disponible cuando el recurso está activado."
+                              className="rounded border px-3 py-1 text-sm text-muted-foreground/60 cursor-not-allowed select-none"
+                            >
+                              Ver pública (inactivo)
+                            </span>
+                          )}
                           <button type="button" onClick={() => handleDelete(r.id)}
                             className="rounded border border-red-200 px-3 py-1 text-sm text-red-600 hover:bg-red-50">
                             Eliminar
