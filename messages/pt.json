@@ -593,7 +593,8 @@
     "noRecursosHint": "Volte mais tarde.",
     "cerradoTemporal": "Temporariamente encerrado",
     "imprescindible": "Essencial",
-    "imprescindibleTooltip": "Obrigatório: classificação do Google Places ≥ 4,7★"
+    "imprescindibleTooltip": "Obrigatório: classificação do Google Places ≥ 4,7★",
+    "soloClub": "Clube de solteiros"
   },
   "puebloPage": {
     "breadcrumbHome": "Início",

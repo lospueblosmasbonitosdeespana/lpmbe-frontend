@@ -593,7 +593,8 @@
     "noRecursosHint": "Tornate a trovarci più tardi.",
     "cerradoTemporal": "Temporaneamente chiuso",
     "imprescindible": "Essenziale",
-    "imprescindibleTooltip": "Must-have: Valutazione di Google Places ≥ 4,7★"
+    "imprescindibleTooltip": "Must-have: Valutazione di Google Places ≥ 4,7★",
+    "soloClub": "Club di solisti"
   },
   "puebloPage": {
     "breadcrumbHome": "Casa",

@@ -61,6 +61,7 @@ type RecursoListItem = {
   comunidad: string | null;
   descuentoPorcentaje: number | null;
   cerradoTemporal: boolean;
+  visibilidad?: 'PUBLICO' | 'SOLO_CLUB' | 'OCULTO' | null;
   imprescindible?: boolean;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
@@ -79,10 +80,12 @@ function RecursoCard({
   r,
   cerradoTemporalLabel,
   imprescindibleLabel,
+  soloClubLabel,
 }: {
   r: RecursoListItem;
   cerradoTemporalLabel: string;
   imprescindibleLabel: string;
+  soloClubLabel: string;
 }) {
   const photoUrl = r.fotoUrl?.trim() || null;
   const slug = r.slug || `recurso-${r.id}`;
@@ -135,7 +138,18 @@ function RecursoCard({
             </span>
           </div>
         )}
-        <div className="absolute right-2 top-2 flex flex-wrap gap-1">
+        <div className="absolute right-2 top-2 flex flex-wrap items-center justify-end gap-1">
+          {r.visibilidad === 'SOLO_CLUB' && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-amber-600 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm"
+              title={soloClubLabel}
+            >
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="currentColor" aria-hidden="true">
+                <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 1 1 6 0v3H9z" />
+              </svg>
+              {soloClubLabel}
+            </span>
+          )}
           {r.cerradoTemporal && (
             <span className="rounded bg-amber-500/90 px-2 py-0.5 text-xs font-medium text-white">
               {cerradoTemporalLabel}
@@ -214,6 +228,7 @@ export default async function RecursosPage() {
                   r={r}
                   cerradoTemporalLabel={t("cerradoTemporal")}
                   imprescindibleLabel={t("imprescindible")}
+                  soloClubLabel={t("soloClub")}
                 />
               ))}
             </div>

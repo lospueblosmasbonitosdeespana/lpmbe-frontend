@@ -593,7 +593,8 @@
     "noRecursosHint": "Revenez plus tard.",
     "cerradoTemporal": "Fermeture temporaire",
     "imprescindible": "Essentiel",
-    "imprescindibleTooltip": "Indispensable : note Google Places ≥ 4.7★"
+    "imprescindibleTooltip": "Indispensable : note Google Places ≥ 4.7★",
+    "soloClub": "Club Solo"
   },
   "puebloPage": {
     "breadcrumbHome": "Accueil",

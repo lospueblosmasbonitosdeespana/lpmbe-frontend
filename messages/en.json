@@ -593,7 +593,8 @@
     "noRecursosHint": "Check back at a later date.",
     "cerradoTemporal": "Temporarily closed",
     "imprescindible": "Essential",
-    "imprescindibleTooltip": "Must-have: Google Places rating ≥ 4.7★"
+    "imprescindibleTooltip": "Must-have: Google Places rating ≥ 4.7★",
+    "soloClub": "Solo Club"
   },
   "puebloPage": {
     "breadcrumbHome": "Home",

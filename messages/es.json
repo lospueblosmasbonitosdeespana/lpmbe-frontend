@@ -633,7 +633,8 @@
     "noRecursosHint": "Vuelve a consultar más adelante.",
     "cerradoTemporal": "Cerrado temporalmente",
     "imprescindible": "Imprescindible",
-    "imprescindibleTooltip": "Imprescindible: valoración Google Places ≥ 4,7★"
+    "imprescindibleTooltip": "Imprescindible: valoración Google Places ≥ 4,7★",
+    "soloClub": "Solo Club"
   },
   "puebloPage": {
     "breadcrumbHome": "Inicio",

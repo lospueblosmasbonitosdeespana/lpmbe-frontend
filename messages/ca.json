@@ -593,7 +593,8 @@
     "noRecursosHint": "Torna més tard.",
     "cerradoTemporal": "Tancat temporalment",
     "imprescindible": "Essencial",
-    "imprescindibleTooltip": "Essencial: valoració de Google Places d'almenys 4,7★"
+    "imprescindibleTooltip": "Essencial: valoració de Google Places d'almenys 4,7★",
+    "soloClub": "Club Solo"
   },
   "puebloPage": {
     "breadcrumbHome": "Inici",
