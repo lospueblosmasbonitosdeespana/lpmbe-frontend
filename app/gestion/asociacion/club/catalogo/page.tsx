@@ -3,28 +3,39 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
+type Tone = 'red' | 'amber' | 'lime' | 'green' | 'blue';
+
 type Item = {
   puebloId: number;
   slug: string;
   nombre: string;
   provincia: string;
   comunidad: string;
+  totalRrtt: number;
+  totalNaturales: number;
   totalRecursos: number;
-  estado: 'Vacío' | 'Mínimo' | 'Básico' | 'Bueno' | 'Completo';
-  tone: 'red' | 'amber' | 'lime' | 'green' | 'blue';
+  estado: string;
+  tone: Tone;
+  estadoRrtt: string;
+  toneRrtt: Tone;
+  estadoNaturales: string;
+  toneNaturales: Tone;
 };
 
 type Resp = {
   resumen: {
     totalPueblos: number;
-    conRecursos: number;
-    sinRecursos: number;
-    porEstado: Record<string, number>;
+    conRrtt: number;
+    sinRrtt: number;
+    conNaturales: number;
+    sinNaturales: number;
+    porEstadoRrtt: Record<string, number>;
+    porEstadoNaturales: Record<string, number>;
   };
   items: Item[];
 };
 
-const TONE_CLASSES: Record<Item['tone'], string> = {
+const TONE_CLASSES: Record<Tone, string> = {
   red: 'bg-red-100 text-red-800',
   amber: 'bg-amber-100 text-amber-800',
   lime: 'bg-lime-100 text-lime-800',
@@ -32,25 +43,31 @@ const TONE_CLASSES: Record<Item['tone'], string> = {
   blue: 'bg-blue-100 text-blue-800',
 };
 
-const FILTERS: Array<{ id: 'all' | 'incompletos' | 'vacios' | 'completos'; label: string }> = [
+type FiltroId = 'all' | 'vacios' | 'incompletos' | 'completos';
+const FILTERS: Array<{ id: FiltroId; label: string }> = [
   { id: 'all', label: 'Todos' },
-  { id: 'vacios', label: 'Vacíos (0 RRTT)' },
-  { id: 'incompletos', label: 'Incompletos (≤5 RRTT)' },
-  { id: 'completos', label: 'Bien (≥6 RRTT)' },
+  { id: 'vacios', label: 'Vacíos (0)' },
+  { id: 'incompletos', label: 'Incompletos (≤5)' },
+  { id: 'completos', label: 'Bien (≥6)' },
 ];
+
+type CategoriaFiltro = 'rrtt' | 'naturales' | 'total';
 
 export default function CatalogoEstadoPage() {
   const [data, setData] = useState<Resp | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('incompletos');
+  const [categoria, setCategoria] = useState<CategoriaFiltro>('rrtt');
+  const [filter, setFilter] = useState<FiltroId>('incompletos');
   const [q, setQ] = useState('');
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/club/admin/catalogo-estado', { cache: 'no-store' });
+        const res = await fetch('/api/club/admin/catalogo-estado', {
+          cache: 'no-store',
+        });
         if (res.ok) setData(await res.json());
         else setError((await res.json().catch(() => ({})))?.message ?? 'Error');
       } finally {
@@ -61,10 +78,16 @@ export default function CatalogoEstadoPage() {
 
   const items = useMemo(() => {
     if (!data) return [];
+    const getTotal = (i: Item) =>
+      categoria === 'rrtt'
+        ? i.totalRrtt
+        : categoria === 'naturales'
+          ? i.totalNaturales
+          : i.totalRecursos;
     let arr = data.items;
-    if (filter === 'vacios') arr = arr.filter((i) => i.totalRecursos === 0);
-    else if (filter === 'incompletos') arr = arr.filter((i) => i.totalRecursos <= 5);
-    else if (filter === 'completos') arr = arr.filter((i) => i.totalRecursos >= 6);
+    if (filter === 'vacios') arr = arr.filter((i) => getTotal(i) === 0);
+    else if (filter === 'incompletos') arr = arr.filter((i) => getTotal(i) <= 5);
+    else if (filter === 'completos') arr = arr.filter((i) => getTotal(i) >= 6);
     if (q.trim()) {
       const term = q.trim().toLowerCase();
       arr = arr.filter(
@@ -74,7 +97,7 @@ export default function CatalogoEstadoPage() {
       );
     }
     return arr;
-  }, [data, filter, q]);
+  }, [data, categoria, filter, q]);
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -84,26 +107,66 @@ export default function CatalogoEstadoPage() {
       >
         ← Volver al Club
       </Link>
-      <h1 className="mb-2 text-3xl font-bold">Estado del catálogo de RRTT</h1>
+      <h1 className="mb-2 text-3xl font-bold">Estado del catálogo</h1>
       <p className="mb-8 text-muted-foreground">
-        Diagnóstico de cuántos recursos turísticos tiene cada pueblo (con descuentos del Club). Útil
-        para identificar pueblos con catálogo vacío o insuficiente y avisar al alcalde.
+        Diagnóstico de cuántos recursos tiene cada pueblo, separados por
+        <strong> RRTT</strong> (museos, monasterios, castillos, ermitas… validados con QR)
+        y <strong>Recursos Naturales</strong> (cascadas, parajes, miradores… validados por GPS).
+        Útil para detectar pueblos con catálogo vacío o insuficiente.
       </p>
 
       {data && (
         <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Pueblos en la red" value={String(data.resumen.totalPueblos)} />
-          <Stat label="Con catálogo" value={String(data.resumen.conRecursos)} tone="blue" />
-          <Stat label="Sin catálogo" value={String(data.resumen.sinRecursos)} tone="red" />
           <Stat
-            label="Por estado"
-            value={Object.entries(data.resumen.porEstado)
+            label="Con RRTT"
+            value={`${data.resumen.conRrtt} / ${data.resumen.totalPueblos}`}
+            tone="blue"
+          />
+          <Stat
+            label="Con Naturales"
+            value={`${data.resumen.conNaturales} / ${data.resumen.totalPueblos}`}
+            tone="blue"
+          />
+          <Stat
+            label={categoria === 'rrtt' ? 'RRTT por estado' : categoria === 'naturales' ? 'Naturales por estado' : 'Total por estado'}
+            value={Object.entries(
+              categoria === 'rrtt'
+                ? data.resumen.porEstadoRrtt
+                : categoria === 'naturales'
+                  ? data.resumen.porEstadoNaturales
+                  : data.resumen.porEstadoRrtt,
+            )
               .map(([k, v]) => `${k}: ${v}`)
               .join(' · ')}
             small
           />
         </section>
       )}
+
+      {/* Selector de categoría */}
+      <div className="mb-3 inline-flex rounded-xl border border-border bg-white p-1 text-xs font-semibold">
+        {(
+          [
+            { id: 'rrtt', label: 'RRTT (QR)' },
+            { id: 'naturales', label: 'Naturales (GPS)' },
+            { id: 'total', label: 'Total combinado' },
+          ] as Array<{ id: CategoriaFiltro; label: string }>
+        ).map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => setCategoria(c.id)}
+            className={`rounded-lg px-3 py-1.5 transition-colors ${
+              categoria === c.id
+                ? 'bg-gray-900 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {FILTERS.map((f) => (
@@ -112,7 +175,9 @@ export default function CatalogoEstadoPage() {
             type="button"
             onClick={() => setFilter(f.id)}
             className={`rounded-full border px-3 py-1.5 text-sm ${
-              filter === f.id ? 'border-gray-900 bg-gray-900 text-white' : 'border-border bg-white'
+              filter === f.id
+                ? 'border-gray-900 bg-gray-900 text-white'
+                : 'border-border bg-white'
             }`}
           >
             {f.label}
@@ -143,10 +208,10 @@ export default function CatalogoEstadoPage() {
                   Provincia
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Estado
+                  RRTT
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  RRTT activos
+                  Naturales
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Acciones
@@ -166,24 +231,25 @@ export default function CatalogoEstadoPage() {
                     <td className="px-4 py-3 font-medium text-gray-900">{i.nombre}</td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">{i.provincia}</td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${TONE_CLASSES[i.tone]}`}>
-                        {i.estado}
-                      </span>
+                      <CategoriaBadge
+                        total={i.totalRrtt}
+                        estado={i.estadoRrtt}
+                        tone={i.toneRrtt}
+                      />
                     </td>
-                    <td className="px-4 py-3 text-center text-sm">{i.totalRecursos}</td>
+                    <td className="px-4 py-3 text-center">
+                      <CategoriaBadge
+                        total={i.totalNaturales}
+                        estado={i.estadoNaturales}
+                        tone={i.toneNaturales}
+                      />
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       <Link
-                        href={`/gestion/pueblos/${i.slug}`}
+                        href={`/gestion/pueblos/${i.slug}/club`}
                         className="text-blue-600 hover:underline"
                       >
                         Gestionar pueblo
-                      </Link>
-                      {' · '}
-                      <Link
-                        href={`/gestion/pueblos/${i.slug}/recursos-turisticos`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Añadir RRTT
                       </Link>
                     </td>
                   </tr>
@@ -194,6 +260,27 @@ export default function CatalogoEstadoPage() {
         </div>
       )}
     </main>
+  );
+}
+
+function CategoriaBadge({
+  total,
+  estado,
+  tone,
+}: {
+  total: number;
+  estado: string;
+  tone: Tone;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="text-sm font-semibold text-gray-900">{total}</span>
+      <span
+        className={`inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium ${TONE_CLASSES[tone]}`}
+      >
+        {estado}
+      </span>
+    </div>
   );
 }
 
@@ -210,10 +297,16 @@ function Stat({
 }) {
   return (
     <div className="rounded-xl border border-border bg-white p-5 shadow-sm">
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       <div
         className={`mt-2 ${small ? 'text-sm font-medium' : 'text-2xl font-bold'} ${
-          tone === 'blue' ? 'text-blue-700' : tone === 'red' ? 'text-red-700' : 'text-gray-900'
+          tone === 'blue'
+            ? 'text-blue-700'
+            : tone === 'red'
+              ? 'text-red-700'
+              : 'text-gray-900'
         }`}
       >
         {value}
