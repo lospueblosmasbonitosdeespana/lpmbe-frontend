@@ -17,8 +17,8 @@ export default async function RecursosAsociacionPage() {
 
   return (
     <GestionAsociacionSubpageShell
-      title="Recursos del club (asociación)"
-      subtitle="Ámbito asociación, sin pueblo concreto · Misma herramienta que recursos turísticos globales"
+      title="Recursos Naturales (asociación)"
+      subtitle="Cascadas, parajes, miradores, hoces, sendas… ámbito nacional · gestionados por la asociación"
       heroIcon={<AsociacionHeroIconCastle />}
       maxWidthClass="max-w-5xl"
       backHref={BACK}

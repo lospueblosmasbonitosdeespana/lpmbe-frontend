@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, MapPin, Search } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronDown, ChevronRight, MapPin, Pencil, Search } from 'lucide-react';
+import FotoLightbox from '../../_components/FotoLightbox';
 
 type Recurso = {
   id: number;
@@ -48,6 +50,7 @@ export default function RecursosAsociacionClient() {
     'todos',
   );
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<{ url: string; alt: string } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -249,10 +252,19 @@ export default function RecursosAsociacionClient() {
               grupo={g}
               busyId={busyId}
               onTogglePublicar={togglePublicar}
+              onAbrirFoto={(url, alt) => setLightbox({ url, alt })}
               expandirPorDefecto={grupos.length === 1}
             />
           ))}
         </div>
+      )}
+
+      {lightbox && (
+        <FotoLightbox
+          src={lightbox.url}
+          alt={lightbox.alt}
+          onClose={() => setLightbox(null)}
+        />
       )}
     </div>
   );
@@ -262,11 +274,13 @@ function CcaaGrupo({
   grupo,
   busyId,
   onTogglePublicar,
+  onAbrirFoto,
   expandirPorDefecto,
 }: {
   grupo: Grupo;
   busyId: number | null;
   onTogglePublicar: (r: Recurso) => void;
+  onAbrirFoto: (url: string, alt: string) => void;
   expandirPorDefecto: boolean;
 }) {
   const [open, setOpen] = useState(expandirPorDefecto);
@@ -310,6 +324,7 @@ function CcaaGrupo({
               activos={p.activos}
               busyId={busyId}
               onTogglePublicar={onTogglePublicar}
+              onAbrirFoto={onAbrirFoto}
             />
           ))}
         </div>
@@ -324,12 +339,14 @@ function ProvinciaGrupo({
   activos,
   busyId,
   onTogglePublicar,
+  onAbrirFoto,
 }: {
   provincia: string;
   items: Recurso[];
   activos: number;
   busyId: number | null;
   onTogglePublicar: (r: Recurso) => void;
+  onAbrirFoto: (url: string, alt: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const inactivos = items.length - activos;
@@ -384,7 +401,9 @@ function ProvinciaGrupo({
                           <img
                             src={r.fotoUrl}
                             alt={r.nombre}
-                            className="h-10 w-10 shrink-0 rounded-md object-cover"
+                            onClick={() => onAbrirFoto(r.fotoUrl!, r.nombre)}
+                            className="h-10 w-10 shrink-0 cursor-zoom-in rounded-md object-cover transition hover:ring-2 hover:ring-emerald-400"
+                            title="Ver foto en grande"
                           />
                         ) : (
                           <div className="h-10 w-10 shrink-0 rounded-md bg-muted/40" />
@@ -433,27 +452,37 @@ function ProvinciaGrupo({
                       </span>
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <button
-                        type="button"
-                        disabled={busyId === r.id}
-                        onClick={() => onTogglePublicar(r)}
-                        className={
-                          r.activo
-                            ? 'inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 disabled:opacity-60'
-                            : 'inline-flex items-center gap-1 rounded-md bg-amber-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-60'
-                        }
-                        title={
-                          r.activo
-                            ? 'Quitar de la web pública'
-                            : 'Activar y publicar (genera slug y 7 idiomas si faltan)'
-                        }
-                      >
-                        {busyId === r.id
-                          ? '…'
-                          : r.activo
-                            ? 'Desactivar'
-                            : 'Activar'}
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <Link
+                          href={`/gestion/asociacion/club/recursos-asociacion/${r.id}/editar`}
+                          className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-white px-2 py-1 text-[11px] font-semibold text-emerald-800 hover:bg-emerald-50"
+                          title="Editar todos los datos"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          Editar
+                        </Link>
+                        <button
+                          type="button"
+                          disabled={busyId === r.id}
+                          onClick={() => onTogglePublicar(r)}
+                          className={
+                            r.activo
+                              ? 'inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-50 disabled:opacity-60'
+                              : 'inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-60'
+                          }
+                          title={
+                            r.activo
+                              ? 'Quitar de la web pública'
+                              : 'Activar y publicar (genera slug y 7 idiomas si faltan)'
+                          }
+                        >
+                          {busyId === r.id
+                            ? '…'
+                            : r.activo
+                              ? 'Desactivar'
+                              : 'Activar'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

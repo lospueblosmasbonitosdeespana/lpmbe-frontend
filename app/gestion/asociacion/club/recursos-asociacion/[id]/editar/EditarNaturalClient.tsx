@@ -6,13 +6,10 @@ import {
   Save,
   Trash2,
   ArrowLeft,
-  Phone,
-  Mail,
-  Globe,
-  Euro,
   Star,
   MapPin,
   Image as ImageIcon,
+  Compass,
 } from 'lucide-react';
 import FotoLightbox from '../../../../_components/FotoLightbox';
 
@@ -27,61 +24,43 @@ type Recurso = {
   descripcion: string | null;
   fotoUrl: string | null;
   validacionTipo: string;
-  codigoQr: string | null;
+  geoRadioMetros?: number | null;
   provincia: string | null;
   comunidad: string | null;
   localidad: string | null;
   lat: number | null;
   lng: number | null;
-  telefono: string | null;
-  email: string | null;
-  web: string | null;
-  whatsapp?: string | null;
-  bookingUrl?: string | null;
   horarios: string | null;
-  precioCents: number | null;
-  descuentoPorcentaje: number | null;
   precargadoFuente: string | null;
   precargadoPorIa: boolean | null;
   imprescindible?: boolean;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
-  regaloActivo?: boolean | null;
-  regaloTitulo?: string | null;
-  regaloDescripcion?: string | null;
-  regaloCondiciones?: string | null;
 };
 
-const TIPOS_RRTT = [
-  'museo',
-  'museo-parroquial',
-  'museo-arqueologico',
-  'casa-museo',
-  'iglesia',
-  'ermita',
-  'monasterio',
-  'cartuja',
-  'abadia',
-  'convento',
-  'castillo',
-  'fortaleza',
-  'palacio',
-  'claustro',
-  'cripta',
-  'molino',
-  'molino-harinero',
-  'almazara',
-  'bodega',
-  'biblioteca',
-  'archivo',
-  'coleccion',
-  'centro-interpretacion',
-  'centro-oficios',
-  'yacimiento',
-  'monumento',
+const TIPOS_NATURAL = [
+  'paraje',
+  'natural',
+  'cascada',
+  'mirador',
+  'ruta_corta',
+  'sendero',
+  'cueva',
+  'garganta',
+  'hoces',
+  'laguna',
+  'lago',
+  'pantano',
+  'rio',
+  'valle',
+  'cumbre',
+  'pico',
+  'parque-natural',
+  'monumento-natural',
+  'espacio-natural',
   'otro',
 ];
 
-export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
+export default function EditarNaturalClient({ recursoId }: { recursoId: number }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -89,7 +68,6 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
   const [aviso, setAviso] = useState<string | null>(null);
   const [original, setOriginal] = useState<Recurso | null>(null);
 
-  // Estado del formulario
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -99,20 +77,9 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
   const [comunidad, setComunidad] = useState('');
   const [lat, setLat] = useState<string>('');
   const [lng, setLng] = useState<string>('');
-  const [telefono, setTelefono] = useState('');
-  const [email, setEmail] = useState('');
-  const [web, setWeb] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [bookingUrl, setBookingUrl] = useState('');
   const [horarios, setHorarios] = useState('');
-  const [precioEur, setPrecioEur] = useState<string>('');
-  const [descuento, setDescuento] = useState<string>('');
   const [activo, setActivo] = useState(false);
   const [cerradoTemporal, setCerradoTemporal] = useState(false);
-  const [regaloActivo, setRegaloActivo] = useState(false);
-  const [regaloTitulo, setRegaloTitulo] = useState('');
-  const [regaloDescripcion, setRegaloDescripcion] = useState('');
-  const [regaloCondiciones, setRegaloCondiciones] = useState('');
 
   const [lightbox, setLightbox] = useState<string | null>(null);
 
@@ -137,7 +104,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
       const r: Recurso = await res.json();
       setOriginal(r);
       setNombre(r.nombre ?? '');
-      setTipo(r.tipo ?? 'otro');
+      setTipo((r.tipo ?? 'paraje').toLowerCase());
       setDescripcion(r.descripcion ?? '');
       setFotoUrl(r.fotoUrl ?? '');
       setLocalidad(r.localidad ?? '');
@@ -145,26 +112,9 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
       setComunidad(r.comunidad ?? '');
       setLat(r.lat != null ? String(r.lat) : '');
       setLng(r.lng != null ? String(r.lng) : '');
-      setTelefono(r.telefono ?? '');
-      setEmail(r.email ?? '');
-      setWeb(r.web ?? '');
-      setWhatsapp(r.whatsapp ?? '');
-      setBookingUrl(r.bookingUrl ?? '');
       setHorarios(r.horarios ?? '');
-      setPrecioEur(
-        r.precioCents != null
-          ? (r.precioCents / 100).toFixed(2).replace('.', ',')
-          : '',
-      );
-      setDescuento(
-        r.descuentoPorcentaje != null ? String(r.descuentoPorcentaje) : '',
-      );
       setActivo(!!r.activo);
       setCerradoTemporal(!!r.cerradoTemporal);
-      setRegaloActivo(!!r.regaloActivo);
-      setRegaloTitulo(r.regaloTitulo ?? '');
-      setRegaloDescripcion(r.regaloDescripcion ?? '');
-      setRegaloCondiciones(r.regaloCondiciones ?? '');
     } catch {
       setError('Error de red');
     } finally {
@@ -191,45 +141,20 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
     setAviso(null);
     setSaving(true);
 
-    const precioCents = (() => {
-      if (precioEur.trim() === '') return null;
-      const n = Number(precioEur.replace(',', '.'));
-      if (!Number.isFinite(n) || n < 0) return null;
-      return Math.round(n * 100);
-    })();
-
-    const descuentoNum = (() => {
-      if (descuento.trim() === '') return null;
-      const n = Number(descuento);
-      if (!Number.isFinite(n)) return null;
-      return Math.max(0, Math.min(100, Math.round(n)));
-    })();
-
     const latNum = lat.trim() === '' ? null : Number(lat.replace(',', '.'));
     const lngNum = lng.trim() === '' ? null : Number(lng.replace(',', '.'));
 
     const payload: Record<string, any> = {
       nombre: nombre.trim(),
-      tipo: tipo.trim() || 'otro',
+      tipo: tipo.trim() || 'paraje',
       descripcion: descripcion.trim() || null,
       fotoUrl: fotoUrl.trim() || null,
       localidad: localidad.trim() || null,
       provincia: provincia.trim() || null,
       comunidad: comunidad.trim() || null,
-      telefono: telefono.trim() || null,
-      email: email.trim() || null,
-      web: web.trim() || null,
-      whatsapp: whatsapp.trim() || null,
-      bookingUrl: bookingUrl.trim() || null,
       horarios: horarios.trim() || null,
-      precioCents,
-      descuentoPorcentaje: descuentoNum,
       activo,
       cerradoTemporal,
-      regaloActivo,
-      regaloTitulo: regaloTitulo.trim() || null,
-      regaloDescripcion: regaloDescripcion.trim() || null,
-      regaloCondiciones: regaloCondiciones.trim() || null,
     };
     if (latNum != null && Number.isFinite(latNum)) payload.lat = latNum;
     if (lngNum != null && Number.isFinite(lngNum)) payload.lng = lngNum;
@@ -282,7 +207,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
         setSaving(false);
         return;
       }
-      router.push('/gestion/asociacion/club/rrtt-asociacion');
+      router.push('/gestion/asociacion/club/recursos-asociacion');
     } catch {
       setError('Error de red');
       setSaving(false);
@@ -327,8 +252,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
         </div>
       )}
 
-      {/* Header con badges */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/50 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4">
         <div className="flex items-center gap-2 text-sm">
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
@@ -339,6 +263,11 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
           >
             {original.activo ? 'Activo' : 'Inactivo'}
           </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+            <Compass className="h-3 w-3" />
+            Validación GEO
+            {original.geoRadioMetros ? ` · ${original.geoRadioMetros} m` : ''}
+          </span>
           {original.imprescindible && (
             <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900">
               <Star className="h-3 w-3" />
@@ -346,7 +275,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
             </span>
           )}
           {ratingTexto && (
-            <span className="font-mono text-xs text-amber-900">
+            <span className="font-mono text-xs text-emerald-900">
               {ratingTexto}
             </span>
           )}
@@ -354,7 +283,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => router.push('/gestion/asociacion/club/rrtt-asociacion')}
+            onClick={() => router.push('/gestion/asociacion/club/recursos-asociacion')}
             className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -373,7 +302,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
             type="button"
             onClick={guardar}
             disabled={saving}
-            className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-60"
+            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-60"
           >
             <Save className="h-3.5 w-3.5" />
             {saving ? 'Guardando…' : 'Guardar'}
@@ -381,7 +310,6 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
         </div>
       </div>
 
-      {/* Datos básicos */}
       <Section titulo="Datos básicos">
         <Field label="Nombre" required>
           <input
@@ -398,7 +326,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
               onChange={(e) => setTipo(e.target.value)}
               className="input"
             >
-              {TIPOS_RRTT.map((t) => (
+              {TIPOS_NATURAL.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
@@ -424,7 +352,6 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
         </Field>
       </Section>
 
-      {/* Foto */}
       <Section titulo="Foto principal" icon={<ImageIcon className="h-4 w-4" />}>
         <Field label="URL de la foto">
           <input
@@ -442,17 +369,16 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
               src={fotoUrl}
               alt="Preview"
               onClick={() => setLightbox(fotoUrl)}
-              className="h-40 w-full max-w-md cursor-zoom-in rounded-lg border border-border object-cover transition hover:ring-2 hover:ring-amber-300"
+              className="h-40 w-full max-w-md cursor-zoom-in rounded-lg border border-border object-cover transition hover:ring-2 hover:ring-emerald-300"
               title="Ver foto en grande"
             />
           </div>
         )}
       </Section>
 
-      {/* Ubicación */}
       <Section titulo="Ubicación" icon={<MapPin className="h-4 w-4" />}>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Localidad">
+          <Field label="Localidad / comarca">
             <input
               type="text"
               value={localidad}
@@ -514,90 +440,16 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
         )}
       </Section>
 
-      {/* Contacto */}
-      <Section titulo="Contacto">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Teléfono" icon={<Phone className="h-3.5 w-3.5 text-amber-600" />}>
-            <input
-              type="tel"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="input"
-            />
-          </Field>
-          <Field label="WhatsApp">
-            <input
-              type="tel"
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              className="input"
-            />
-          </Field>
-          <Field label="Email" icon={<Mail className="h-3.5 w-3.5 text-amber-600" />}>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input"
-            />
-          </Field>
-          <Field label="Web" icon={<Globe className="h-3.5 w-3.5 text-amber-600" />}>
-            <input
-              type="url"
-              value={web}
-              onChange={(e) => setWeb(e.target.value)}
-              placeholder="https://…"
-              className="input"
-            />
-          </Field>
-          <Field label="URL de reservas (Booking, GetYourGuide…)">
-            <input
-              type="url"
-              value={bookingUrl}
-              onChange={(e) => setBookingUrl(e.target.value)}
-              className="input"
-            />
-          </Field>
-        </div>
-      </Section>
-
-      {/* Horarios y precio */}
-      <Section titulo="Horarios y precio">
-        <Field label="Horarios (texto libre)">
+      <Section titulo="Horarios y estado">
+        <Field label="Horarios / observaciones (texto libre)">
           <textarea
             value={horarios}
             onChange={(e) => setHorarios(e.target.value)}
             rows={3}
-            placeholder="Mar-Dom 10:00-14:00, 16:00-19:00 · Lun cerrado"
+            placeholder="Acceso libre todo el año. Mejor primavera. Aparcamiento a 200 m."
             className="input"
           />
         </Field>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Precio entrada (€)" icon={<Euro className="h-3.5 w-3.5 text-amber-600" />}>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={precioEur}
-              onChange={(e) => setPrecioEur(e.target.value)}
-              placeholder="ej. 6,00"
-              className="input"
-            />
-          </Field>
-          <Field label="Descuento Club (%)">
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={descuento}
-              onChange={(e) => setDescuento(e.target.value)}
-              className="input"
-            />
-          </Field>
-        </div>
-      </Section>
-
-      {/* Estado */}
-      <Section titulo="Estado y publicación">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-white p-3 text-sm hover:bg-slate-50">
             <input
@@ -623,61 +475,17 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
             <div>
               <div className="font-semibold">Cerrado temporalmente</div>
               <div className="text-xs text-muted-foreground">
-                Se muestra como "no disponible" sin desactivar.
+                Por obras, restricción ambiental, etc.
               </div>
             </div>
           </label>
         </div>
       </Section>
 
-      {/* Regalo */}
-      <Section titulo="Regalo del Club (opcional)">
-        <label className="flex cursor-pointer items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={regaloActivo}
-            onChange={(e) => setRegaloActivo(e.target.checked)}
-            className="h-4 w-4"
-          />
-          Regalo activo
-        </label>
-        {regaloActivo && (
-          <div className="mt-2 space-y-3">
-            <Field label="Título del regalo">
-              <input
-                type="text"
-                value={regaloTitulo}
-                onChange={(e) => setRegaloTitulo(e.target.value)}
-                placeholder="ej. Postal antigua firmada"
-                className="input"
-              />
-            </Field>
-            <Field label="Descripción">
-              <textarea
-                value={regaloDescripcion}
-                onChange={(e) => setRegaloDescripcion(e.target.value)}
-                rows={2}
-                className="input"
-              />
-            </Field>
-            <Field label="Condiciones">
-              <textarea
-                value={regaloCondiciones}
-                onChange={(e) => setRegaloCondiciones(e.target.value)}
-                rows={2}
-                placeholder="ej. Un regalo por reserva. Hasta agotar existencias."
-                className="input"
-              />
-            </Field>
-          </div>
-        )}
-      </Section>
-
-      {/* Footer acciones */}
       <div className="sticky bottom-0 -mx-4 mt-4 flex items-center justify-end gap-2 border-t border-border bg-white/95 px-4 py-3 shadow-[0_-4px_8px_rgba(0,0,0,0.04)] backdrop-blur">
         <button
           type="button"
-          onClick={() => router.push('/gestion/asociacion/club/rrtt-asociacion')}
+          onClick={() => router.push('/gestion/asociacion/club/recursos-asociacion')}
           className="inline-flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           Cancelar
@@ -686,7 +494,7 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
           type="button"
           onClick={guardar}
           disabled={saving}
-          className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 disabled:opacity-60"
+          className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-60"
         >
           <Save className="h-3.5 w-3.5" />
           {saving ? 'Guardando…' : 'Guardar cambios'}
@@ -704,8 +512,8 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
           outline: none;
         }
         .input:focus {
-          border-color: rgb(245 158 11);
-          box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+          border-color: rgb(16 185 129);
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
       `}</style>
 
