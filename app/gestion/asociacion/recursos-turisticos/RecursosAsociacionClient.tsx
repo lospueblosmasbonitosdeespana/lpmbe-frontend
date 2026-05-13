@@ -604,9 +604,8 @@ export default function RecursosAsociacionClient() {
   // IDs de recursos con detalle expandido (vista compacta)
   const [expandedDetail, setExpandedDetail] = useState<Set<number>>(new Set());
 
-  // Búsqueda y filtro
+  // Búsqueda (los filtros de categoría e inactivos viven en el toolbar del mapa).
   const [search, setSearch] = useState('');
-  const [filterActivo, setFilterActivo] = useState<'todos' | 'activo' | 'inactivo'>('todos');
 
   const [flyToPos, setFlyToPos] = useState<[number, number] | null>(null);
 
@@ -633,18 +632,6 @@ export default function RecursosAsociacionClient() {
     });
   }
 
-  const recursosFiltrados = useMemo(() => {
-    return recursos.filter((r) => {
-      const q = search.trim().toLowerCase();
-      if (q && !r.nombre.toLowerCase().includes(q) &&
-          !(r.provincia || '').toLowerCase().includes(q) &&
-          !(r.comunidad || '').toLowerCase().includes(q)) return false;
-      if (filterActivo === 'activo' && !r.activo) return false;
-      if (filterActivo === 'inactivo' && r.activo) return false;
-      return true;
-    });
-  }, [recursos, search, filterActivo]);
-
   // Items del mapa filtrados por categoría/activos. Mantenemos el orden
   // estable para poder mapear el índice de marker → item en el click.
   const mapaItemsFiltrados = useMemo(() => {
@@ -664,6 +651,22 @@ export default function RecursosAsociacionClient() {
     label: m.nombre,
     color: CATEGORIA_COLORS[m.categoria],
   }));
+
+  // Lista de la zona inferior: parte de los items del mapa (mismos filtros de
+  // categoría e inactivos) y aplica encima la búsqueda por texto. Así lo que
+  // ves en el mapa = lo que ves en la lista.
+  const itemsListaFiltrados = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return mapaItemsFiltrados.filter((m) => {
+      if (!q) return true;
+      if (m.nombre.toLowerCase().includes(q)) return true;
+      if ((m.provincia || '').toLowerCase().includes(q)) return true;
+      if ((m.comunidad || '').toLowerCase().includes(q)) return true;
+      if ((m.localidad || '').toLowerCase().includes(q)) return true;
+      if ((m.pueblo?.nombre || '').toLowerCase().includes(q)) return true;
+      return false;
+    });
+  }, [mapaItemsFiltrados, search]);
 
   // Conteos por categoría: respetan el filtro de inactivos para que los números
   // de los botones cuadren con lo que se ve en el mapa.
@@ -1016,8 +1019,8 @@ export default function RecursosAsociacionClient() {
         </div>
       )}
 
-      {/* Barra de búsqueda y filtros */}
-      {recursos.length > 0 && (
+      {/* Barra de búsqueda */}
+      {mapaTodos.length > 0 && (
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -1035,22 +1038,18 @@ export default function RecursosAsociacionClient() {
               </button>
             )}
           </div>
-          <div className="flex rounded border overflow-hidden text-sm">
-            {(['todos', 'activo', 'inactivo'] as const).map((v) => (
-              <button key={v} type="button"
-                onClick={() => setFilterActivo(v)}
-                className={`px-3 py-1.5 transition ${filterActivo === v ? 'bg-gray-800 text-white' : 'bg-white text-muted-foreground hover:bg-muted/30'}`}>
-                {v === 'todos' ? 'Todos' : v === 'activo' ? 'Activos' : 'Inactivos'}
-              </button>
-            ))}
-          </div>
           <span className="text-xs text-muted-foreground">
-            {recursosFiltrados.length} de {recursos.length}
+            {itemsListaFiltrados.length} de {mapaItemsFiltrados.length}
+            {' · '}
+            <span className="text-muted-foreground/70">
+              filtros del mapa: {CATEGORIA_LABELS[mapaCategoria]}
+              {!mapaMostrarInactivos ? ' · solo activos' : ''}
+            </span>
           </span>
         </div>
       )}
 
-      {/* Lista */}
+      {/* Lista — sincronizada con el mapa: muestra los mismos items */}
       <div className="mt-4 space-y-2">
         {loading ? (
           <div className="space-y-2">
@@ -1058,18 +1057,84 @@ export default function RecursosAsociacionClient() {
               <div key={i} className="h-14 animate-pulse rounded border bg-muted/30" />
             ))}
           </div>
-        ) : recursos.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No hay recursos de asociación todavía.</p>
-        ) : recursosFiltrados.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No hay recursos que coincidan con la búsqueda.</p>
+        ) : mapaTodos.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No hay recursos cargados.</p>
+        ) : itemsListaFiltrados.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No hay recursos que coincidan con la búsqueda y los filtros del mapa.
+          </p>
         ) : (
-          recursosFiltrados.map((r) => {
+          itemsListaFiltrados.map((item) => {
+            // Si es un RRNN Asociación, intentamos enlazarlo con el detalle
+            // completo cargado desde /club/recursos/asociacion para usar la
+            // tarjeta rica con horarios, precios y edición inline.
+            const r = item.categoria === 'rrnn-asociacion'
+              ? recursos.find((x) => x.id === item.id) ?? null
+              : null;
+
+            // Card simple para items que NO se gestionan inline aquí: muestra
+            // info básica, badge de categoría y enlace al editor específico.
+            if (!r) {
+              const dotColor = CATEGORIA_COLORS[item.categoria];
+              const editLink = editLinkFor(item);
+              return (
+                <div
+                  key={`${item.categoria}-${item.id}`}
+                  className="flex items-center gap-3 rounded-lg border bg-white px-4 py-3"
+                >
+                  {item.fotoUrl ? (
+                    <img src={item.fotoUrl} alt="" className="h-10 w-14 shrink-0 rounded object-cover" />
+                  ) : (
+                    <div className="h-10 w-14 shrink-0 rounded bg-muted flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span
+                        className="inline-block h-2 w-2 rounded-full border border-white/70"
+                        style={{
+                          background:
+                            dotColor === 'blue' ? '#2563eb' :
+                            dotColor === 'green' ? '#16a34a' :
+                            dotColor === 'red' ? '#dc2626' :
+                            dotColor === 'gold' ? '#d4a017' : '#6b7280',
+                        }}
+                      />
+                      <span className="font-medium text-sm text-gray-900 truncate">{item.nombre}</span>
+                      <span className="shrink-0 rounded border bg-muted/30 px-1.5 py-0.5 text-xs text-muted-foreground">
+                        {CATEGORIA_LABELS[item.categoria]}
+                      </span>
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${
+                        item.activo ? 'bg-green-50 text-green-700' : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {item.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {item.pueblo
+                        ? `${item.pueblo.nombre}${item.provincia ? ` (${item.provincia})` : ''}`
+                        : [item.localidad, item.provincia, item.comunidad].filter(Boolean).join(', ') || '—'}
+                    </p>
+                  </div>
+                  {editLink ? (
+                    <a
+                      href={editLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 rounded border px-3 py-1 text-sm text-blue-600 hover:bg-blue-50"
+                    >
+                      Editar ↗
+                    </a>
+                  ) : null}
+                </div>
+              );
+            }
+
             const isExpanded = expandedDetail.has(r.id);
             const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
             return (
               <div
-                key={r.id}
+                key={`rrnn-asociacion-${r.id}`}
                 ref={(el) => {
                   if (el) recursoRefs.current.set(r.id, el);
                   else recursoRefs.current.delete(r.id);
