@@ -57,7 +57,7 @@ const TONES: Record<QuickLink['tone'], { card: string; bullet: string; iconBg: s
 const QUICK_LINKS: QuickLink[] = [
   {
     href: '/gestion/asociacion/club/recursos-pueblos',
-    title: 'Recursos pueblos',
+    title: 'RRTT Pueblos',
     description: 'Catálogo RRTT por pueblo · descuentos y regalos',
     tone: 'emerald',
     icon: (
@@ -93,8 +93,8 @@ const QUICK_LINKS: QuickLink[] = [
   },
   {
     href: '/gestion/asociacion/club/recursos-rurales',
-    title: 'Recursos rurales/naturales',
-    description: 'Cascadas, miradores, parajes · pueblos y asociación · validados por GPS',
+    title: 'Recursos Naturales Pueblos',
+    description: 'Cascadas, miradores, parajes por pueblo · validados por GPS',
     tone: 'emerald',
     icon: (
       <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
