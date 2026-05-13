@@ -101,12 +101,12 @@ const CATEGORIA_COLORS: Record<CategoriaRecurso, string> = {
   'rrnn-asociacion': 'gold',
 };
 
-// Lookup de página de edición específica por categoría (para los recursos
-// que NO son RRTT Asociación, los cuales se editan en otra página).
+// Lookup de página de edición específica por categoría. Esta página gestiona
+// inline los RRNN Asociación; el resto se edita en su propio editor.
 function editLinkFor(item: MapaItem): string | null {
-  if (item.categoria === 'rrtt-asociacion') return null; // edición inline aquí
-  if (item.categoria === 'rrnn-asociacion')
-    return `/gestion/asociacion/club/recursos-asociacion/${item.id}/editar`;
+  if (item.categoria === 'rrnn-asociacion') return null; // edición inline aquí
+  if (item.categoria === 'rrtt-asociacion')
+    return `/gestion/asociacion/club/rrtt-asociacion/${item.id}/editar`;
   // Recursos de pueblo: la edición la hace el alcalde dentro de su pueblo.
   // Como ADMIN, ofrecemos vista previa con el slug.
   if (item.slug) return `/recursos/${item.slug}?preview=1`;
@@ -725,9 +725,9 @@ export default function RecursosAsociacionClient() {
     const item = mapaItemsFiltrados[index];
     if (!item) return;
 
-    // RRTT Asociación QR → es lo que esta página gestiona inline: scroll a la
+    // RRNN Asociación → es lo que esta página gestiona inline: scroll a la
     // tarjeta y la resaltamos brevemente.
-    if (item.categoria === 'rrtt-asociacion') {
+    if (item.categoria === 'rrnn-asociacion') {
       const el = recursoRefs.current.get(item.id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
