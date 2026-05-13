@@ -1,4 +1,9 @@
+import { getMeServer } from "@/lib/me";
+import { redirect } from "next/navigation";
 import PoisPuebloClient from "./PoisPuebloClient";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function PoisPuebloPage({
   params,
@@ -6,5 +11,8 @@ export default async function PoisPuebloPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  return <PoisPuebloClient slug={slug} />;
+  const me = await getMeServer();
+  if (!me) redirect("/entrar");
+  const isAdmin = me.rol === "ADMIN";
+  return <PoisPuebloClient slug={slug} isAdmin={isAdmin} />;
 }

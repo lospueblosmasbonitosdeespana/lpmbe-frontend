@@ -147,7 +147,7 @@ function SortablePoiCard({
   );
 }
 
-export default function PoisPuebloClient({ slug }: { slug: string }) {
+export default function PoisPuebloClient({ slug, isAdmin = false }: { slug: string; isAdmin?: boolean }) {
   const [puebloId, setPuebloId] = useState<number | null>(null);
   const [puebloLat, setPuebloLat] = useState<number | null>(null);
   const [puebloLng, setPuebloLng] = useState<number | null>(null);
@@ -377,8 +377,10 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
       descripcion: editDescripcion.trim() || undefined,
       lat: finalLat,
       lng: finalLng,
-      puntosCustom: parsedPuntosCustom,
     };
+    if (isAdmin) {
+      payload.puntosCustom = parsedPuntosCustom;
+    }
 
     const r = await fetch(`/api/admin/pois/${editId}`, {
       method: "PUT",
@@ -784,22 +786,24 @@ export default function PoisPuebloClient({ slug }: { slug: string }) {
                         className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </div>
-                    <div>
-                      <label className="mb-1 block text-sm font-medium text-foreground">
-                        Puntos Club (individual)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        step={1}
-                        value={editPuntosCustom}
-                        onChange={(e) =>
-                          setEditPuntosCustom(e.target.value === "" ? "" : Number(e.target.value))
-                        }
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
-                        placeholder="Vacío = usar regla genérica"
-                      />
-                    </div>
+                    {isAdmin && (
+                      <div>
+                        <label className="mb-1 block text-sm font-medium text-foreground">
+                          Puntos Club (individual)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={editPuntosCustom}
+                          onChange={(e) =>
+                            setEditPuntosCustom(e.target.value === "" ? "" : Number(e.target.value))
+                          }
+                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                          placeholder="Vacío = usar regla genérica"
+                        />
+                      </div>
+                    )}
                     
                     {editId && (
                       <div className="mt-4">
