@@ -23,6 +23,7 @@ type Recurso = {
   tipo: string;
   scope: string;
   activo: boolean;
+  visibilidad?: 'PUBLICO' | 'SOLO_CLUB' | 'OCULTO' | null;
   cerradoTemporal?: boolean | null;
   descripcion: string | null;
   fotoUrl: string | null;
@@ -82,6 +83,7 @@ export default function EditarNaturalClient({ recursoId }: { recursoId: number }
   const [lng, setLng] = useState<string>('');
   const [horarios, setHorarios] = useState('');
   const [activo, setActivo] = useState(false);
+  const [visibilidad, setVisibilidad] = useState<'PUBLICO' | 'SOLO_CLUB' | 'OCULTO'>('SOLO_CLUB');
   const [cerradoTemporal, setCerradoTemporal] = useState(false);
 
   const [lightbox, setLightbox] = useState<string | null>(null);
@@ -117,6 +119,7 @@ export default function EditarNaturalClient({ recursoId }: { recursoId: number }
       setLng(r.lng != null ? String(r.lng) : '');
       setHorarios(r.horarios ?? '');
       setActivo(!!r.activo);
+      setVisibilidad((r.visibilidad as any) ?? 'SOLO_CLUB');
       setCerradoTemporal(!!r.cerradoTemporal);
     } catch {
       setError('Error de red');
@@ -157,6 +160,7 @@ export default function EditarNaturalClient({ recursoId }: { recursoId: number }
       comunidad: comunidad.trim() || null,
       horarios: horarios.trim() || null,
       activo,
+      visibilidad,
       cerradoTemporal,
     };
     if (latNum != null && Number.isFinite(latNum)) payload.lat = latNum;
@@ -486,6 +490,52 @@ export default function EditarNaturalClient({ recursoId }: { recursoId: number }
             </div>
           </label>
         </div>
+
+        <div className="mt-3 rounded-lg border border-border bg-white p-3">
+          <div className="mb-2 text-sm font-semibold">Visibilidad pública</div>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Quién puede ver el detalle completo del recurso. Los listados y mapas siempre lo muestran si está activo (con candado para no socios cuando es Solo Club).
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <label className={`flex cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm ${visibilidad === 'PUBLICO' ? 'border-emerald-500 bg-emerald-50' : 'border-border hover:bg-slate-50'}`}>
+              <span className="flex items-center gap-2 font-semibold">
+                <input type="radio" name="visibilidad" value="PUBLICO" checked={visibilidad === 'PUBLICO'} onChange={() => setVisibilidad('PUBLICO')} className="h-4 w-4" />
+                Público
+              </span>
+              <span className="pl-6 text-xs text-muted-foreground">Todos lo ven completo (página abierta).</span>
+            </label>
+            <label className={`flex cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm ${visibilidad === 'SOLO_CLUB' ? 'border-amber-500 bg-amber-50' : 'border-border hover:bg-slate-50'}`}>
+              <span className="flex items-center gap-2 font-semibold">
+                <input type="radio" name="visibilidad" value="SOLO_CLUB" checked={visibilidad === 'SOLO_CLUB'} onChange={() => setVisibilidad('SOLO_CLUB')} className="h-4 w-4" />
+                Solo Club <span className="text-amber-700">(recomendado)</span>
+              </span>
+              <span className="pl-6 text-xs text-muted-foreground">Socios ven todo. No socios ven landing "Únete al Club".</span>
+            </label>
+            <label className={`flex cursor-pointer flex-col gap-1 rounded-lg border p-3 text-sm ${visibilidad === 'OCULTO' ? 'border-rose-500 bg-rose-50' : 'border-border hover:bg-slate-50'}`}>
+              <span className="flex items-center gap-2 font-semibold">
+                <input type="radio" name="visibilidad" value="OCULTO" checked={visibilidad === 'OCULTO'} onChange={() => setVisibilidad('OCULTO')} className="h-4 w-4" />
+                Oculto
+              </span>
+              <span className="pl-6 text-xs text-muted-foreground">No aparece en ningún sitio público (404). Para borradores.</span>
+            </label>
+          </div>
+        </div>
+
+        {original?.slug && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <a
+              href={`/recursos/${original.slug}?preview=1`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 font-semibold text-amber-900 hover:bg-amber-100"
+            >
+              <Maximize2 className="h-4 w-4" /> Vista previa de admin ↗
+            </a>
+            <span className="text-xs text-muted-foreground">
+              Funciona aunque el recurso esté inactivo o sea Solo Club. No indexable.
+            </span>
+          </div>
+        )}
       </Section>
 
       <div className="sticky bottom-0 -mx-4 mt-4 flex items-center justify-end gap-2 border-t border-border bg-white/95 px-4 py-3 shadow-[0_-4px_8px_rgba(0,0,0,0.04)] backdrop-blur">

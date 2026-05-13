@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getApiUrl } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 import {
   seoAbsoluteTitle,
   seoDescription,
@@ -19,6 +20,7 @@ import { Container } from "@/app/components/ui/container";
 import { Lead, Headline } from "@/app/components/ui/typography";
 import ParadasMap from "@/app/_components/ParadasMap";
 import JsonLd from "@/app/components/seo/JsonLd";
+import RecursoClubLandingView from "./_components/RecursoClubLandingView";
 import {
   ChevronLeft,
   Clock,
@@ -75,9 +77,37 @@ type RecursoDetail = {
   maxAdultos: number;
   maxMenores: number;
   edadMaxMenor: number;
+  visibilidad?: "PUBLICO" | "SOLO_CLUB" | "OCULTO";
+  requiereClub?: false;
+  previewMode?: boolean;
   imprescindible?: boolean;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
+};
+
+/**
+ * Versión "candado" devuelta por el backend cuando el recurso es SOLO_CLUB
+ * y el visitante no es socio activo del Club. Contiene únicamente datos
+ * suficientes para construir una landing de captación + SEO.
+ */
+type RecursoLimited = {
+  id: number;
+  slug: string | null;
+  nombre: string;
+  tipo: string;
+  scope: string;
+  visibilidad: "PUBLICO" | "SOLO_CLUB" | "OCULTO";
+  requiereClub: true;
+  fotoUrl: string | null;
+  descripcion: string | null;
+  provincia: string | null;
+  comunidad: string | null;
+  localidad: string | null;
+  pueblo: { id: number; nombre: string; slug: string } | null;
+  imprescindible?: boolean;
+  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
+  cerradoTemporal: boolean;
+  activo: boolean;
 };
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -475,11 +505,29 @@ function parseContacto(contacto: string | null): { telefono: string | null; emai
 
 // ── data fetching ───────────────────────────────────────────────────────────
 
-async function getRecursoBySlug(slug: string, locale?: string): Promise<RecursoDetail | null> {
+async function getRecursoBySlug(
+  slug: string,
+  locale?: string,
+  previewMode = false,
+): Promise<RecursoDetail | RecursoLimited | null> {
   const apiUrl = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
-  const res = await fetch(
-    `${apiUrl}/public/recursos/${encodeURIComponent(slug)}${langQs}`);
+  // Si el visitante tiene sesión iniciada, mandamos el JWT al backend para
+  // que sepa si es socio del Club. Sin sesión, recibimos versión "candado"
+  // si el recurso es SOLO_CLUB.
+  const token = await getToken().catch(() => null);
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  // Modo vista previa: usamos endpoint admin que ignora 'activo' y devuelve
+  // siempre la versión completa (rol ADMIN/COLABORADOR/ALCALDE requerido).
+  // Si la sesión no autoriza el preview, el endpoint devuelve 401/403 → null.
+  const url = previewMode
+    ? `${apiUrl}/club/recursos/preview/${encodeURIComponent(slug)}${langQs}`
+    : `${apiUrl}/public/recursos/${encodeURIComponent(slug)}${langQs}`;
+  const res = await fetch(url, {
+    headers,
+    cache: token ? "no-store" : (undefined as any),
+  });
   if (res.status === 404 || !res.ok) return null;
   return res.json();
 }
@@ -488,14 +536,26 @@ async function getRecursoBySlug(slug: string, locale?: string): Promise<RecursoD
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const sp = (await (searchParams ?? Promise.resolve({}))) as Record<string, string | undefined>;
+  const previewMode = sp?.preview === "1";
   const locale = (await getLocale()) as SupportedLocale;
   const t = PAGE_I18N[locale] ?? PAGE_I18N.es;
-  const recurso = await getRecursoBySlug(slug, locale);
+  const recurso = await getRecursoBySlug(slug, locale, previewMode);
   if (!recurso) return { title: t.notFoundTitle };
+  // En modo preview, evitamos indexación y desactivamos canonical alterno
+  // para que ningún buscador siga este enlace.
+  if (previewMode) {
+    return {
+      title: `[Vista previa] ${recurso.nombre}`,
+      robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+    };
+  }
 
   const tipoLabel = getResourceLabel(recurso.tipo);
   const puebloName = recurso.pueblo?.nombre ?? recurso.provincia ?? recurso.comunidad ?? "España";
@@ -536,16 +596,37 @@ export async function generateMetadata({
 
 export default async function RecursoDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  const sp = (await (searchParams ?? Promise.resolve({}))) as Record<string, string | undefined>;
+  const previewMode = sp?.preview === "1";
   const locale = (await getLocale()) as SupportedLocale;
   const t = PAGE_I18N[locale] ?? PAGE_I18N.es;
   const tRecursos = await getTranslations("recursos");
-  const recurso = await getRecursoBySlug(slug, locale);
+  const recurso = await getRecursoBySlug(slug, locale, previewMode);
 
   if (!recurso) notFound();
+
+  // Si el recurso es SOLO_CLUB y el visitante NO es socio, el backend devuelve
+  // versión "candado" (RecursoLimited con requiereClub:true). En ese caso
+  // pintamos la landing del Club en lugar de la página completa.
+  if ("requiereClub" in recurso && recurso.requiereClub === true) {
+    const canonicalPathLanding = `/recursos/${recurso.slug ?? slug}`;
+    const canonicalUrlLanding = getCanonicalUrl(canonicalPathLanding, locale);
+    const baseUrlLanding = getBaseUrl();
+    return (
+      <RecursoClubLandingView
+        recurso={recurso}
+        locale={locale}
+        canonicalUrl={canonicalUrlLanding}
+        baseUrl={baseUrlLanding}
+      />
+    );
+  }
 
   const heroImage = recurso.fotoUrl?.trim() || null;
   const provCom = [recurso.provincia, recurso.comunidad].filter(Boolean).join(" / ");
@@ -625,6 +706,15 @@ export default async function RecursoDetailPage({
 
   return (
     <main className="bg-background">
+      {previewMode && (
+        <div className="border-b-2 border-amber-400 bg-amber-100 px-4 py-2 text-center text-sm font-semibold text-amber-900">
+          Vista previa de admin · este recurso está {recurso.activo ? "activo" : "INACTIVO"}
+          {("visibilidad" in recurso) && recurso.visibilidad ? (
+            <> · visibilidad: <strong>{recurso.visibilidad}</strong></>
+          ) : null}
+          {" "}· no indexable
+        </div>
+      )}
       <JsonLd data={breadcrumbJsonLd} />
       <JsonLd data={recursoJsonLd} />
 
