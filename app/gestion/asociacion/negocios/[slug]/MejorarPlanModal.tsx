@@ -9,34 +9,28 @@ import {
 
 type Cadencia = 'MES' | 'ANUAL';
 
-interface PlanCard {
-  plan: 'PREMIUM';
-  label: string;
-  highlight: boolean;
-  bullets: string[];
-}
-
-const CARDS: PlanCard[] = [
-  {
-    plan: 'PREMIUM',
-    label: 'Premium Club LPMBE',
-    highlight: true,
-    bullets: [
-      'Galería de hasta 30 fotos',
-      'WhatsApp, horarios y servicios visibles',
-      'Enlace de reservas (Booking, web propia…)',
-      'Redes sociales del negocio enlazadas',
-      'Landing personalizada del negocio',
-      'Ofertas destacadas para socios del Club',
-      'Posición destacada en listados',
-      'IA del Club te recomienda a los socios',
-      'Traducción automática a 7 idiomas',
-      'Mención editorial + 1 story/mes en RRSS LPMBE',
-      'Badge dorado Premium y placa física',
-      'Estadísticas avanzadas de visitas y clics',
-    ],
-  },
+const BULLETS_BASE = [
+  'Galería de hasta 30 fotos',
+  'WhatsApp, horarios y servicios visibles',
+  'Enlace de reservas (Booking, web propia…)',
+  'Redes sociales del negocio enlazadas',
+  'Landing personalizada del negocio',
+  'Ofertas destacadas para socios del Club',
+  'Posición destacada en listados',
+  'IA del Club te recomienda a los socios',
+  'Traducción automática a 7 idiomas',
+  'Mención editorial + 1 story/mes en RRSS LPMBE',
+  'Estadísticas avanzadas de visitas y clics',
 ];
+
+function getBullets(cadencia: Cadencia): string[] {
+  return [
+    ...BULLETS_BASE,
+    cadencia === 'ANUAL'
+      ? 'Badge dorado Premium + placa física incluida'
+      : 'Badge dorado Premium (placa física solo con plan anual)',
+  ];
+}
 
 export default function MejorarPlanModal({
   negocioId,
@@ -142,69 +136,61 @@ export default function MejorarPlanModal({
             </div>
           </div>
 
-          {/* Cards */}
-          <div className="grid gap-4">
-            {CARDS.map((card) => {
-              const precio = priceFor(card.plan);
-              const isCurrent = currentPlan === card.plan;
-              return (
-                <div
-                  key={card.plan}
-                  className={`flex flex-col rounded-2xl border-2 p-5 ${
-                    card.highlight && !isCurrent
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border bg-card'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <h3 className="text-base font-bold text-foreground">{card.label}</h3>
-                    {card.highlight && !isCurrent && (
-                      <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
-                        Más popular
-                      </span>
-                    )}
-                    {isCurrent && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-800">
-                        Tu plan
-                      </span>
-                    )}
-                  </div>
-                  <div className="mb-3">
-                    <span className="text-2xl font-bold text-foreground">
-                      {precio != null ? `${precio} €` : '—'}
+          {/* Card Premium */}
+          {(() => {
+            const precio = priceFor('PREMIUM');
+            const isCurrent = currentPlan === 'PREMIUM';
+            const bullets = getBullets(cadencia);
+            return (
+              <div
+                className={`flex flex-col rounded-2xl border-2 p-5 ${
+                  !isCurrent ? 'border-primary bg-primary/5' : 'border-border bg-card'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h3 className="text-base font-bold text-foreground">Premium Club LPMBE</h3>
+                  {!isCurrent && (
+                    <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                      Más popular
                     </span>
-                    <span className="ml-1 text-xs text-muted-foreground">{sufijo}</span>
-                  </div>
-                  <ul className="flex-1 space-y-1.5 text-xs">
-                    {card.bullets.map((b, i) => (
-                      <li key={i} className="flex items-start gap-1.5">
-                        <svg className="h-3.5 w-3.5 shrink-0 text-green-600 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        <span className="text-foreground">{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    type="button"
-                    onClick={() => startCheckout(card.plan)}
-                    disabled={isCurrent || !!loading}
-                    className={`mt-4 w-full rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
-                      card.highlight
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-amber-500 text-white hover:bg-amber-600'
-                    }`}
-                  >
-                    {isCurrent
-                      ? 'Plan actual'
-                      : loading === card.plan
-                        ? 'Redirigiendo a Stripe…'
-                        : `Suscribirme — ${precio} €${sufijo}`}
-                  </button>
+                  )}
+                  {isCurrent && (
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-800">
+                      Tu plan
+                    </span>
+                  )}
                 </div>
-              );
-            })}
-          </div>
+                <div className="mb-3">
+                  <span className="text-2xl font-bold text-foreground">
+                    {precio != null ? `${precio} €` : '—'}
+                  </span>
+                  <span className="ml-1 text-xs text-muted-foreground">{sufijo}</span>
+                </div>
+                <ul className="flex-1 space-y-1.5 text-xs">
+                  {bullets.map((b, i) => (
+                    <li key={i} className="flex items-start gap-1.5">
+                      <svg className="h-3.5 w-3.5 shrink-0 text-green-600 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span className="text-foreground">{b}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => startCheckout('PREMIUM')}
+                  disabled={isCurrent || !!loading}
+                  className="mt-4 w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {isCurrent
+                    ? 'Plan actual'
+                    : loading === 'PREMIUM'
+                      ? 'Redirigiendo a Stripe…'
+                      : `Suscribirme — ${precio} €${sufijo}`}
+                </button>
+              </div>
+            );
+          })()}
 
           {error && (
             <p className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">

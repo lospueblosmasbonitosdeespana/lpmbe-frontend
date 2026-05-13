@@ -81,7 +81,7 @@ const FEATURES: Feature[] = [
   { text: "Story/mes en el highlight «Ventajas Club»",           free: false,                         prem: P.monthlyStoryIncluded > 0 },
   { text: "Mención en post editorial mensual del pueblo",        free: false,                         prem: P.monthlyEditorialMention > 0 },
   { text: "Estadísticas avanzadas (gráficos, conversión)",       free: false,                         prem: P.statsLevel === 'ADVANCED' },
-  { text: "Placa física «Premium Club LPMBE»",                   free: F.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
+  { text: "Placa física «Premium Club LPMBE» (solo plan anual)", free: F.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
 ];
 
 
