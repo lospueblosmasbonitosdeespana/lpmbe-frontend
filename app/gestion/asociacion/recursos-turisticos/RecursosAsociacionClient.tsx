@@ -618,7 +618,10 @@ export default function RecursosAsociacionClient() {
   const [mapaTodos, setMapaTodos] = useState<MapaItem[]>([]);
   const [mapaCategoria, setMapaCategoria] =
     useState<CategoriaRecurso | 'todos'>('todos');
-  const [mapaSoloActivos, setMapaSoloActivos] = useState(false);
+  // Por defecto NO mostramos inactivos: la mayoría de recursos sin validar lo
+  // están y, si los pintásemos, ocultarían la lectura por categoría. El usuario
+  // puede activarlos con el checkbox.
+  const [mapaMostrarInactivos, setMapaMostrarInactivos] = useState(false);
 
   const isFormActive = showCreate || editId !== null;
 
@@ -647,21 +650,23 @@ export default function RecursosAsociacionClient() {
   const mapaItemsFiltrados = useMemo(() => {
     return mapaTodos.filter((m) => {
       if (mapaCategoria !== 'todos' && m.categoria !== mapaCategoria) return false;
-      if (mapaSoloActivos && !m.activo) return false;
+      if (!mapaMostrarInactivos && !m.activo) return false;
       if (m.lat == null || m.lng == null) return false;
       return true;
     });
-  }, [mapaTodos, mapaCategoria, mapaSoloActivos]);
+  }, [mapaTodos, mapaCategoria, mapaMostrarInactivos]);
 
+  // El color del marker representa SIEMPRE la categoría real del recurso.
+  // Los inactivos se filtran por defecto desde `mapaMostrarInactivos`.
   const existingMarkers = mapaItemsFiltrados.map((m) => ({
     lat: m.lat as number,
     lng: m.lng as number,
     label: m.nombre,
-    // Inactivos siempre en gris para distinguirlos a simple vista.
-    color: m.activo ? CATEGORIA_COLORS[m.categoria] : 'grey',
+    color: CATEGORIA_COLORS[m.categoria],
   }));
 
-  // Conteos por categoría para mostrar en los botones del filtro.
+  // Conteos por categoría: respetan el filtro de inactivos para que los números
+  // de los botones cuadren con lo que se ve en el mapa.
   const conteoPorCategoria = useMemo(() => {
     const c: Record<CategoriaRecurso | 'todos', number> = {
       todos: 0,
@@ -671,12 +676,12 @@ export default function RecursosAsociacionClient() {
       'rrnn-asociacion': 0,
     };
     for (const m of mapaTodos) {
-      if (mapaSoloActivos && !m.activo) continue;
+      if (!mapaMostrarInactivos && !m.activo) continue;
       c.todos += 1;
       c[m.categoria] += 1;
     }
     return c;
-  }, [mapaTodos, mapaSoloActivos]);
+  }, [mapaTodos, mapaMostrarInactivos]);
 
   const selectedMapPosition = (() => {
     const form = showCreate ? createForm : editId !== null ? editForm : null;
@@ -948,10 +953,10 @@ export default function RecursosAsociacionClient() {
           <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <input
               type="checkbox"
-              checked={mapaSoloActivos}
-              onChange={(e) => setMapaSoloActivos(e.target.checked)}
+              checked={mapaMostrarInactivos}
+              onChange={(e) => setMapaMostrarInactivos(e.target.checked)}
             />
-            Solo activos
+            Mostrar inactivos
           </label>
           <span className="text-xs text-muted-foreground">
             Mostrando {existingMarkers.length} en el mapa
@@ -972,8 +977,9 @@ export default function RecursosAsociacionClient() {
         />
 
         <p className="text-xs text-muted-foreground">
-          Pulsa un marcador para abrir su tarjeta (RRTT Asociación) o ir a su
-          edición/vista previa (resto). Los inactivos se ven en gris.
+          El color del marcador indica la categoría del recurso. Pulsa para
+          abrir su tarjeta (RRTT Asociación) o ir a su edición/vista previa
+          (resto). Los inactivos están ocultos por defecto.
         </p>
       </div>
 

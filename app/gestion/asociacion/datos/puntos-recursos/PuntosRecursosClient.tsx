@@ -72,7 +72,6 @@ type Resp = {
 
 const PLAN_LABEL: Record<string, string> = {
   FREE: 'Gratuito',
-  RECOMENDADO: 'Recomendado',
   PREMIUM: 'Premium',
   SELECTION: 'Selection',
 };
@@ -104,7 +103,6 @@ const MATCHERS: Record<ScopeFilter, (r: Recurso) => boolean> = {
 // ─── Badge de validación ────────────────────────────────────────────────────
 const PLAN_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   FREE:        { bg: 'bg-emerald-100', text: 'text-emerald-800', label: 'Negocio Free' },
-  RECOMENDADO: { bg: 'bg-blue-100',    text: 'text-blue-800',    label: 'Recomendado' },
   PREMIUM:     { bg: 'bg-purple-100',  text: 'text-purple-800',  label: 'Premium' },
   SELECTION:   { bg: 'bg-amber-100',   text: 'text-amber-800',   label: 'Selection' },
 };

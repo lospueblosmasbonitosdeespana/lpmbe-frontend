@@ -5,7 +5,7 @@
  * usa esta config para decidir qué UI mostrar (badges, CTAs, etc.).
  */
 
-export type PlanNegocio = 'FREE' | 'RECOMENDADO' | 'PREMIUM' | 'SELECTION';
+export type PlanNegocio = 'FREE' | 'PREMIUM' | 'SELECTION';
 
 export type StatsLevel = 'NONE' | 'BASIC' | 'ADVANCED';
 export type ListingPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'FEATURED';
@@ -74,36 +74,6 @@ export const PLAN_FEATURES: Record<PlanNegocio, PlanFeatures> = {
     featuredOffersEnabled: false,
     monthlyEditorialMention: 0,
     monthlyStoryIncluded: 0,
-    iaRecommendationBoost: false,
-    physicalPlaqueIncluded: false,
-    selectionPageEnabled: false,
-    guideIncluded: false,
-    cobranding: false,
-  },
-  RECOMENDADO: {
-    maxPhotos: 15,
-    publicPhoneVisible: true,
-    publicEmailVisible: true,
-    publicWebVisible: true,
-    publicWhatsappVisible: true,
-    publicScheduleVisible: true,
-    publicMapVisible: true,
-    qrValidationEnabled: true,
-    clubOfferEnabled: true,
-    recommendedBadgeEnabled: true,
-    premiumBadgeEnabled: false,
-    selectionBadgeEnabled: false,
-    translationEnabled: true,
-    statsLevel: 'BASIC',
-    listingPriority: 'MEDIUM',
-    listingSortWeight: 2,
-    serviceHighlightsEnabled: true,
-    bookingLinkEnabled: false,
-    socialLinksEnabled: false,
-    customLandingEnabled: false,
-    featuredOffersEnabled: false,
-    monthlyEditorialMention: 0,
-    monthlyStoryIncluded: 1,
     iaRecommendationBoost: false,
     physicalPlaqueIncluded: false,
     selectionPageEnabled: false,
@@ -179,21 +149,19 @@ export function getPlanFeatures(plan?: string | null): PlanFeatures {
 
 export const PLAN_LABELS: Record<PlanNegocio, string> = {
   FREE: 'Gratuito',
-  RECOMENDADO: 'Recomendado',
   PREMIUM: 'Premium',
   SELECTION: 'Selection',
 };
 
 /** Planes para negocios dentro de pueblos de la red */
-export const PLAN_ORDER: PlanNegocio[] = ['FREE', 'RECOMENDADO', 'PREMIUM'];
+export const PLAN_ORDER: PlanNegocio[] = ['FREE', 'PREMIUM'];
 
 /** Todos los planes incluyendo Selection (fuera de la red) */
-export const ALL_PLANS: PlanNegocio[] = ['FREE', 'RECOMENDADO', 'PREMIUM', 'SELECTION'];
+export const ALL_PLANS: PlanNegocio[] = ['FREE', 'PREMIUM', 'SELECTION'];
 
 /** Precios mensuales en euros (null = consultar / por contacto). */
 export const PLAN_PRICES_MONTHLY: Record<PlanNegocio, number | null> = {
   FREE: 0,
-  RECOMENDADO: 19,
   PREMIUM: 49,
   SELECTION: null,
 };
@@ -201,7 +169,6 @@ export const PLAN_PRICES_MONTHLY: Record<PlanNegocio, number | null> = {
 /** Precios anuales con descuento (≈ 2 meses gratis). */
 export const PLAN_PRICES_YEARLY: Record<PlanNegocio, number | null> = {
   FREE: 0,
-  RECOMENDADO: 199,
   PREMIUM: 499,
   SELECTION: 1500,
 };

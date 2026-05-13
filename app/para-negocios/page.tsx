@@ -55,37 +55,33 @@ const LOCK = (
 );
 
 const F = PLAN_FEATURES.FREE;
-const R = PLAN_FEATURES.RECOMENDADO;
 const P = PLAN_FEATURES.PREMIUM;
 
-type Feature = { text: string; free: boolean; reco: boolean; prem: boolean };
+type Feature = { text: string; free: boolean; prem: boolean };
 
 const FEATURES: Feature[] = [
-  { text: "Aparición en listados del Club",                      free: true,                          reco: true,                                                  prem: true },
-  { text: "Validación QR de socios en el local",                 free: F.qrValidationEnabled,         reco: R.qrValidationEnabled,                                 prem: P.qrValidationEnabled },
-  { text: "Oferta/descuento para socios del Club",               free: F.clubOfferEnabled,            reco: R.clubOfferEnabled,                                    prem: P.clubOfferEnabled },
-  { text: "1 foto del negocio",                                  free: F.maxPhotos >= 1,              reco: R.maxPhotos >= 1,                                      prem: P.maxPhotos >= 1 },
-  { text: "Mapa con ubicación y «Cómo llegar»",                  free: F.publicMapVisible,            reco: R.publicMapVisible,                                    prem: P.publicMapVisible },
-  { text: "Teléfono, email y web visibles",                      free: F.publicPhoneVisible,          reco: R.publicPhoneVisible,                                  prem: P.publicPhoneVisible },
-  { text: `Galería de fotos (hasta ${R.maxPhotos})`,             free: F.maxPhotos >= R.maxPhotos,    reco: true,                                                  prem: true },
-  { text: "Horarios públicos detallados",                        free: F.publicScheduleVisible,       reco: R.publicScheduleVisible,                               prem: P.publicScheduleVisible },
-  { text: "Botón WhatsApp directo",                              free: F.publicWhatsappVisible,       reco: R.publicWhatsappVisible,                               prem: P.publicWhatsappVisible },
-  { text: "Servicios con iconos (WiFi, parking, mascotas…)",     free: F.serviceHighlightsEnabled,    reco: R.serviceHighlightsEnabled,                            prem: P.serviceHighlightsEnabled },
-  { text: "Badge «Club LPMBE»",                                  free: F.recommendedBadgeEnabled,     reco: R.recommendedBadgeEnabled,                             prem: R.recommendedBadgeEnabled || P.premiumBadgeEnabled },
-  { text: "Traducción automática a 7 idiomas",                   free: F.translationEnabled,          reco: R.translationEnabled,                                  prem: P.translationEnabled },
-  { text: "Estadísticas básicas (visitas, clics)",               free: F.statsLevel !== 'NONE',       reco: R.statsLevel !== 'NONE',                               prem: P.statsLevel !== 'NONE' },
-  { text: "Story/mes en el highlight «Ventajas Club»",           free: F.monthlyStoryIncluded > 0,    reco: R.monthlyStoryIncluded > 0,                            prem: P.monthlyStoryIncluded > 0 },
-  { text: `Galería ampliada (hasta ${P.maxPhotos} fotos)`,       free: F.maxPhotos >= P.maxPhotos,    reco: R.maxPhotos >= P.maxPhotos,                            prem: true },
-  { text: "Landing personalizada del negocio",                   free: F.customLandingEnabled,        reco: R.customLandingEnabled,                                prem: P.customLandingEnabled },
-  { text: "Botón de reserva (Booking, TheFork, web propia)",     free: F.bookingLinkEnabled,          reco: R.bookingLinkEnabled,                                  prem: P.bookingLinkEnabled },
-  { text: "Links a tus redes sociales",                          free: F.socialLinksEnabled,          reco: R.socialLinksEnabled,                                  prem: P.socialLinksEnabled },
-  { text: "Ofertas destacadas con diseño premium",               free: F.featuredOffersEnabled,       reco: R.featuredOffersEnabled,                               prem: P.featuredOffersEnabled },
-  { text: "Estadísticas avanzadas (gráficos, conversión)",       free: F.statsLevel === 'ADVANCED',   reco: R.statsLevel === 'ADVANCED',                           prem: P.statsLevel === 'ADVANCED' },
-  { text: "Badge dorado «Premium Club LPMBE»",                   free: F.premiumBadgeEnabled,         reco: R.premiumBadgeEnabled,                                 prem: P.premiumBadgeEnabled },
-  { text: "Posición destacada (primero en listados)",            free: F.listingPriority === 'HIGH',  reco: R.listingPriority === 'HIGH',                          prem: P.listingPriority === 'HIGH' },
-  { text: "La IA del Club te recomienda primero a los socios",   free: F.iaRecommendationBoost,       reco: R.iaRecommendationBoost,                               prem: P.iaRecommendationBoost },
-  { text: "Mención en post editorial mensual del pueblo",        free: F.monthlyEditorialMention > 0, reco: R.monthlyEditorialMention > 0,                         prem: P.monthlyEditorialMention > 0 },
-  { text: "Placa física «Premium Club LPMBE»",                   free: F.physicalPlaqueIncluded,      reco: R.physicalPlaqueIncluded,                              prem: P.physicalPlaqueIncluded },
+  { text: "Aparición en listados del Club",                      free: true,                          prem: true },
+  { text: "Validación QR de socios en el local",                 free: F.qrValidationEnabled,         prem: P.qrValidationEnabled },
+  { text: "Oferta/descuento para socios del Club",               free: F.clubOfferEnabled,            prem: P.clubOfferEnabled },
+  { text: "1 foto del negocio",                                  free: F.maxPhotos >= 1,              prem: P.maxPhotos >= 1 },
+  { text: "Mapa con ubicación y «Cómo llegar»",                  free: F.publicMapVisible,            prem: P.publicMapVisible },
+  { text: "Teléfono, email y web visibles",                      free: F.publicPhoneVisible,          prem: P.publicPhoneVisible },
+  { text: `Galería de hasta ${P.maxPhotos} fotos`,               free: false,                         prem: true },
+  { text: "Horarios públicos detallados",                        free: F.publicScheduleVisible,       prem: P.publicScheduleVisible },
+  { text: "Botón WhatsApp directo",                              free: F.publicWhatsappVisible,       prem: P.publicWhatsappVisible },
+  { text: "Servicios con iconos (WiFi, parking, mascotas…)",     free: F.serviceHighlightsEnabled,    prem: P.serviceHighlightsEnabled },
+  { text: "Badge dorado «Premium Club LPMBE»",                   free: false,                         prem: P.premiumBadgeEnabled },
+  { text: "Traducción automática a 7 idiomas",                   free: F.translationEnabled,          prem: P.translationEnabled },
+  { text: "Ofertas destacadas con diseño premium",               free: F.featuredOffersEnabled,       prem: P.featuredOffersEnabled },
+  { text: "Landing personalizada del negocio",                   free: F.customLandingEnabled,        prem: P.customLandingEnabled },
+  { text: "Botón de reserva (Booking, TheFork, web propia)",     free: F.bookingLinkEnabled,          prem: P.bookingLinkEnabled },
+  { text: "Links a tus redes sociales",                          free: F.socialLinksEnabled,           prem: P.socialLinksEnabled },
+  { text: "Posición destacada (primero en listados)",            free: false,                         prem: P.listingPriority === 'HIGH' },
+  { text: "La IA del Club te recomienda primero a los socios",   free: F.iaRecommendationBoost,       prem: P.iaRecommendationBoost },
+  { text: "Story/mes en el highlight «Ventajas Club»",           free: false,                         prem: P.monthlyStoryIncluded > 0 },
+  { text: "Mención en post editorial mensual del pueblo",        free: false,                         prem: P.monthlyEditorialMention > 0 },
+  { text: "Estadísticas avanzadas (gráficos, conversión)",       free: false,                         prem: P.statsLevel === 'ADVANCED' },
+  { text: "Placa física «Premium Club LPMBE»",                   free: F.physicalPlaqueIncluded,      prem: P.physicalPlaqueIncluded },
 ];
 
 
@@ -110,8 +106,8 @@ export default async function ParaNegociosPage() {
         </div>
       </div>
 
-      {/* Pricing cards — 3 planes para negocios en la red */}
-      <div className="mx-auto max-w-5xl px-4 py-12">
+      {/* Pricing cards — 2 planes para negocios en la red */}
+      <div className="mx-auto max-w-4xl px-4 py-12">
         <h2 className="text-center text-2xl font-bold text-foreground mb-2">
           Planes para negocios en pueblos de la red
         </h2>
@@ -120,7 +116,7 @@ export default async function ParaNegociosPage() {
           que mejor se adapte. Cancela cuando quieras.
         </p>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {/* FREE */}
           <div className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="mb-6">
@@ -150,44 +146,14 @@ export default async function ParaNegociosPage() {
             </div>
           </div>
 
-          {/* RECOMENDADO */}
-          <div className="flex flex-col rounded-2xl border-2 border-primary bg-card p-6 shadow-lg relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
-              Más popular
-            </div>
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-foreground">Recomendado</h3>
-              <div className="mt-3">
-                <span className="text-3xl font-bold text-foreground">{fmtEuros(PLAN_PRICES_MONTHLY.RECOMENDADO)}</span>
-                <span className="text-sm text-muted-foreground">/mes</span>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                o {fmtEuros(PLAN_PRICES_YEARLY.RECOMENDADO)}/año (≈ 2 meses gratis)
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Tu negocio visible al completo: galería, horarios, WhatsApp, badge y stats.
-              </p>
-            </div>
-            <ul className="flex-1 space-y-3 text-sm">
-              {FEATURES.map((f) => (
-                <li key={f.text} className="flex items-start gap-2">
-                  {f.reco ? CHECK : LOCK}
-                  <span className={f.reco ? "text-foreground" : "text-muted-foreground/50"}>
-                    {f.text}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 pt-4 border-t border-border space-y-2">
-              <PlanCTAButton plan="RECOMENDADO" variant="primary" />
-            </div>
-          </div>
-
           {/* PREMIUM */}
-          <div className="flex flex-col rounded-2xl border border-amber-300 bg-card p-6 shadow-sm">
+          <div className="flex flex-col rounded-2xl border-2 border-amber-400 bg-card p-6 shadow-lg relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-bold text-white">
+              Recomendado
+            </div>
             <div className="mb-6">
               <div className="flex items-center gap-2">
-                <h3 className="text-xl font-bold text-foreground">Premium</h3>
+                <h3 className="text-xl font-bold text-foreground">Premium Club LPMBE</h3>
                 <svg className="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
@@ -200,7 +166,7 @@ export default async function ParaNegociosPage() {
                 o {fmtEuros(PLAN_PRICES_YEARLY.PREMIUM)}/año (≈ 2 meses gratis)
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Tu landing propia, IA del Club que te recomienda, posición destacada y placa física.
+                Todo lo que tu negocio necesita: galería, landing propia, posición destacada, IA, badge dorado, placa física y mucho más.
               </p>
             </div>
             <ul className="flex-1 space-y-3 text-sm">
@@ -241,19 +207,11 @@ export default async function ParaNegociosPage() {
             <h3 className="text-lg font-bold text-foreground mb-4">
               Incluido en tu plan
             </h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-border bg-muted/30 p-4">
-                <p className="text-sm font-bold text-foreground">Recomendado</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {R.monthlyStoryIncluded} story/mes en el highlight permanente «Ventajas Club».
-                </p>
-              </div>
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
-                <p className="text-sm font-bold text-amber-900">Premium</p>
-                <p className="mt-1 text-xs text-amber-900/80">
-                  {P.monthlyEditorialMention} mención editorial mensual + {P.monthlyStoryIncluded} story en el highlight del Club.
-                </p>
-              </div>
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+              <p className="text-sm font-bold text-amber-900">Premium Club LPMBE</p>
+              <p className="mt-1 text-xs text-amber-900/80">
+                {P.monthlyEditorialMention} mención editorial mensual + {P.monthlyStoryIncluded} story/mes en el highlight permanente «Ventajas Club».
+              </p>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
               Las menciones se publican dentro de contenido editorial sobre el pueblo

@@ -94,7 +94,7 @@ export default function ColaboradorClient() {
   useEffect(() => { loadRecursos(); }, []);
 
   // Auto-apertura del modal "Mejorar plan" cuando llega desde /para-negocios
-  // con ?upgrade=RECOMENDADO|PREMIUM. También procesa ?plan=ok|cancel tras
+  // con ?upgrade=PREMIUM. También procesa ?plan=ok|cancel tras
   // volver del checkout de Stripe.
   useEffect(() => {
     if (recursos.length === 0) return;
@@ -115,7 +115,7 @@ export default function ColaboradorClient() {
       window.history.replaceState({}, '', url.toString());
     }
 
-    if (upgrade && (upgrade === 'RECOMENDADO' || upgrade === 'PREMIUM')) {
+    if (upgrade && upgrade === 'PREMIUM') {
       const negocio = recursos.find((r) => r.scope === 'NEGOCIO');
       if (negocio) {
         setSelectedId(negocio.id);
@@ -221,19 +221,14 @@ function PlanBanner({
 }) {
   const plan = (recurso.planNegocio ?? 'FREE') as PlanNegocio;
   const isFree = plan === 'FREE';
-  const isRecomendado = plan === 'RECOMENDADO';
-  const puedeSubir = isFree || isRecomendado;
+  const puedeSubir = isFree;
 
   const bg = isFree
     ? 'border-amber-200 bg-amber-50'
-    : isRecomendado
-      ? 'border-primary/30 bg-primary/5'
-      : 'border-amber-300 bg-amber-100';
+    : 'border-amber-300 bg-amber-100';
   const text = isFree
     ? 'text-amber-900'
-    : isRecomendado
-      ? 'text-primary'
-      : 'text-amber-900';
+    : 'text-amber-900';
 
   return (
     <div className={`mb-5 rounded-xl border ${bg} p-4`}>
@@ -244,8 +239,7 @@ function PlanBanner({
             {PLAN_LABELS[plan] ?? plan}
           </div>
           <p className={`mt-1 text-xs ${text} opacity-80`}>
-            {isFree && 'Funciones limitadas. Mejora a Recomendado para galería de fotos, WhatsApp, horarios, badge y stats.'}
-            {isRecomendado && 'Sube a Premium para landing personalizada, IA del Club que te recomienda, posición destacada y placa física.'}
+            {isFree && 'Funciones limitadas. Pasa a Premium para galería completa, WhatsApp, horarios, servicios, landing, badge dorado, estadísticas y mucho más.'}
             {plan === 'PREMIUM' && '¡Disfrutas de todas las ventajas Premium! Posición destacada, IA, placa física y mención editorial mensual.'}
             {plan === 'SELECTION' && 'Eres parte del Club LPMBE Selection. Lo mejor de lo mejor.'}
           </p>

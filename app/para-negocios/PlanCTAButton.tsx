@@ -12,12 +12,11 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 interface Props {
-  plan: 'RECOMENDADO' | 'PREMIUM';
+  plan: 'PREMIUM';
   variant?: Variant;
 }
 
 const PLAN_LABELS = {
-  RECOMENDADO: 'Recomendado',
   PREMIUM: 'Premium',
 } as const;
 
@@ -92,7 +91,7 @@ function ChooseFlowModal({
   isLoggedIn,
   onClose,
 }: {
-  plan: 'RECOMENDADO' | 'PREMIUM';
+  plan: 'PREMIUM';
   isLoggedIn: boolean;
   onClose: () => void;
 }) {

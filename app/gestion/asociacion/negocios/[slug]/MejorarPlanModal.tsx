@@ -10,7 +10,7 @@ import {
 type Cadencia = 'MES' | 'ANUAL';
 
 interface PlanCard {
-  plan: 'RECOMENDADO' | 'PREMIUM';
+  plan: 'PREMIUM';
   label: string;
   highlight: boolean;
   bullets: string[];
@@ -18,30 +18,22 @@ interface PlanCard {
 
 const CARDS: PlanCard[] = [
   {
-    plan: 'RECOMENDADO',
-    label: 'Recomendado',
+    plan: 'PREMIUM',
+    label: 'Premium Club LPMBE',
     highlight: true,
     bullets: [
-      'Galería de fotos completa',
-      'WhatsApp y horarios públicos',
-      'Badge "Club LPMBE"',
-      'Traducción a 7 idiomas',
-      'Estadísticas básicas',
-      '1 story/mes en el highlight del Club',
-    ],
-  },
-  {
-    plan: 'PREMIUM',
-    label: 'Premium',
-    highlight: false,
-    bullets: [
-      'Todo lo del plan Recomendado +',
+      'Galería de hasta 30 fotos',
+      'WhatsApp, horarios y servicios visibles',
+      'Enlace de reservas (Booking, web propia…)',
+      'Redes sociales del negocio enlazadas',
       'Landing personalizada del negocio',
+      'Ofertas destacadas para socios del Club',
       'Posición destacada en listados',
-      'IA del Club te recomienda primero',
-      'Mención editorial mensual',
-      'Badge dorado y placa física',
-      'Estadísticas avanzadas',
+      'IA del Club te recomienda a los socios',
+      'Traducción automática a 7 idiomas',
+      'Mención editorial + 1 story/mes en RRSS LPMBE',
+      'Badge dorado Premium y placa física',
+      'Estadísticas avanzadas de visitas y clics',
     ],
   },
 ];
@@ -61,7 +53,7 @@ export default function MejorarPlanModal({
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const startCheckout = async (plan: 'RECOMENDADO' | 'PREMIUM') => {
+  const startCheckout = async (plan: 'PREMIUM') => {
     setLoading(plan);
     setError(null);
     try {
@@ -85,7 +77,7 @@ export default function MejorarPlanModal({
     }
   };
 
-  const priceFor = (plan: 'RECOMENDADO' | 'PREMIUM'): number | null => {
+  const priceFor = (plan: 'PREMIUM'): number | null => {
     return cadencia === 'MES' ? PLAN_PRICES_MONTHLY[plan] : PLAN_PRICES_YEARLY[plan];
   };
 
@@ -97,7 +89,7 @@ export default function MejorarPlanModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
@@ -151,7 +143,7 @@ export default function MejorarPlanModal({
           </div>
 
           {/* Cards */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4">
             {CARDS.map((card) => {
               const precio = priceFor(card.plan);
               const isCurrent = currentPlan === card.plan;

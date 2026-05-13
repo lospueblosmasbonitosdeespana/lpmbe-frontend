@@ -358,7 +358,7 @@ export default async function ClubPuebloPage({
     )
     .slice(0, 6);
 
-  const PLAN_SORT: Record<string, number> = { PREMIUM: 0, RECOMENDADO: 1, FREE: 2 };
+  const PLAN_SORT: Record<string, number> = { PREMIUM: 0, FREE: 1 };
   const negociosByTipo = TIPO_ORDER
     .map((tipo) => ({
       tipo,

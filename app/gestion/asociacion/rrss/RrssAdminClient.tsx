@@ -88,8 +88,6 @@ function planClass(plan: string | null): string {
       return 'bg-slate-900 text-amber-300';
     case 'PREMIUM':
       return 'bg-amber-100 text-amber-900';
-    case 'RECOMENDADO':
-      return 'bg-primary/10 text-primary';
     default:
       return 'bg-gray-100 text-gray-700';
   }

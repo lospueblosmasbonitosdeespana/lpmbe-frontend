@@ -88,7 +88,6 @@ type Negocio = {
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   FREE: { label: 'Gratuito', color: 'bg-muted text-muted-foreground' },
-  RECOMENDADO: { label: 'Recomendado', color: 'bg-blue-100 text-blue-800' },
   PREMIUM: { label: 'Premium', color: 'bg-amber-100 text-amber-800' },
   SELECTION: { label: 'Selection', color: 'bg-gradient-to-r from-slate-800 to-slate-700 text-white' },
 };
@@ -843,9 +842,7 @@ export default function NegociosPuebloClient({
                   ? 'bg-slate-900 border border-slate-600'
                   : planKey === 'PREMIUM'
                     ? 'bg-amber-50 border border-amber-200'
-                    : planKey === 'RECOMENDADO'
-                      ? 'bg-blue-50 border border-blue-200'
-                      : '';
+                    : '';
                 return isFree ? (
                   <div className="mb-3 flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2">
                     <span className="text-xs text-muted-foreground">Plan Gratuito — Funcionalidades limitadas en la web pública</span>
@@ -863,15 +860,7 @@ export default function NegociosPuebloClient({
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${pl.color}`}>{pl.label}</span>
                       <span className={`text-xs ${isSelection ? 'text-slate-300' : 'text-muted-foreground'}`}>Plan activo</span>
                     </div>
-                    {planKey === 'RECOMENDADO' && (
-                      <button
-                        type="button"
-                        onClick={() => setMejorarPlanNegocio(n)}
-                        className="rounded bg-amber-500 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-600"
-                      >
-                        Subir a Premium
-                      </button>
-                    )}
+                    
                   </div>
                 );
               })()}

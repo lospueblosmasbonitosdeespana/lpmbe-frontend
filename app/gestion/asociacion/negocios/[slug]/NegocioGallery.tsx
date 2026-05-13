@@ -162,8 +162,8 @@ export default function NegocioGallery({
     return <p className="text-xs text-muted-foreground py-2">Cargando galería...</p>;
   }
 
-  const nextPlanName = plan === 'FREE' ? 'Recomendado' : plan === 'RECOMENDADO' ? 'Premium' : null;
-  const nextPlanLimit = plan === 'FREE' ? 15 : plan === 'RECOMENDADO' ? 30 : null;
+  const nextPlanName = plan === 'FREE' ? 'Premium' : null;
+  const nextPlanLimit = plan === 'FREE' ? 30 : null;
 
   return (
     <div className="mt-3 space-y-3">
