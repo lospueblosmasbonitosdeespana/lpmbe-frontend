@@ -59,6 +59,60 @@ type Colaborador = {
   };
 };
 
+// Categorías que devuelve `/api/gestion/asociacion/recursos-turisticos/mapa-todos`.
+// Se corresponden con (scope × validacionTipo) y se usan tanto para colorear
+// los marcadores del mapa como para los botones de filtro.
+type CategoriaRecurso = 'rrtt-pueblo' | 'rrnn-pueblo' | 'rrtt-asociacion' | 'rrnn-asociacion';
+
+type MapaItem = {
+  id: number;
+  nombre: string;
+  slug: string | null;
+  tipo: string;
+  scope: string;
+  validacionTipo: string;
+  lat: number | null;
+  lng: number | null;
+  activo: boolean;
+  cerradoTemporal: boolean;
+  visibilidad: 'PUBLICO' | 'SOLO_CLUB' | 'OCULTO' | null;
+  provincia: string | null;
+  comunidad: string | null;
+  localidad: string | null;
+  fotoUrl: string | null;
+  pueblo: { id: number; nombre: string; slug: string } | null;
+  categoria: CategoriaRecurso;
+};
+
+const CATEGORIA_LABELS: Record<CategoriaRecurso | 'todos', string> = {
+  todos: 'Todos',
+  'rrtt-pueblo': 'RRTT Pueblos',
+  'rrnn-pueblo': 'RRNN Pueblos',
+  'rrtt-asociacion': 'RRTT Asociación',
+  'rrnn-asociacion': 'RRNN Asociación',
+};
+
+// Colores soportados por MapLocationPicker (leaflet-color-markers).
+// Usamos uno por categoría y mantenemos `grey` para inactivos.
+const CATEGORIA_COLORS: Record<CategoriaRecurso, string> = {
+  'rrtt-pueblo': 'blue',
+  'rrnn-pueblo': 'green',
+  'rrtt-asociacion': 'red',
+  'rrnn-asociacion': 'gold',
+};
+
+// Lookup de página de edición específica por categoría (para los recursos
+// que NO son RRTT Asociación, los cuales se editan en otra página).
+function editLinkFor(item: MapaItem): string | null {
+  if (item.categoria === 'rrtt-asociacion') return null; // edición inline aquí
+  if (item.categoria === 'rrnn-asociacion')
+    return `/gestion/asociacion/club/recursos-asociacion/${item.id}/editar`;
+  // Recursos de pueblo: la edición la hace el alcalde dentro de su pueblo.
+  // Como ADMIN, ofrecemos vista previa con el slug.
+  if (item.slug) return `/recursos/${item.slug}?preview=1`;
+  return null;
+}
+
 type FormData = {
   nombre: string;
   tipo: string;
@@ -558,6 +612,14 @@ export default function RecursosAsociacionClient() {
 
   const recursoRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
+  // ── Mapa unificado: todos los recursos no-negocio en una sola vista ──
+  // Cargamos las 4 fuentes (RRTT/RRNN × Pueblos/Asociación) en una sola
+  // llamada al endpoint admin y permitimos filtrarlas por categoría.
+  const [mapaTodos, setMapaTodos] = useState<MapaItem[]>([]);
+  const [mapaCategoria, setMapaCategoria] =
+    useState<CategoriaRecurso | 'todos'>('todos');
+  const [mapaSoloActivos, setMapaSoloActivos] = useState(false);
+
   const isFormActive = showCreate || editId !== null;
 
   function toggleDetail(id: number) {
@@ -580,14 +642,41 @@ export default function RecursosAsociacionClient() {
     });
   }, [recursos, search, filterActivo]);
 
-  const existingMarkers = recursos
-    .filter((r) => r.lat && r.lng)
-    .map((r) => ({
-      lat: r.lat,
-      lng: r.lng,
-      label: r.nombre,
-      color: r.activo ? 'blue' : 'grey',
-    }));
+  // Items del mapa filtrados por categoría/activos. Mantenemos el orden
+  // estable para poder mapear el índice de marker → item en el click.
+  const mapaItemsFiltrados = useMemo(() => {
+    return mapaTodos.filter((m) => {
+      if (mapaCategoria !== 'todos' && m.categoria !== mapaCategoria) return false;
+      if (mapaSoloActivos && !m.activo) return false;
+      if (m.lat == null || m.lng == null) return false;
+      return true;
+    });
+  }, [mapaTodos, mapaCategoria, mapaSoloActivos]);
+
+  const existingMarkers = mapaItemsFiltrados.map((m) => ({
+    lat: m.lat as number,
+    lng: m.lng as number,
+    label: m.nombre,
+    // Inactivos siempre en gris para distinguirlos a simple vista.
+    color: m.activo ? CATEGORIA_COLORS[m.categoria] : 'grey',
+  }));
+
+  // Conteos por categoría para mostrar en los botones del filtro.
+  const conteoPorCategoria = useMemo(() => {
+    const c: Record<CategoriaRecurso | 'todos', number> = {
+      todos: 0,
+      'rrtt-pueblo': 0,
+      'rrnn-pueblo': 0,
+      'rrtt-asociacion': 0,
+      'rrnn-asociacion': 0,
+    };
+    for (const m of mapaTodos) {
+      if (mapaSoloActivos && !m.activo) continue;
+      c.todos += 1;
+      c[m.categoria] += 1;
+    }
+    return c;
+  }, [mapaTodos, mapaSoloActivos]);
 
   const selectedMapPosition = (() => {
     const form = showCreate ? createForm : editId !== null ? editForm : null;
@@ -625,15 +714,25 @@ export default function RecursosAsociacionClient() {
   }
 
   function handleExistingMarkerClick(index: number) {
-    const withCoords = recursos.filter((r) => r.lat && r.lng);
-    const recurso = withCoords[index];
-    if (!recurso) return;
-    const el = recursoRefs.current.get(recurso.id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add('ring-2', 'ring-blue-400');
-      setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400'), 2000);
+    const item = mapaItemsFiltrados[index];
+    if (!item) return;
+
+    // RRTT Asociación QR → es lo que esta página gestiona inline: scroll a la
+    // tarjeta y la resaltamos brevemente.
+    if (item.categoria === 'rrtt-asociacion') {
+      const el = recursoRefs.current.get(item.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-blue-400');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400'), 2000);
+        return;
+      }
     }
+
+    // Resto de categorías: abrimos su página de edición (o vista previa) en
+    // pestaña nueva.
+    const link = editLinkFor(item);
+    if (link) window.open(link, '_blank');
   }
 
   // ---- Load ----
@@ -664,6 +763,22 @@ export default function RecursosAsociacionClient() {
   useEffect(() => {
     loadRecursos();
   }, [loadRecursos]);
+
+  // Carga del mapa unificado (4 fuentes en una sola llamada admin).
+  const loadMapaTodos = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/mapa-todos`, { cache: 'no-store' });
+      if (!res.ok) return; // si falla, el mapa funciona en modo "vacío"
+      const data = await res.json();
+      setMapaTodos(Array.isArray(data) ? (data as MapaItem[]) : []);
+    } catch {
+      // silencioso: el mapa unificado es complementario, no bloquea la página.
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMapaTodos();
+  }, [loadMapaTodos]);
 
   // ---- Create ----
 
@@ -793,8 +908,56 @@ export default function RecursosAsociacionClient() {
         </div>
       )}
 
-      {/* Mapa interactivo */}
-      <div className="mt-4">
+      {/* Mapa interactivo unificado: las 4 fuentes (RRTT/RRNN × Pueblos/Asociación) */}
+      <div className="mt-4 space-y-2">
+        {/* Filtro por categoría + leyenda de colores */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap rounded border overflow-hidden text-sm">
+            {(['todos', 'rrtt-pueblo', 'rrnn-pueblo', 'rrtt-asociacion', 'rrnn-asociacion'] as const).map((c) => {
+              const count = conteoPorCategoria[c];
+              const active = mapaCategoria === c;
+              const dot = c === 'todos' ? null : CATEGORIA_COLORS[c as CategoriaRecurso];
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setMapaCategoria(c)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 transition border-l first:border-l-0 ${
+                    active ? 'bg-gray-800 text-white' : 'bg-white text-muted-foreground hover:bg-muted/30'
+                  }`}
+                  title={CATEGORIA_LABELS[c]}
+                >
+                  {dot && (
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full border border-white/70"
+                      style={{
+                        background:
+                          dot === 'blue' ? '#2563eb' :
+                          dot === 'green' ? '#16a34a' :
+                          dot === 'red' ? '#dc2626' :
+                          dot === 'gold' ? '#d4a017' : '#6b7280',
+                      }}
+                    />
+                  )}
+                  <span>{CATEGORIA_LABELS[c]}</span>
+                  <span className={`text-xs ${active ? 'text-white/80' : 'text-muted-foreground'}`}>({count})</span>
+                </button>
+              );
+            })}
+          </div>
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={mapaSoloActivos}
+              onChange={(e) => setMapaSoloActivos(e.target.checked)}
+            />
+            Solo activos
+          </label>
+          <span className="text-xs text-muted-foreground">
+            Mostrando {existingMarkers.length} en el mapa
+          </span>
+        </div>
+
         <MapLocationPicker
           center={[40.0, -3.7]}
           zoom={6}
@@ -807,6 +970,11 @@ export default function RecursosAsociacionClient() {
           activeHint={activeHint}
           flyTo={flyToPos}
         />
+
+        <p className="text-xs text-muted-foreground">
+          Pulsa un marcador para abrir su tarjeta (RRTT Asociación) o ir a su
+          edición/vista previa (resto). Los inactivos se ven en gris.
+        </p>
       </div>
 
       {/* Botón / formulario de creación */}
