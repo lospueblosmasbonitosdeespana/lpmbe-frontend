@@ -7,6 +7,16 @@ import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/ed
 import MejorarPlanModal from '@/app/gestion/asociacion/negocios/[slug]/MejorarPlanModal';
 import { PLAN_LABELS, type PlanNegocio } from '@/lib/plan-features';
 
+const TIPO_TO_PUBLIC_ROUTE: Record<string, string> = {
+  HOTEL: 'donde-dormir',
+  CASA_RURAL: 'donde-dormir',
+  RESTAURANTE: 'donde-comer',
+  BAR: 'donde-comer',
+  BODEGA: 'donde-comer',
+  COMERCIO: 'donde-comprar',
+  TIENDA_ARTESANIA: 'donde-comprar',
+};
+
 const MapLocationPicker = dynamic(
   () => import('@/app/components/MapLocationPicker'),
   { ssr: false, loading: () => <div className="h-[300px] w-full animate-pulse rounded-lg bg-muted" /> },
@@ -37,6 +47,7 @@ type Recurso = {
   edadMaxMenor: number;
   horariosSemana?: HorarioDia[];
   cierresEspeciales?: CierreEspecial[];
+  pueblo?: { id: number; nombre: string; slug: string } | null;
 };
 
 type Metricas = {
@@ -283,16 +294,23 @@ function RecursoPanel({
             )}
           </div>
         </div>
-        {recurso.slug && (
-          <a
-            href={`/recursos/${recurso.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 rounded border border-blue-200 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 inline-flex items-center gap-1"
-          >
-            Ver en web ↗
-          </a>
-        )}
+        {recurso.slug && (() => {
+          const route = recurso.scope === 'NEGOCIO' ? TIPO_TO_PUBLIC_ROUTE[recurso.tipo] : null;
+          const pSlug = recurso.pueblo?.slug;
+          const href = route && pSlug
+            ? `/${route}/${pSlug}/${recurso.slug}`
+            : `/recursos/${recurso.slug}`;
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded border border-blue-200 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 inline-flex items-center gap-1"
+            >
+              Vista previa ↗
+            </a>
+          );
+        })()}
       </div>
 
       {/* Tabs */}

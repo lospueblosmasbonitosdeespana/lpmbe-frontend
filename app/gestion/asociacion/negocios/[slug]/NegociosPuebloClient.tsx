@@ -34,9 +34,20 @@ const TIPO_LABELS: Record<string, string> = {
   OTRO: 'Otro',
 };
 
+const TIPO_TO_ROUTE: Record<string, string> = {
+  HOTEL: 'donde-dormir',
+  CASA_RURAL: 'donde-dormir',
+  RESTAURANTE: 'donde-comer',
+  BAR: 'donde-comer',
+  BODEGA: 'donde-comer',
+  COMERCIO: 'donde-comprar',
+  TIENDA_ARTESANIA: 'donde-comprar',
+};
+
 type Negocio = {
   id: number;
   nombre: string;
+  slug?: string | null;
   tipo: string;
   activo: boolean;
   cerradoTemporal: boolean;
@@ -956,6 +967,28 @@ export default function NegociosPuebloClient({
                   >
                     QR del local
                   </button>
+                  {(() => {
+                    const negSlug = n.slug?.trim();
+                    const pSlug = n.pueblo?.slug ?? puebloSlug;
+                    const route = TIPO_TO_ROUTE[n.tipo];
+                    const href = negSlug && route
+                      ? `/${route}/${pSlug}/${negSlug}`
+                      : negSlug
+                        ? `/negocio/${negSlug}`
+                        : null;
+                    if (!href) return null;
+                    return (
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50 text-center"
+                        title="Ver cómo se muestra este negocio al público"
+                      >
+                        Vista previa
+                      </a>
+                    );
+                  })()}
                   <button
                     onClick={() => handleDelete(n.id, n.nombre)}
                     className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
