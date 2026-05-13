@@ -3,6 +3,7 @@
  * Usado por: gastronomia, naturaleza, cultura, en-familia, petfriendly, patrimonio
  */
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { stripHtml } from "@/app/_lib/html";
 import {
@@ -98,18 +99,25 @@ export async function TematicaDetailPage({
       <JsonLd data={articleLd} />
       <JsonLd data={breadcrumbLd} />
       {page.coverUrl && (
-        <div className="relative h-[50vh] min-h-[320px] max-h-[520px] w-full overflow-hidden bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={page.coverUrl} alt={page.titulo} className="h-full w-full object-cover" fetchPriority="high" decoding="async" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+        <div className="relative h-[60vh] min-h-[420px] max-h-[680px] w-full overflow-hidden bg-muted">
+          <Image
+            src={page.coverUrl}
+            alt={page.titulo}
+            fill
+            priority
+            quality={92}
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 lg:p-14">
             <Container>
-              <Eyebrow className="text-white/80 mb-2">{label} · {puebloNombre}</Eyebrow>
-              <h1 className="font-serif text-3xl md:text-5xl font-medium text-white tracking-tight leading-tight max-w-3xl">
+              <Eyebrow className="text-white/85 mb-3">{label} · {puebloNombre}</Eyebrow>
+              <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl font-medium text-white tracking-tight leading-tight max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
                 {uniqueH1ForLocale(page.titulo, locale)}
               </h1>
               {page.resumen && (
-                <p className="mt-3 text-base md:text-lg text-white/80 max-w-2xl leading-relaxed line-clamp-3">
+                <p className="mt-4 text-base md:text-lg text-white/90 max-w-2xl leading-relaxed line-clamp-3 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
                   {stripHtml(page.resumen).slice(0, 220)}
                 </p>
               )}
