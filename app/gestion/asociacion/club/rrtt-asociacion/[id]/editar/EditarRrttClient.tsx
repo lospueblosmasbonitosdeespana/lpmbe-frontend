@@ -13,8 +13,11 @@ import {
   Star,
   MapPin,
   Image as ImageIcon,
+  Maximize2,
 } from 'lucide-react';
 import FotoLightbox from '../../../../_components/FotoLightbox';
+import R2ImageUploader from '@/app/components/R2ImageUploader';
+import MapLocationPicker from '@/app/components/MapLocationPicker';
 
 type Recurso = {
   id: number;
@@ -304,15 +307,13 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
     );
   }
 
-  const mapSrc =
-    Number.isFinite(Number(lat.replace(',', '.'))) &&
-    Number.isFinite(Number(lng.replace(',', '.'))) &&
+  const latNum = Number(lat.replace(',', '.'));
+  const lngNum = Number(lng.replace(',', '.'));
+  const tieneCoords =
+    Number.isFinite(latNum) &&
+    Number.isFinite(lngNum) &&
     lat.trim() !== '' &&
-    lng.trim() !== ''
-      ? `https://www.google.com/maps?q=${encodeURIComponent(
-          `${lat.replace(',', '.')},${lng.replace(',', '.')}`,
-        )}&z=14&output=embed`
-      : null;
+    lng.trim() !== '';
 
   return (
     <div className="space-y-5">
@@ -426,26 +427,27 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
 
       {/* Foto */}
       <Section titulo="Foto principal" icon={<ImageIcon className="h-4 w-4" />}>
-        <Field label="URL de la foto">
-          <input
-            type="url"
-            value={fotoUrl}
-            onChange={(e) => setFotoUrl(e.target.value)}
-            placeholder="https://…"
-            className="input"
-          />
-        </Field>
+        <R2ImageUploader
+          label=""
+          value={fotoUrl || null}
+          onChange={(url) => setFotoUrl(url ?? '')}
+          folder="recursos-rurales/asociacion-rrtt"
+          previewHeight="h-56"
+        />
+        <p className="text-[11px] text-muted-foreground">
+          Sube una foto desde tu equipo (JPG, PNG, WebP). Se comprime
+          automáticamente y se almacena en Cloudflare R2.
+        </p>
         {fotoUrl && (
-          <div className="mt-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={fotoUrl}
-              alt="Preview"
-              onClick={() => setLightbox(fotoUrl)}
-              className="h-40 w-full max-w-md cursor-zoom-in rounded-lg border border-border object-cover transition hover:ring-2 hover:ring-amber-300"
-              title="Ver foto en grande"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setLightbox(fotoUrl)}
+            className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-white px-2.5 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-50"
+            title="Ver foto en grande"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+            Ver foto en grande
+          </button>
         )}
       </Section>
 
@@ -499,19 +501,23 @@ export default function EditarRrttClient({ recursoId }: { recursoId: number }) {
             />
           </Field>
         </div>
-        {mapSrc && (
-          <div className="mt-2 overflow-hidden rounded-lg border border-border">
-            <iframe
-              src={mapSrc}
-              width="100%"
-              height="240"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Mapa"
-              className="block"
-            />
-          </div>
-        )}
+        <div className="mt-2">
+          <p className="mb-1.5 text-[11px] text-muted-foreground">
+            Haz clic en el mapa o arrastra el marcador rojo para reubicar el
+            recurso. Las coordenadas se actualizan automáticamente.
+          </p>
+          <MapLocationPicker
+            center={tieneCoords ? [latNum, lngNum] : [40.4168, -3.7038]}
+            zoom={tieneCoords ? 14 : 6}
+            selectedPosition={tieneCoords ? { lat: latNum, lng: lngNum } : null}
+            onLocationSelect={(la, ln) => {
+              setLat(String(la));
+              setLng(String(ln));
+            }}
+            height="360px"
+            searchPlaceholder="Buscar lugar (ej: Castillo de Loarre)…"
+          />
+        </div>
       </Section>
 
       {/* Contacto */}
