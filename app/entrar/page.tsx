@@ -21,7 +21,13 @@ function EntrarForm() {
         const res = await fetch('/api/auth/me', { cache: 'no-store' });
         if (!mounted) return;
         if (res.ok) {
-          router.replace('/mi-cuenta');
+          const me = await res.json().catch(() => null);
+          const rol = me?.rol as string | undefined;
+          const dest =
+            rol === 'ALCALDE' || rol === 'ADMIN' || rol === 'EDITOR' || rol === 'COLABORADOR'
+              ? '/gestion'
+              : '/mi-cuenta';
+          router.replace(dest);
         }
       } catch {
         // ignore
@@ -52,9 +58,29 @@ function EntrarForm() {
         return;
       }
 
+      // Detectar rol para enviar al destino correcto.
+      // ALCALDE/ADMIN/EDITOR/COLABORADOR → /gestion (su panel real).
+      // USUARIO/CLIENTE → /mi-cuenta.
+      let defaultDest = '/mi-cuenta';
+      try {
+        const meRes = await fetch(`/api/auth/me?_t=${Date.now()}`, {
+          cache: 'no-store',
+          credentials: 'include',
+        });
+        if (meRes.ok) {
+          const me = await meRes.json().catch(() => null);
+          const rol = me?.rol as string | undefined;
+          if (rol === 'ALCALDE' || rol === 'ADMIN' || rol === 'EDITOR' || rol === 'COLABORADOR') {
+            defaultDest = '/gestion';
+          }
+        }
+      } catch {
+        // si falla, fallback a /mi-cuenta
+      }
+
       const redirect = searchParams.get('redirect');
       router.refresh();
-      router.push(redirect || '/mi-cuenta');
+      router.push(redirect || defaultDest);
     } finally {
       setLoading(false);
     }

@@ -72,16 +72,12 @@ export default function AuthNavLink({ variant = 'default' }: AuthNavLinkProps) {
   const entrarParaGestionHref = '/entrar?redirect=%2Fgestion';
 
   if (loading) {
-    return (
-      <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'}>
-        <Link href="/entrar" className={`${linkClass} opacity-70`}>
-          {t('login')}
-        </Link>
-        <Link href={entrarParaGestionHref} className={linkClass}>
-          {t('management')}
-        </Link>
-      </span>
-    );
+    // Durante el loading inicial NO mostramos los botones de auth.
+    // Mostrar "Entrar | Gestión" durante el loading provoca que un alcalde
+    // logueado vea por una fracción de segundo "Entrar" y al pulsar "Gestión"
+    // sea enviado a /entrar?redirect=/gestion, generando un bucle de rebotes.
+    // Mejor renderizar nada hasta saber el estado real de la sesión.
+    return <span className={variant === 'drawer' ? 'flex flex-col' : 'flex items-center gap-4'} aria-hidden />;
   }
 
   if (!me) {
