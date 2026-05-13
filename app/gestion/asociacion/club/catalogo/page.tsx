@@ -80,11 +80,11 @@ export default function CatalogoEstadoPage() {
     if (!data) return [];
     const getTotal = (i: Item) =>
       categoria === 'rrtt'
-        ? i.totalRrtt
+        ? (i.totalRrtt ?? 0)
         : categoria === 'naturales'
-          ? i.totalNaturales
-          : i.totalRecursos;
-    let arr = data.items;
+          ? (i.totalNaturales ?? 0)
+          : (i.totalRecursos ?? 0);
+    let arr = data.items ?? [];
     if (filter === 'vacios') arr = arr.filter((i) => getTotal(i) === 0);
     else if (filter === 'incompletos') arr = arr.filter((i) => getTotal(i) <= 5);
     else if (filter === 'completos') arr = arr.filter((i) => getTotal(i) >= 6);
@@ -115,27 +115,36 @@ export default function CatalogoEstadoPage() {
         Útil para detectar pueblos con catálogo vacío o insuficiente.
       </p>
 
-      {data && (
+      {data?.resumen && (
         <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Pueblos en la red" value={String(data.resumen.totalPueblos)} />
+          <Stat
+            label="Pueblos en la red"
+            value={String(data.resumen.totalPueblos ?? 0)}
+          />
           <Stat
             label="Con RRTT"
-            value={`${data.resumen.conRrtt} / ${data.resumen.totalPueblos}`}
+            value={`${data.resumen.conRrtt ?? 0} / ${data.resumen.totalPueblos ?? 0}`}
             tone="blue"
           />
           <Stat
             label="Con Naturales"
-            value={`${data.resumen.conNaturales} / ${data.resumen.totalPueblos}`}
+            value={`${data.resumen.conNaturales ?? 0} / ${data.resumen.totalPueblos ?? 0}`}
             tone="blue"
           />
           <Stat
-            label={categoria === 'rrtt' ? 'RRTT por estado' : categoria === 'naturales' ? 'Naturales por estado' : 'Total por estado'}
-            value={Object.entries(
+            label={
               categoria === 'rrtt'
+                ? 'RRTT por estado'
+                : categoria === 'naturales'
+                  ? 'Naturales por estado'
+                  : 'Total por estado'
+            }
+            value={Object.entries(
+              (categoria === 'rrtt'
                 ? data.resumen.porEstadoRrtt
                 : categoria === 'naturales'
                   ? data.resumen.porEstadoNaturales
-                  : data.resumen.porEstadoRrtt,
+                  : data.resumen.porEstadoRrtt) ?? {},
             )
               .map(([k, v]) => `${k}: ${v}`)
               .join(' · ')}
@@ -232,16 +241,16 @@ export default function CatalogoEstadoPage() {
                     <td className="px-4 py-3 text-sm text-muted-foreground">{i.provincia}</td>
                     <td className="px-4 py-3 text-center">
                       <CategoriaBadge
-                        total={i.totalRrtt}
-                        estado={i.estadoRrtt}
-                        tone={i.toneRrtt}
+                        total={i.totalRrtt ?? 0}
+                        estado={i.estadoRrtt ?? '—'}
+                        tone={i.toneRrtt ?? 'red'}
                       />
                     </td>
                     <td className="px-4 py-3 text-center">
                       <CategoriaBadge
-                        total={i.totalNaturales}
-                        estado={i.estadoNaturales}
-                        tone={i.toneNaturales}
+                        total={i.totalNaturales ?? 0}
+                        estado={i.estadoNaturales ?? '—'}
+                        tone={i.toneNaturales ?? 'red'}
                       />
                     </td>
                     <td className="px-4 py-3 text-sm">
