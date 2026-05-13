@@ -29,7 +29,7 @@ type Parada = {
   puntosCustom?: number | null;
 };
 
-export default function MultiexperienciasPuebloClient({ slug }: { slug: string }) {
+export default function MultiexperienciasPuebloClient({ slug, isAdmin = false }: { slug: string; isAdmin?: boolean }) {
   const [pueblo, setPueblo] = useState<any>(null);
   const [multiexperiencias, setMultiexperiencias] = useState<Multiexperiencia[]>([]);
   const [expandedMxId, setExpandedMxId] = useState<number | null>(null);
@@ -202,14 +202,17 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       return;
     }
     try {
+      const updateMxBody: any = {
+        titulo: tituloTrim,
+        descripcion: editMxDescripcion.trim() || null,
+      };
+      if (isAdmin) {
+        updateMxBody.bonusCompletaCustom = parsedBonus;
+      }
       const res = await fetch(`/api/admin/multiexperiencias/${mx.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          titulo: tituloTrim,
-          descripcion: editMxDescripcion.trim() || null,
-          bonusCompletaCustom: parsedBonus,
-        }),
+        body: JSON.stringify(updateMxBody),
       });
       if (!res.ok) {
         const text = await res.text();
@@ -306,7 +309,9 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
       const payload: any = { titulo: createParadaTitulo.trim() };
       if (createParadaDescripcion?.trim()) payload.descripcion = createParadaDescripcion.trim();
       if (createParadaFoto?.trim()) payload.foto = createParadaFoto.trim();
-      payload.puntosCustom = parsedPuntosCustom;
+      if (isAdmin) {
+        payload.puntosCustom = parsedPuntosCustom;
+      }
       if (latStr && lngStr) {
         payload.lat = lat!;
         payload.lng = lng!;
@@ -404,8 +409,10 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
     try {
       const payload: any = {
         titulo: editParadaTitulo.trim(),
-        puntosCustom: parsedPuntosCustom,
       };
+      if (isAdmin) {
+        payload.puntosCustom = parsedPuntosCustom;
+      }
       if (editParadaDescripcion?.trim()) {
         payload.descripcion = editParadaDescripcion.trim();
       } else {
@@ -755,19 +762,21 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           rows={2}
                           placeholder="Descripción"
                         />
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          value={editMxBonusCompletaCustom}
-                          onChange={(e) =>
-                            setEditMxBonusCompletaCustom(
-                              e.target.value === "" ? "" : Number(e.target.value),
-                            )
-                          }
-                          className="w-full rounded border border-border px-3 py-1.5 text-sm"
-                          placeholder="Bonus completa (vacío = genérico)"
-                        />
+                        {isAdmin && (
+                          <input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={editMxBonusCompletaCustom}
+                            onChange={(e) =>
+                              setEditMxBonusCompletaCustom(
+                                e.target.value === "" ? "" : Number(e.target.value),
+                              )
+                            }
+                            className="w-full rounded border border-border px-3 py-1.5 text-sm"
+                            placeholder="Bonus completa (vacío = genérico)"
+                          />
+                        )}
                       </div>
                     ) : (
                       <>
@@ -1020,22 +1029,24 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                           />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium">Puntos Club (parada)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          step={1}
-                          value={createParadaPuntosCustom}
-                          onChange={(e) =>
-                            setCreateParadaPuntosCustom(
-                              e.target.value === "" ? "" : Number(e.target.value),
-                            )
-                          }
-                          className="mt-1 w-full rounded border border-border px-3 py-2"
-                          placeholder="Vacío = regla genérica"
-                        />
-                      </div>
+                      {isAdmin && (
+                        <div>
+                          <label className="block text-sm font-medium">Puntos Club (parada)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={createParadaPuntosCustom}
+                            onChange={(e) =>
+                              setCreateParadaPuntosCustom(
+                                e.target.value === "" ? "" : Number(e.target.value),
+                              )
+                            }
+                            className="mt-1 w-full rounded border border-border px-3 py-2"
+                            placeholder="Vacío = regla genérica"
+                          />
+                        </div>
+                      )}
                       <p className="text-xs text-blue-600 font-medium">
                         {createParadaLat && createParadaLng
                           ? `Coordenadas: ${createParadaLat}, ${createParadaLng}`
@@ -1153,24 +1164,26 @@ export default function MultiexperienciasPuebloClient({ slug }: { slug: string }
                                     />
                                   </div>
                                 </div>
-                                <div>
-                                  <label className="block text-sm font-medium">
-                                    Puntos Club (parada)
-                                  </label>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    step={1}
-                                    value={editParadaPuntosCustom}
-                                    onChange={(e) =>
-                                      setEditParadaPuntosCustom(
-                                        e.target.value === "" ? "" : Number(e.target.value),
-                                      )
-                                    }
-                                    className="mt-1 w-full rounded border border-border px-3 py-2"
-                                    placeholder="Vacío = regla genérica"
-                                  />
-                                </div>
+                                {isAdmin && (
+                                  <div>
+                                    <label className="block text-sm font-medium">
+                                      Puntos Club (parada)
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      step={1}
+                                      value={editParadaPuntosCustom}
+                                      onChange={(e) =>
+                                        setEditParadaPuntosCustom(
+                                          e.target.value === "" ? "" : Number(e.target.value),
+                                        )
+                                      }
+                                      className="mt-1 w-full rounded border border-border px-3 py-2"
+                                      placeholder="Vacío = regla genérica"
+                                    />
+                                  </div>
+                                )}
                                 <div className="flex items-center gap-2">
                                   <button
                                     type="button"
