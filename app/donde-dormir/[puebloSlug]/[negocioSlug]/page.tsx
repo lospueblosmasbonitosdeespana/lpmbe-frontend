@@ -12,6 +12,7 @@ import {
 } from "@/app/_lib/club/club-helpers";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
+import AlojamientoPremiumDetail from "@/app/_components/alojamiento/AlojamientoPremiumDetail";
 import {
   esAlojamientoPremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
@@ -72,10 +73,11 @@ export default async function DondeDormirDetailPage({ params }: { params: Promis
   const tPremium = await getTranslations("premiumNegocio");
 
   const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
-  const _isAlojamientoPremium = esAlojamientoPremium(recurso.tipo, recurso.planNegocio);
+  const isAlojamientoPremium = esAlojamientoPremium(recurso.tipo, recurso.planNegocio);
 
-  // TODO: cuando exista AlojamientoPremiumDetail, activar aquí:
-  // if (_isAlojamientoPremium) { ... return <AlojamientoPremiumDetail /> }
+  if (isAlojamientoPremium) {
+    return <AlojamientoPremiumDetail />;
+  }
 
   if (isPremium) {
     const translations: Record<string, string> = {};
