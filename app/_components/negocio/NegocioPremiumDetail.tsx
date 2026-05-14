@@ -96,6 +96,129 @@ const TIPO_TAGLINES: Record<string, string> = {
   OTRO: 'Una experiencia premium del Club LPMBE',
 };
 
+// Descripción demo cuando el negocio no la tiene aún configurada
+const TIPO_DESCRIPCION_DEMO: Record<string, (nombre: string, pueblo?: string) => string> = {
+  HOTEL: (nombre, pueblo) =>
+    `<p>Enclavado en el corazón ${pueblo ? `de ${pueblo}` : 'del Pirineo'}, ${nombre} ofrece una experiencia que combina el encanto de la tradición con el confort de la hostelería contemporánea. Cada habitación ha sido pensada para transmitir calma y autenticidad.</p>` +
+    `<p>Nuestro equipo cuida hasta el último detalle para que tu estancia sea memorable: desde el desayuno casero con productos de proximidad hasta las recomendaciones personalizadas para descubrir el entorno.</p>` +
+    `<p>Tanto si buscas una escapada romántica, una aventura en familia o un retiro tranquilo, encontrarás el espacio ideal para desconectar y reconectar con lo esencial.</p>`,
+  CASA_RURAL: (nombre, pueblo) =>
+    `<p>${nombre} es un alojamiento singular ${pueblo ? `en ${pueblo}` : 'en plena naturaleza'} que invita a vivir la esencia del entorno rural sin renunciar al confort. Una casa con historia, restaurada con materiales nobles y mucho cariño.</p>` +
+    `<p>Cada rincón ha sido cuidado para ofrecer una experiencia auténtica: desde la chimenea encendida en invierno hasta el jardín en flor en primavera. El silencio, las estrellas y el aroma del campo son parte del viaje.</p>`,
+  RESTAURANTE: (nombre) =>
+    `<p>${nombre} es mucho más que un restaurante: es una declaración de amor por el producto local y por la cocina hecha sin prisa. Cada plato cuenta una historia del territorio.</p>` +
+    `<p>Nuestra carta evoluciona con las estaciones, trabajando con productores cercanos y técnicas que respetan al máximo la materia prima. Un viaje gastronómico para los sentidos.</p>`,
+  RESTAURANTE_DEFAULT: (nombre) =>
+    `<p>${nombre} ofrece una experiencia gastronómica única en la zona, con una propuesta cuidada y un servicio personalizado.</p>`,
+};
+
+function getDescripcionDemo(tipo: string, nombre: string, pueblo?: string): string {
+  const fn = TIPO_DESCRIPCION_DEMO[tipo] ?? TIPO_DESCRIPCION_DEMO.RESTAURANTE_DEFAULT;
+  return fn(nombre, pueblo);
+}
+
+// Stats demo según el tipo de negocio cuando no hay datos reales
+function getStatsDemo(tipo: string): { value: string; label: string }[] {
+  switch (tipo) {
+    case 'HOTEL':
+      return [
+        { value: '4.8', label: 'Valoración huéspedes' },
+        { value: '24/7', label: 'Atención personalizada' },
+        { value: '100%', label: 'Recomendado por socios' },
+      ];
+    case 'CASA_RURAL':
+      return [
+        { value: '4.9', label: 'Valoración huéspedes' },
+        { value: '5+', label: 'Años cuidando del entorno' },
+        { value: '100%', label: 'Producto local' },
+      ];
+    case 'RESTAURANTE':
+    case 'BAR':
+    case 'BODEGA':
+      return [
+        { value: '4.7', label: 'Valoración Google' },
+        { value: 'Km0', label: 'Producto de proximidad' },
+        { value: '100%', label: 'Cocina de temporada' },
+      ];
+    default:
+      return [
+        { value: '4.8', label: 'Valoración clientes' },
+        { value: '100%', label: 'Recomendado por socios' },
+        { value: 'Premium', label: 'Club LPMBE' },
+      ];
+  }
+}
+
+// Ofertas demo cuando el negocio no tiene aún sus ofertas configuradas
+function getOfertasDemo(tipo: string): OfertaPublic[] {
+  if (tipo === 'HOTEL' || tipo === 'CASA_RURAL') {
+    return [
+      {
+        id: -1,
+        tipoOferta: 'REGALO',
+        titulo: 'Botella de cava de bienvenida',
+        descripcion: 'Te recibimos con una botella de cava local en la habitación al hacer el check-in.',
+        descuentoPorcentaje: null,
+        valorFijoCents: null,
+        condicionTexto: 'Para socios del Club LPMBE en estancias de mínimo 2 noches.',
+        destacada: true,
+      },
+      {
+        id: -2,
+        tipoOferta: 'DESCUENTO',
+        titulo: '10% en estancias largas',
+        descripcion: 'Disfruta de un 10% de descuento en reservas de 3 noches o más.',
+        descuentoPorcentaje: 10,
+        valorFijoCents: null,
+        condicionTexto: 'Aplicable a la tarifa flexible y no acumulable con otras promociones.',
+        destacada: true,
+      },
+      {
+        id: -3,
+        tipoOferta: 'EXPERIENCIA',
+        titulo: 'Late check-out hasta las 14:00',
+        descripcion: 'Disfruta de la habitación hasta las 14:00 sin coste adicional.',
+        descuentoPorcentaje: null,
+        valorFijoCents: null,
+        condicionTexto: 'Sujeto a disponibilidad. Solicítalo al hacer la reserva.',
+        destacada: true,
+      },
+    ];
+  }
+  return [
+    {
+      id: -1,
+      tipoOferta: 'BEBIDA',
+      titulo: 'Copa de vino de la casa de bienvenida',
+      descripcion: 'Te invitamos a una copa de nuestro vino de la casa al inicio de la comida.',
+      descuentoPorcentaje: null,
+      valorFijoCents: null,
+      condicionTexto: 'Para socios del Club LPMBE. Una copa por persona.',
+      destacada: true,
+    },
+    {
+      id: -2,
+      tipoOferta: 'DESCUENTO',
+      titulo: '10% en menú degustación',
+      descripcion: 'Descuento exclusivo para socios en nuestro menú degustación de temporada.',
+      descuentoPorcentaje: 10,
+      valorFijoCents: null,
+      condicionTexto: 'Reserva previa obligatoria. No acumulable con otras ofertas.',
+      destacada: true,
+    },
+    {
+      id: -3,
+      tipoOferta: 'EXPERIENCIA',
+      titulo: 'Cata de vinos guiada',
+      descripcion: 'Disfruta de una cata privada con nuestro sumiller para descubrir vinos de la zona.',
+      descuentoPorcentaje: null,
+      valorFijoCents: null,
+      condicionTexto: 'Bajo reserva con 48h de antelación. Mínimo 2 personas.',
+      destacada: true,
+    },
+  ];
+}
+
 export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, backLabel, translations }: NegocioPremiumProps) {
   const t = (key: string) => translations[key] ?? key;
   const tipoLabel = TIPO_LABELS[recurso.tipo] ?? recurso.tipo;
@@ -120,28 +243,37 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
         })
     : [];
 
-  const ofertas = (recurso.ofertas ?? []).filter((o) => o.destacada || (recurso.ofertas ?? []).length <= 3);
+  const ofertasReales = (recurso.ofertas ?? []).filter((o) => o.destacada || (recurso.ofertas ?? []).length <= 3);
+  const ofertas: OfertaPublic[] = ofertasReales.length > 0 ? ofertasReales : getOfertasDemo(recurso.tipo);
 
-  // Stats: usa datos reales (rating Google, puntos Club, % descuento socios)
-  const stats: { value: string; label: string }[] = [];
+  // Stats: usa datos reales (rating Google, puntos Club, % descuento socios).
+  // Si no hay ninguno, mostramos placeholders coherentes con el tipo de negocio
+  // para que la sección "Sobre nosotros" tenga peso visual estilo V0.
+  const statsReales: { value: string; label: string }[] = [];
   if (recurso.ratingVerificado?.rating != null) {
-    stats.push({
+    statsReales.push({
       value: recurso.ratingVerificado.rating.toFixed(1),
       label: `Valoración Google${recurso.ratingVerificado.reviews ? ` (${recurso.ratingVerificado.reviews} reseñas)` : ''}`,
     });
   }
   if (recurso.puntosClub != null && recurso.puntosClub > 0) {
-    stats.push({
+    statsReales.push({
       value: String(recurso.puntosClub),
       label: 'Puntos Club LPMBE por visita',
     });
   }
   if (recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0) {
-    stats.push({
+    statsReales.push({
       value: `${recurso.descuentoPorcentaje}%`,
       label: 'Descuento exclusivo socios',
     });
   }
+  const stats = statsReales.length === 3 ? statsReales : getStatsDemo(recurso.tipo);
+
+  // Descripción demo si el negocio no la tiene aún configurada
+  const descripcion = recurso.descripcion?.trim()
+    ? recurso.descripcion
+    : getDescripcionDemo(recurso.tipo, recurso.nombre, recurso.pueblo?.nombre);
 
   // Cómo llegar — datos genéricos basados en la ubicación
   const accessInfo: { label: string; detail: string }[] = [];
@@ -188,15 +320,14 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
         <PremiumServicesGrid servicios={servicios} t={t} />
       )}
 
-      {recurso.descripcion && (
-        <PremiumDescription
-          descripcion={recurso.descripcion}
-          secondaryImage={images[1]?.url}
-          nombre={recurso.nombre}
-          stats={stats}
-          t={t}
-        />
-      )}
+      <PremiumDescription
+        descripcion={descripcion}
+        secondaryImage={images[1]?.url ?? images[0]?.url}
+        nombre={recurso.nombre}
+        stats={stats}
+        t={t}
+      />
+
 
       <PremiumContactSection
         telefono={recurso.telefono}
