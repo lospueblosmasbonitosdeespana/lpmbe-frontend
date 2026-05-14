@@ -4,12 +4,16 @@
  */
 import { getApiUrl } from "@/lib/api";
 
-export type NegocioTipo = "RESTAURANTE" | "HOTEL" | "COMERCIO";
+export type NegocioTipo =
+  | "RESTAURANTE" | "BAR" | "BODEGA"
+  | "HOTEL" | "CASA_RURAL"
+  | "COMERCIO" | "TIENDA_ARTESANIA"
+  | "EXPERIENCIA" | "OTRO";
 
 export const NEGOCIO_TIPO_BY_SLUG: Record<string, NegocioTipo[]> = {
-  "donde-comer": ["RESTAURANTE"],
-  "donde-dormir": ["HOTEL"],
-  "donde-comprar": ["COMERCIO"],
+  "donde-comer": ["RESTAURANTE", "BAR", "BODEGA"],
+  "donde-dormir": ["HOTEL", "CASA_RURAL"],
+  "donde-comprar": ["COMERCIO", "TIENDA_ARTESANIA"],
 };
 
 const TIPO_TO_CATEGORY_ROUTE: Record<string, string> = {
@@ -20,6 +24,7 @@ const TIPO_TO_CATEGORY_ROUTE: Record<string, string> = {
   CASA_RURAL: "donde-dormir",
   COMERCIO: "donde-comprar",
   TIENDA_ARTESANIA: "donde-comprar",
+  EXPERIENCIA: "donde-comprar",
 };
 
 /**
@@ -155,8 +160,13 @@ export async function getNegociosByPuebloSlug(
 
 export const TIPO_TO_ROUTE_SLUG: Record<string, string> = {
   RESTAURANTE: "donde-comer",
+  BAR: "donde-comer",
+  BODEGA: "donde-comer",
   HOTEL: "donde-dormir",
+  CASA_RURAL: "donde-dormir",
   COMERCIO: "donde-comprar",
+  TIENDA_ARTESANIA: "donde-comprar",
+  EXPERIENCIA: "donde-comprar",
 };
 
 export async function getNegocioBySlug(

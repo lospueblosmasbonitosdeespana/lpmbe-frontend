@@ -12,6 +12,9 @@ import {
 } from "@/app/_lib/club/club-helpers";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
+import {
+  esComercioPremium,
+} from "@/app/_components/restaurante/restaurante-translation-keys";
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -69,6 +72,10 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
   const tPremium = await getTranslations("premiumNegocio");
 
   const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
+  const _isComercioPremium = esComercioPremium(recurso.tipo, recurso.planNegocio);
+
+  // TODO: cuando exista ComercioPremiumDetail, activar aquí:
+  // if (_isComercioPremium) { ... return <ComercioPremiumDetail /> }
 
   if (isPremium) {
     const translations: Record<string, string> = {};

@@ -23,3 +23,19 @@ export function esRestaurantePremium(tipo: string | undefined, plan: string | un
   if (plan !== 'PREMIUM' && plan !== 'SELECTION') return false;
   return (TIPOS_RESTAURANTE_PREMIUM as readonly string[]).includes(tipo);
 }
+
+export const TIPOS_ALOJAMIENTO_PREMIUM = ['HOTEL', 'CASA_RURAL'] as const;
+
+export function esAlojamientoPremium(tipo: string | undefined, plan: string | undefined): boolean {
+  if (!tipo || !plan) return false;
+  if (plan !== 'PREMIUM' && plan !== 'SELECTION') return false;
+  return (TIPOS_ALOJAMIENTO_PREMIUM as readonly string[]).includes(tipo);
+}
+
+export const TIPOS_COMERCIO_PREMIUM = ['COMERCIO', 'TIENDA_ARTESANIA', 'EXPERIENCIA'] as const;
+
+export function esComercioPremium(tipo: string | undefined, plan: string | undefined): boolean {
+  if (!tipo || !plan) return false;
+  if (plan !== 'PREMIUM' && plan !== 'SELECTION') return false;
+  return (TIPOS_COMERCIO_PREMIUM as readonly string[]).includes(tipo);
+}
