@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import NegocioGallery from './NegocioGallery';
 import NegocioOfertas from './NegocioOfertas';
 import NegocioStats from './NegocioStats';
@@ -9,6 +10,11 @@ import MejorarPlanModal from './MejorarPlanModal';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS, getPlanFeatures, type PlanNegocio } from '@/lib/plan-features';
 import { QrCartelModal } from '@/app/_components/club/QrCartelModal';
+
+const RestauranteLandingEditor = dynamic(
+  () => import('./_editor/RestauranteLandingEditor'),
+  { ssr: false },
+);
 
 const TIPOS_NEGOCIO = [
   'HOTEL',
@@ -160,6 +166,7 @@ export default function NegociosPuebloClient({
   const [puebloComunidad, setPuebloComunidad] = useState<string>('');
   const [qrCartelNegocio, setQrCartelNegocio] = useState<Negocio | null>(null);
   const [mejorarPlanNegocio, setMejorarPlanNegocio] = useState<Negocio | null>(null);
+  const [landingEditorNegocio, setLandingEditorNegocio] = useState<Negocio | null>(null);
 
   useEffect(() => {
     if (isAsociacion) return;
@@ -1016,7 +1023,20 @@ export default function NegociosPuebloClient({
                 const pk = (n.planNegocio ?? 'FREE') as PlanNegocio;
                 const pf = getPlanFeatures(pk);
                 if (!pf.customLandingEnabled) return null;
-                return <NegocioLandingEditor negocio={n} />;
+                return (
+                  <div className="mt-3 border-t border-gray-100 pt-3">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Página premium
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setLandingEditorNegocio(n)}
+                      className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+                    >
+                      Abrir editor de página premium
+                    </button>
+                  </div>
+                );
               })()}
             </div>
           ))}
@@ -1042,142 +1062,32 @@ export default function NegociosPuebloClient({
           onClose={() => setMejorarPlanNegocio(null)}
         />
       )}
+
+      {landingEditorNegocio && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
+          <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setLandingEditorNegocio(null); load(); }}
+              className="rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent transition-colors"
+            >
+              ← Volver a negocios
+            </button>
+            <span className="text-sm font-medium text-foreground truncate">
+              {landingEditorNegocio.nombre}
+            </span>
+          </div>
+          <RestauranteLandingEditor
+            negocioId={landingEditorNegocio.id}
+            negocioNombre={landingEditorNegocio.nombre}
+            negocioSlug={landingEditorNegocio.slug}
+            puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
+            initialLandingConfig={landingEditorNegocio.landingConfig}
+            onSaved={() => load()}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-function NegocioLandingEditor({ negocio }: { negocio: Negocio }) {
-  const [config, setConfig] = useState<Record<string, any>>(
-    (negocio.landingConfig as Record<string, any>) ?? {},
-  );
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [msg, setMsg] = useState('');
-
-  const update = (key: string, value: string) =>
-    setConfig((c) => ({ ...c, [key]: value }));
-
-  const handleSave = async () => {
-    setSaving(true);
-    setMsg('');
-    try {
-      const res = await fetch(`/api/club/negocios/${negocio.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ landingConfig: config }),
-      });
-      if (res.ok) setMsg('Guardado');
-      else setMsg('Error al guardar');
-    } catch {
-      setMsg('Error de conexión');
-    }
-    setSaving(false);
-  };
-
-  const handleHeroUpload = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e: any) => {
-      const file = e.target?.files?.[0];
-      if (!file) return;
-      setUploading(true);
-      setMsg('');
-      try {
-        const { compressImage } = await import('@/src/lib/compressImage');
-        const compressed = await compressImage(file, {
-          fileName: file.name.replace(/\.[^.]+$/, ''),
-        });
-        const fd = new FormData();
-        fd.append('file', compressed);
-        fd.append('folder', 'negocios/landing');
-        const uploadRes = await fetch('/api/admin/uploads', {
-          method: 'POST',
-          body: fd,
-          credentials: 'include',
-        });
-        const json = await uploadRes.json().catch(() => null);
-        if (!uploadRes.ok) throw new Error(json?.error ?? json?.message ?? `Error ${uploadRes.status}`);
-        const url = json?.url ?? json?.publicUrl ?? json?.data?.url ?? null;
-        if (!url) throw new Error('No se recibió URL de imagen');
-        update('heroImageUrl', url);
-        setMsg('Imagen subida (recuerda guardar)');
-      } catch (err: any) {
-        setMsg(err?.message ?? 'Error subiendo imagen');
-      }
-      setUploading(false);
-    };
-    input.click();
-  };
-
-  const landingUrl = `/negocio/${negocio.codigoQr.replace(/^qr-/, '')}`;
-  const slug = (negocio as any).slug;
-  const previewUrl = slug ? `/negocio/${slug}` : landingUrl;
-  const inputCls = 'w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
-
-  return (
-    <div className="mt-3 border-t border-gray-100 pt-3">
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-        Landing personalizada
-      </h4>
-      <div className="rounded-lg border border-border p-4 space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Titular principal</label>
-            <input value={config.headline ?? ''} onChange={(e) => update('headline', e.target.value)}
-              className={inputCls} placeholder={negocio.nombre} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Subtítulo</label>
-            <input value={config.subheadline ?? ''} onChange={(e) => update('subheadline', e.target.value)}
-              className={inputCls} placeholder="Descripción breve" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Texto del botón CTA</label>
-            <input value={config.ctaText ?? ''} onChange={(e) => update('ctaText', e.target.value)}
-              className={inputCls} placeholder="Reservar ahora" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">URL del botón CTA</label>
-            <input value={config.ctaUrl ?? ''} onChange={(e) => update('ctaUrl', e.target.value)}
-              className={inputCls} placeholder="https://..." />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Imagen hero</label>
-            <div className="flex gap-2 items-center">
-              <input value={config.heroImageUrl ?? ''} onChange={(e) => update('heroImageUrl', e.target.value)}
-                className={`flex-1 ${inputCls}`} placeholder="URL o sube una imagen" />
-              <button type="button" onClick={handleHeroUpload} disabled={uploading}
-                className="shrink-0 rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent disabled:opacity-50 transition-colors">
-                {uploading ? 'Subiendo...' : 'Subir'}
-              </button>
-            </div>
-            {config.heroImageUrl && (
-              <img src={config.heroImageUrl} alt="Hero preview" className="mt-2 h-24 w-full rounded-lg object-cover border border-border" />
-            )}
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Tema visual</label>
-            <select value={config.theme ?? 'classic'} onChange={(e) => update('theme', e.target.value)} className={inputCls}>
-              <option value="classic">Clásico</option>
-              <option value="dark">Oscuro</option>
-              <option value="nature">Naturaleza</option>
-              <option value="elegant">Elegante</option>
-            </select>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={handleSave} disabled={saving}
-            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
-            {saving ? 'Guardando...' : 'Guardar landing'}
-          </button>
-          <a href={previewUrl} target="_blank" rel="noopener noreferrer"
-            className="text-xs text-primary hover:underline">
-            Ver landing →
-          </a>
-          {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
