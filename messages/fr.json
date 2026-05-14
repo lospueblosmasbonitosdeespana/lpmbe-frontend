@@ -2663,6 +2663,10 @@
     "offersTitle": "Offres pour les membres du Club",
     "offersDescription": "Présentez votre carte de membre du Club LPMBE et profitez de ces avantages exclusifs.",
     "forMembers": "pour les partenaires",
-    "featured": "En vedette"
+    "featured": "En vedette",
+    "becomeMemberTitle": "Devenir membre du Club LPMBE",
+    "becomeMemberDescription": "Profitez de réductions exclusives, de cadeaux de bienvenue, d'expériences uniques et d'avantages dans des centaines de commerces de qualité dans les plus belles villes d'Espagne.",
+    "joinNow": "S'inscrire",
+    "learnMore": "En savoir plus"
   }
 }

@@ -2663,6 +2663,10 @@
     "offersTitle": "Ofertes per a socis del Club",
     "offersDescription": "Mostra la teva targeta de soci del Club LPMBE i gaudeix d'aquests avantatges exclusius.",
     "forMembers": "per als membres",
-    "featured": "Destacat"
+    "featured": "Destacat",
+    "becomeMemberTitle": "Fes-te membre del Club LPMBE",
+    "becomeMemberDescription": "Gaudeix de descomptes exclusius, obsequis de benvinguda, experiències úniques i ofertes especials en centenars d'establiments de primera qualitat als pobles més bonics d'Espanya.",
+    "joinNow": "Uneix-te ara",
+    "learnMore": "Més informació"
   }
 }

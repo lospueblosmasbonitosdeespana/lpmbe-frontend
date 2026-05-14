@@ -1,12 +1,13 @@
 'use client';
 
-import { getPlanFeatures, type PlanNegocio, SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS } from '@/lib/plan-features';
+import { type PlanNegocio, SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS } from '@/lib/plan-features';
 import PremiumHeroGallery from './PremiumHeroGallery';
 import PremiumServicesGrid from './PremiumServicesGrid';
 import PremiumDescription from './PremiumDescription';
 import PremiumContactSection from './PremiumContactSection';
 import PremiumLocationMap from './PremiumLocationMap';
 import PremiumMemberOffers from './PremiumMemberOffers';
+import PremiumMembershipCTA from './PremiumMembershipCTA';
 import Link from 'next/link';
 
 type Imagen = { id: number; url: string; alt: string | null; orden: number };
@@ -83,14 +84,25 @@ const TIPO_LABELS: Record<string, string> = {
   OTRO: 'Otro',
 };
 
+const TIPO_TAGLINES: Record<string, string> = {
+  HOTEL: 'Donde la elegancia rural se encuentra con la auténtica hospitalidad',
+  CASA_RURAL: 'Tu refugio de calma rodeado de naturaleza',
+  RESTAURANTE: 'Cocina artesanal con producto local de temporada',
+  BAR: 'Un rincón con encanto para los buenos momentos',
+  COMERCIO: 'Producto local con historia y autenticidad',
+  TIENDA_ARTESANIA: 'Artesanía hecha a mano con alma y tradición',
+  BODEGA: 'Vinos con identidad y carácter del territorio',
+  EXPERIENCIA: 'Una experiencia única para descubrir nuestra tierra',
+  OTRO: 'Una experiencia premium del Club LPMBE',
+};
+
 export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, backLabel, translations }: NegocioPremiumProps) {
   const t = (key: string) => translations[key] ?? key;
-  const plan = recurso.planNegocio ?? 'FREE';
-  const features = getPlanFeatures(plan);
   const tipoLabel = TIPO_LABELS[recurso.tipo] ?? recurso.tipo;
+  const tagline = TIPO_TAGLINES[recurso.tipo] ?? TIPO_TAGLINES.OTRO;
 
   const images = recurso.imagenes?.length
-    ? recurso.imagenes.sort((a, b) => a.orden - b.orden)
+    ? [...recurso.imagenes].sort((a, b) => a.orden - b.orden)
     : recurso.fotoUrl
       ? [{ id: 0, url: recurso.fotoUrl, alt: recurso.nombre, orden: 0 }]
       : [];
@@ -108,7 +120,46 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
         })
     : [];
 
-  const ofertas = (recurso.ofertas ?? []).filter((o) => o.destacada);
+  const ofertas = (recurso.ofertas ?? []).filter((o) => o.destacada || (recurso.ofertas ?? []).length <= 3);
+
+  // Stats: usa datos reales (rating Google, puntos Club, % descuento socios)
+  const stats: { value: string; label: string }[] = [];
+  if (recurso.ratingVerificado?.rating != null) {
+    stats.push({
+      value: recurso.ratingVerificado.rating.toFixed(1),
+      label: `Valoración Google${recurso.ratingVerificado.reviews ? ` (${recurso.ratingVerificado.reviews} reseñas)` : ''}`,
+    });
+  }
+  if (recurso.puntosClub != null && recurso.puntosClub > 0) {
+    stats.push({
+      value: String(recurso.puntosClub),
+      label: 'Puntos Club LPMBE por visita',
+    });
+  }
+  if (recurso.descuentoPorcentaje != null && recurso.descuentoPorcentaje > 0) {
+    stats.push({
+      value: `${recurso.descuentoPorcentaje}%`,
+      label: 'Descuento exclusivo socios',
+    });
+  }
+
+  // Cómo llegar — datos genéricos basados en la ubicación
+  const accessInfo: { label: string; detail: string }[] = [];
+  if (recurso.pueblo?.nombre) {
+    accessInfo.push(
+      { label: `Centro de ${recurso.pueblo.nombre}`, detail: 'A pocos minutos a pie del corazón del pueblo' },
+      { label: 'Aparcamiento', detail: 'Zonas de aparcamiento gratuito en las inmediaciones' },
+      { label: 'Transporte', detail: 'Bien comunicado por carretera con poblaciones cercanas' },
+    );
+  }
+
+  // Texto introductorio del contacto
+  const contactDescription = `Nuestro equipo está a tu disposición para reservas, consultas y para ayudarte a planificar tu visita perfecta a ${recurso.nombre}.`;
+
+  // Nota sobre horarios
+  const scheduleNote = recurso.cerradoTemporal
+    ? 'Estamos cerrados temporalmente. Consulta nuestras redes sociales para conocer la fecha de reapertura.'
+    : 'Te recomendamos consultar disponibilidad antes de tu visita, especialmente en temporada alta y festivos.';
 
   return (
     <main className="min-h-screen bg-background">
@@ -125,6 +176,7 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
         images={images}
         nombre={recurso.nombre}
         tipoLabel={tipoLabel}
+        tagline={tagline}
         pueblo={recurso.pueblo}
         imprescindible={recurso.imprescindible}
         ratingVerificado={recurso.ratingVerificado}
@@ -141,8 +193,7 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
           descripcion={recurso.descripcion}
           secondaryImage={images[1]?.url}
           nombre={recurso.nombre}
-          ratingVerificado={recurso.ratingVerificado}
-          puntosClub={recurso.puntosClub}
+          stats={stats}
           t={t}
         />
       )}
@@ -155,6 +206,8 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
         bookingUrl={recurso.bookingUrl}
         horariosSemana={recurso.horariosSemana}
         socialLinks={socialLinks}
+        contactDescription={contactDescription}
+        scheduleNote={scheduleNote}
         t={t}
       />
 
@@ -165,6 +218,7 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
           nombre={recurso.nombre}
           pueblo={recurso.pueblo}
           localidad={recurso.localidad}
+          accessInfo={accessInfo}
           t={t}
         />
       )}
@@ -176,6 +230,8 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
           t={t}
         />
       )}
+
+      <PremiumMembershipCTA t={t} />
     </main>
   );
 }

@@ -1,11 +1,18 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation } from 'lucide-react';
 
 const MapContainer = dynamic(() => import('react-leaflet').then((m) => m.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then((m) => m.TileLayer), { ssr: false });
 const LeafletMarker = dynamic(() => import('react-leaflet').then((m) => m.Marker), { ssr: false });
+
+interface AccessInfo {
+  label: string;
+  detail: string;
+}
 
 interface Props {
   lat: number;
@@ -13,11 +20,22 @@ interface Props {
   nombre: string;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   localidad?: string | null;
+  accessInfo?: AccessInfo[];
   t: (key: string) => string;
 }
 
-export default function PremiumLocationMap({ lat, lng, nombre, pueblo, localidad, t }: Props) {
+export default function PremiumLocationMap({ lat, lng, nombre, pueblo, localidad, accessInfo, t }: Props) {
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  const mapRef = useRef<any>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <section className="py-16 md:py-24 bg-muted/30">
@@ -31,10 +49,10 @@ export default function PremiumLocationMap({ lat, lng, nombre, pueblo, localidad
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 mb-12">
           <div className="bg-card rounded-lg border border-border p-8">
-            <div className="size-14 rounded-full bg-muted flex items-center justify-center mb-6">
-              <MapPin className="size-7 text-primary" />
+            <div className="size-12 rounded-full bg-muted flex items-center justify-center mb-6">
+              <MapPin className="size-6 text-primary" />
             </div>
             <h3 className="text-xl font-serif text-foreground mb-4">
               {t('address')}
@@ -55,12 +73,13 @@ export default function PremiumLocationMap({ lat, lng, nombre, pueblo, localidad
             </a>
           </div>
 
-          <div className="lg:col-span-2 rounded-lg overflow-hidden border border-border h-[400px] lg:h-auto min-h-[400px]">
+          <div className="lg:col-span-2 rounded-lg overflow-hidden border border-border" style={{ height: 400 }}>
             <MapContainer
               center={[lat, lng]}
               zoom={15}
-              style={{ width: '100%', height: '100%', minHeight: '400px' }}
+              style={{ width: '100%', height: '100%' }}
               scrollWheelZoom={false}
+              ref={mapRef as any}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -70,6 +89,21 @@ export default function PremiumLocationMap({ lat, lng, nombre, pueblo, localidad
             </MapContainer>
           </div>
         </div>
+
+        {accessInfo && accessInfo.length > 0 && (
+          <div className="grid sm:grid-cols-3 gap-6 text-center">
+            {accessInfo.map((info, i) => (
+              <div key={i}>
+                <p className="text-gold text-sm font-semibold tracking-wide mb-1.5">
+                  {info.label}
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  {info.detail}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

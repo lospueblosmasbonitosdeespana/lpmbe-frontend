@@ -12,6 +12,7 @@ interface Props {
   images: Imagen[];
   nombre: string;
   tipoLabel: string;
+  tagline?: string;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imprescindible?: boolean;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
@@ -19,7 +20,7 @@ interface Props {
   t: (key: string) => string;
 }
 
-export default function PremiumHeroGallery({ images, nombre, tipoLabel, pueblo, imprescindible, ratingVerificado, cerradoTemporal, t }: Props) {
+export default function PremiumHeroGallery({ images, nombre, tipoLabel, tagline, pueblo, imprescindible, ratingVerificado, cerradoTemporal, t }: Props) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
 
@@ -103,9 +104,14 @@ export default function PremiumHeroGallery({ images, nombre, tipoLabel, pueblo, 
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif text-card leading-tight">
               {nombre}
             </h1>
+            {tagline && (
+              <p className="text-card/85 mt-4 text-base md:text-lg italic max-w-2xl">
+                {tagline}
+              </p>
+            )}
             {pueblo && (
-              <p className="text-card/80 mt-3 text-lg md:text-xl flex items-center gap-2">
-                <MapPin className="size-5" />
+              <p className="text-card/80 mt-3 text-base md:text-lg flex items-center gap-2">
+                <MapPin className="size-4 md:size-5" />
                 {pueblo.nombre}
               </p>
             )}

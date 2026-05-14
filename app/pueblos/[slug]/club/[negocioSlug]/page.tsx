@@ -20,6 +20,7 @@ const PREMIUM_TRANSLATION_KEYS = [
   'openingHours', 'closed', 'locationSubtitle', 'locationTitle', 'address',
   'getDirections', 'offersSubtitle', 'offersTitle', 'offersDescription',
   'forMembers', 'featured',
+  'becomeMemberTitle', 'becomeMemberDescription', 'joinNow', 'learnMore',
 ] as const;
 
 export const revalidate = 60;

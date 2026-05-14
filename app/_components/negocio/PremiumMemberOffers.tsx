@@ -1,4 +1,4 @@
-import { Crown, Gift, Percent, Tag } from 'lucide-react';
+import { Crown, Gift, Percent, Tag, Wine, UtensilsCrossed, Sparkles } from 'lucide-react';
 import { Badge } from '@/app/components/ui/badge';
 
 type OfertaPublic = {
@@ -22,7 +22,10 @@ interface Props {
 const TIPO_ICONS: Record<string, typeof Gift> = {
   DESCUENTO: Percent,
   REGALO: Gift,
-  MENU: Tag,
+  MENU: UtensilsCrossed,
+  BEBIDA: Wine,
+  EXPERIENCIA: Sparkles,
+  OTRO: Tag,
 };
 
 export default function PremiumMemberOffers({ ofertas, descuentoPorcentaje, t }: Props) {
@@ -55,19 +58,26 @@ export default function PremiumMemberOffers({ ofertas, descuentoPorcentaje, t }:
         <div className={`grid gap-8 ${ofertas.length >= 3 ? 'md:grid-cols-3' : ofertas.length === 2 ? 'md:grid-cols-2' : ''}`}>
           {ofertas.map((oferta, index) => {
             const Icon = TIPO_ICONS[oferta.tipoOferta] ?? Gift;
+            const showFeaturedBadge = index === 0 && ofertas.length > 1;
+            const showNewBadge = index === ofertas.length - 1 && ofertas.length > 1;
             return (
               <div
                 key={oferta.id}
-                className="relative bg-card rounded-lg border border-border p-8 hover:border-gold/30 transition-all group"
+                className="relative bg-card rounded-lg border border-border p-8 hover:border-gold/30 transition-all group flex flex-col"
               >
-                {index === 0 && ofertas.length > 1 && (
+                {showFeaturedBadge && (
                   <Badge variant="gold" className="absolute -top-3 right-6">
                     {t('featured')}
                   </Badge>
                 )}
+                {showNewBadge && !showFeaturedBadge && (
+                  <Badge variant="outline" className="absolute -top-3 right-6 bg-card border-gold/40 text-gold">
+                    Nueva
+                  </Badge>
+                )}
 
-                <div className="size-14 rounded-full bg-gold/10 flex items-center justify-center mb-6">
-                  <Icon className="size-7 text-gold" />
+                <div className="size-12 rounded-full bg-gold/10 flex items-center justify-center mb-5">
+                  <Icon className="size-6 text-gold" />
                 </div>
 
                 <h3 className="text-xl font-serif text-foreground mb-3">
@@ -75,15 +85,25 @@ export default function PremiumMemberOffers({ ofertas, descuentoPorcentaje, t }:
                 </h3>
 
                 {oferta.descripcion && (
-                  <p className="text-muted-foreground leading-relaxed mb-4">
+                  <p className="text-muted-foreground leading-relaxed mb-5 flex-1">
                     {oferta.descripcion}
                   </p>
                 )}
 
-                {oferta.descuentoPorcentaje != null && (
-                  <div className="flex items-center gap-2 text-gold font-semibold">
-                    <Percent className="size-4" />
-                    <span>-{oferta.descuentoPorcentaje}%</span>
+                {(oferta.descuentoPorcentaje != null || oferta.valorFijoCents != null) && (
+                  <div className="pt-4 border-t border-border">
+                    {oferta.descuentoPorcentaje != null && (
+                      <div className="flex items-center gap-2 text-gold font-semibold">
+                        <Percent className="size-4" />
+                        <span>-{oferta.descuentoPorcentaje}% para socios</span>
+                      </div>
+                    )}
+                    {oferta.valorFijoCents != null && oferta.descuentoPorcentaje == null && (
+                      <div className="flex items-center gap-2 text-gold font-semibold">
+                        <Tag className="size-4" />
+                        <span>{(oferta.valorFijoCents / 100).toFixed(2)} €</span>
+                      </div>
+                    )}
                   </div>
                 )}
 

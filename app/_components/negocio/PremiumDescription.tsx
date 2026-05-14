@@ -1,16 +1,19 @@
 import Image from 'next/image';
-import { Star } from 'lucide-react';
+
+interface Stat {
+  value: string;
+  label: string;
+}
 
 interface Props {
   descripcion: string;
   secondaryImage?: string;
   nombre: string;
-  ratingVerificado?: { rating: number | null; reviews: number | null } | null;
-  puntosClub?: number | null;
+  stats?: Stat[];
   t: (key: string) => string;
 }
 
-export default function PremiumDescription({ descripcion, secondaryImage, nombre, ratingVerificado, puntosClub, t }: Props) {
+export default function PremiumDescription({ descripcion, secondaryImage, nombre, stats, t }: Props) {
   return (
     <section className="py-16 md:py-24 bg-muted/30">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16">
@@ -27,34 +30,21 @@ export default function PremiumDescription({ descripcion, secondaryImage, nombre
               dangerouslySetInnerHTML={{ __html: descripcion }}
             />
 
-            {(ratingVerificado?.rating || puntosClub) && (
-              <div className="flex flex-wrap gap-8 mt-10 pt-10 border-t border-border">
-                {ratingVerificado?.rating && (
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <Star className="size-5 text-gold" fill="currentColor" />
-                      <p className="text-3xl md:text-4xl font-serif text-gold">
-                        {ratingVerificado.rating.toFixed(1)}
-                      </p>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Google{ratingVerificado.reviews ? ` (${ratingVerificado.reviews})` : ''}
-                    </p>
+            {stats && stats.length > 0 && (
+              <div className={`grid ${stats.length === 3 ? 'grid-cols-3' : stats.length === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-6 mt-10 pt-10 border-t border-border`}>
+                {stats.map((stat, i) => (
+                  <div key={i}>
+                    <p className="text-3xl md:text-4xl font-serif text-gold">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
                   </div>
-                )}
-                {puntosClub != null && puntosClub > 0 && (
-                  <div>
-                    <p className="text-3xl md:text-4xl font-serif text-gold">{puntosClub}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{t('clubPoints')}</p>
-                  </div>
-                )}
+                ))}
               </div>
             )}
           </div>
 
           {secondaryImage && (
             <div className="relative hidden lg:block">
-              <div className="aspect-[4/5] rounded-lg overflow-hidden">
+              <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
                 <Image
                   src={secondaryImage}
                   alt={nombre}
