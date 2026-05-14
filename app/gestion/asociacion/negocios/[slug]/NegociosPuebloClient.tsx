@@ -21,6 +21,11 @@ const AlojamientoLandingEditor = dynamic(
   { ssr: false },
 );
 
+const ActividadLandingEditor = dynamic(
+  () => import('./_editor-actividad/ActividadLandingEditor'),
+  { ssr: false },
+);
+
 const TIPOS_NEGOCIO = [
   'HOTEL',
   'CASA_RURAL',
@@ -1082,25 +1087,24 @@ export default function NegociosPuebloClient({
               {landingEditorNegocio.nombre}
             </span>
           </div>
-          {(['HOTEL', 'CASA_RURAL'] as string[]).includes(landingEditorNegocio.tipo) ? (
-            <AlojamientoLandingEditor
-              negocioId={landingEditorNegocio.id}
-              negocioNombre={landingEditorNegocio.nombre}
-              negocioSlug={landingEditorNegocio.slug ?? ''}
-              puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
-              initialLandingConfig={landingEditorNegocio.landingConfig}
-              onSaved={() => load()}
-            />
-          ) : (
-            <RestauranteLandingEditor
-              negocioId={landingEditorNegocio.id}
-              negocioNombre={landingEditorNegocio.nombre}
-              negocioSlug={landingEditorNegocio.slug ?? ''}
-              puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
-              initialLandingConfig={landingEditorNegocio.landingConfig}
-              onSaved={() => load()}
-            />
-          )}
+          {(() => {
+            const tipo = landingEditorNegocio.tipo
+            const editorProps = {
+              negocioId: landingEditorNegocio.id,
+              negocioNombre: landingEditorNegocio.nombre,
+              negocioSlug: landingEditorNegocio.slug ?? '',
+              puebloSlug: landingEditorNegocio.pueblo?.slug ?? puebloSlug,
+              initialLandingConfig: landingEditorNegocio.landingConfig,
+              onSaved: () => load(),
+            }
+            if ((['HOTEL', 'CASA_RURAL'] as string[]).includes(tipo)) {
+              return <AlojamientoLandingEditor {...editorProps} />
+            }
+            if (tipo === 'EXPERIENCIA') {
+              return <ActividadLandingEditor {...editorProps} />
+            }
+            return <RestauranteLandingEditor {...editorProps} />
+          })()}
         </div>
       )}
     </div>
