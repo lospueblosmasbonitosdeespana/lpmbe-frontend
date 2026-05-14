@@ -13,6 +13,15 @@ import {
 import NegocioDetail from "./NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
 
+const PREMIUM_TRANSLATION_KEYS = [
+  'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
+  'servicesSubtitle', 'servicesTitle', 'aboutSubtitle', 'aboutTitle', 'clubPoints',
+  'contactSubtitle', 'contactTitle', 'phone', 'email', 'website', 'bookNow',
+  'openingHours', 'closed', 'locationSubtitle', 'locationTitle', 'address',
+  'getDirections', 'offersSubtitle', 'offersTitle', 'offersDescription',
+  'forMembers', 'featured',
+] as const;
+
 export const revalidate = 60;
 export async function generateMetadata({
   params,
@@ -117,13 +126,17 @@ export default async function NegocioDetailPage({
   const isPremium = (recurso as any).planNegocio === "PREMIUM" || (recurso as any).planNegocio === "SELECTION";
 
   if (isPremium) {
+    const translations: Record<string, string> = {};
+    for (const key of PREMIUM_TRANSLATION_KEYS) {
+      translations[key] = tPremium(key as any);
+    }
     return (
       <NegocioPremiumDetail
         recurso={recurso as any}
         puebloSlug={slug}
         backHref={pueblo ? `/pueblos/${pueblo.slug}/club` : `/pueblos/${slug}/club`}
         backLabel={pueblo?.nombre ?? "Club"}
-        t={(key: string) => tPremium(key as any)}
+        translations={translations}
       />
     );
   }

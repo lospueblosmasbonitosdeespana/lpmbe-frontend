@@ -68,7 +68,7 @@ export type NegocioPremiumProps = {
   puebloSlug: string;
   backHref: string;
   backLabel: string;
-  t: (key: string) => string;
+  translations: Record<string, string>;
 };
 
 const TIPO_LABELS: Record<string, string> = {
@@ -83,7 +83,8 @@ const TIPO_LABELS: Record<string, string> = {
   OTRO: 'Otro',
 };
 
-export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, backLabel, t }: NegocioPremiumProps) {
+export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, backLabel, translations }: NegocioPremiumProps) {
+  const t = (key: string) => translations[key] ?? key;
   const plan = recurso.planNegocio ?? 'FREE';
   const features = getPlanFeatures(plan);
   const tipoLabel = TIPO_LABELS[recurso.tipo] ?? recurso.tipo;
