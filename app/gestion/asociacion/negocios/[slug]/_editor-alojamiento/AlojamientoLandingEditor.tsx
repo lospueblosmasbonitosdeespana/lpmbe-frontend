@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -84,6 +84,20 @@ interface Props {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+/**
+ * El editor V0 vive bajo `landingConfig.v0` para no chocar con el schema legacy
+ * (en español) que consume la página pública. Si no existe, arrancamos con
+ * `defaultConfig`.
+ */
+function parseInitial(raw: unknown): LodgingLandingConfig {
+  if (!raw || typeof raw !== 'object') return defaultConfig
+  const v0 = (raw as { v0?: LodgingLandingConfig }).v0
+  if (!v0 || typeof v0 !== 'object') return defaultConfig
+  // Validación blanda: el editor V0 debe traer al menos hero/quickStats/story.
+  if (!v0.hero && !v0.quickStats && !v0.story) return defaultConfig
+  return { ...defaultConfig, ...v0 }
+}
+
 export default function AlojamientoLandingEditor({
   negocioId,
   negocioNombre,
@@ -92,7 +106,8 @@ export default function AlojamientoLandingEditor({
   initialLandingConfig,
   onSaved,
 }: Props) {
-  const [config, setConfig] = useState<LodgingLandingConfig>(initialLandingConfig ?? defaultConfig)
+  const initialConfig = useMemo(() => parseInitial(initialLandingConfig), [initialLandingConfig])
+  const [config, setConfig] = useState<LodgingLandingConfig>(initialConfig)
   const [showJson, setShowJson]     = useState(false)
   const [saved, setSaved]           = useState(false)
   const [openSection, setOpenSection] = useState<string>(SECTIONS[0].key)
@@ -107,10 +122,17 @@ export default function AlojamientoLandingEditor({
 
   const handleSave = async () => {
     try {
+      // Mergeamos con el landingConfig existente (campos legacy en español
+      // que consume la página pública) y sólo escribimos en `v0`.
+      const baseRaw =
+        initialLandingConfig && typeof initialLandingConfig === 'object'
+          ? initialLandingConfig
+          : {}
+      const merged = { ...baseRaw, v0: config }
       const res = await fetch(`/api/club/negocios/${negocioId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ landingConfig: config }),
+        body: JSON.stringify({ landingConfig: merged }),
       })
       if (!res.ok) throw new Error('Error al guardar')
       setSaved(true)
@@ -123,7 +145,7 @@ export default function AlojamientoLandingEditor({
 
   const handleReset = () => {
     if (window.confirm('¿Restaurar la configuración predeterminada? Se perderán los cambios no guardados.')) {
-      setConfig(initialLandingConfig ?? defaultConfig)
+      setConfig(initialConfig)
       setSaved(false)
     }
   }

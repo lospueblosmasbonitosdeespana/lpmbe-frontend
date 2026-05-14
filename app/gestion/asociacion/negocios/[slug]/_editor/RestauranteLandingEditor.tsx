@@ -39,20 +39,27 @@ function calcCompletion(cfg: LandingConfig): number {
   return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 }
 
+/**
+ * El editor V0 vive bajo `landingConfig.v0` para no chocar con el schema
+ * legacy en español que consume la página pública (chef.nombre, menus.items[].cursos, etc.).
+ * Si el negocio no tiene aún `landingConfig.v0`, arrancamos con DEMO_CONFIG.
+ */
 function parseLandingConfig(raw: Record<string, any> | null | undefined): LandingConfig {
   if (!raw || typeof raw !== 'object') return DEMO_CONFIG
-  const parsed = raw as Partial<LandingConfig>
-  if (!parsed.hero && !parsed.chef && !parsed.menus) return DEMO_CONFIG
+  const v0 = (raw as { v0?: Partial<LandingConfig> }).v0
+  if (!v0 || typeof v0 !== 'object') return DEMO_CONFIG
+  // Validación blanda: si no hay hero/chef/menus tipo V0, también devolvemos DEMO.
+  if (!v0.hero && !v0.chef && !v0.menus) return DEMO_CONFIG
   return {
-    hero: parsed.hero ?? DEMO_CONFIG.hero,
-    chef: parsed.chef ?? DEMO_CONFIG.chef,
-    philosophy: parsed.philosophy ?? DEMO_CONFIG.philosophy,
-    menus: parsed.menus ?? DEMO_CONFIG.menus,
-    dishes: parsed.dishes ?? DEMO_CONFIG.dishes,
-    ambiance: parsed.ambiance ?? DEMO_CONFIG.ambiance,
-    practicalInfo: parsed.practicalInfo ?? DEMO_CONFIG.practicalInfo,
-    access: parsed.access ?? DEMO_CONFIG.access,
-    memberOffers: parsed.memberOffers ?? DEMO_CONFIG.memberOffers,
+    hero: v0.hero ?? DEMO_CONFIG.hero,
+    chef: v0.chef ?? DEMO_CONFIG.chef,
+    philosophy: v0.philosophy ?? DEMO_CONFIG.philosophy,
+    menus: v0.menus ?? DEMO_CONFIG.menus,
+    dishes: v0.dishes ?? DEMO_CONFIG.dishes,
+    ambiance: v0.ambiance ?? DEMO_CONFIG.ambiance,
+    practicalInfo: v0.practicalInfo ?? DEMO_CONFIG.practicalInfo,
+    access: v0.access ?? DEMO_CONFIG.access,
+    memberOffers: v0.memberOffers ?? DEMO_CONFIG.memberOffers,
   }
 }
 
@@ -85,10 +92,17 @@ export default function RestauranteLandingEditor({
   const handleSave = useCallback(async () => {
     setIsSaving(true)
     try {
+      // Mergeamos con el landingConfig existente (campos legacy en español que
+      // consume la página pública) y sólo escribimos en `v0` para no destruirlos.
+      const baseRaw =
+        initialLandingConfig && typeof initialLandingConfig === 'object'
+          ? initialLandingConfig
+          : {}
+      const merged = { ...baseRaw, v0: config }
       const res = await fetch(`/api/club/negocios/${negocioId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ landingConfig: config }),
+        body: JSON.stringify({ landingConfig: merged }),
       })
       if (res.ok) {
         setSavedConfig(config)
@@ -99,7 +113,7 @@ export default function RestauranteLandingEditor({
     } finally {
       setIsSaving(false)
     }
-  }, [config, negocioId, onSaved])
+  }, [config, negocioId, onSaved, initialLandingConfig])
 
   const handleReset = useCallback(() => {
     setConfig(initial)
