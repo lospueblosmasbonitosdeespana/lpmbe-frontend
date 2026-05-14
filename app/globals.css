@@ -112,6 +112,10 @@
   /* Premium gold palette */
   --color-gold: oklch(0.75 0.12 85);
   --color-gold-dark: oklch(0.60 0.14 80);
+
+  /* Premium restaurant: forest green for CTAs */
+  --color-forest: oklch(0.35 0.08 145);
+  --color-forest-dark: oklch(0.28 0.07 145);
 }
 
 .dark {

@@ -12,6 +12,12 @@ import {
 } from "@/lib/seo";
 import NegocioDetail from "./NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
+import RestaurantePremiumDetail from "@/app/_components/restaurante/RestaurantePremiumDetail";
+import {
+  RESTAURANTE_TRANSLATION_KEYS,
+  esRestaurantePremium,
+} from "@/app/_components/restaurante/restaurante-translation-keys";
+import { buildRestaurantJsonLd } from "@/app/_lib/seo/restaurant-json-ld";
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -124,7 +130,29 @@ export default async function NegocioDetailPage({
   }
 
   const tPremium = await getTranslations("premiumNegocio");
-  const isPremium = (recurso as any).planNegocio === "PREMIUM" || (recurso as any).planNegocio === "SELECTION";
+  const planNegocio = (recurso as any).planNegocio;
+  const isPremium = planNegocio === "PREMIUM" || planNegocio === "SELECTION";
+  const isRestaurantePremium = esRestaurantePremium((recurso as any).tipo, planNegocio);
+
+  if (isRestaurantePremium) {
+    const tRest = await getTranslations("premiumRestaurante");
+    const translations: Record<string, string> = {};
+    for (const key of RESTAURANTE_TRANSLATION_KEYS) {
+      translations[key] = tRest(key as any);
+    }
+    const jsonLd = buildRestaurantJsonLd(recurso as any, `/pueblos/${slug}/club/${negocioSlug}`);
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <RestaurantePremiumDetail
+          recurso={recurso as any}
+          backHref={pueblo ? `/pueblos/${pueblo.slug}/club` : `/pueblos/${slug}/club`}
+          backLabel={pueblo?.nombre ?? "Club"}
+          translations={translations}
+        />
+      </>
+    );
+  }
 
   if (isPremium) {
     const translations: Record<string, string> = {};

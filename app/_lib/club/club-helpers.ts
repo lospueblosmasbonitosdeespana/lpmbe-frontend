@@ -100,8 +100,11 @@ export type NegocioPublic = {
   planNegocio?: string;
   puntosClub?: number | null;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
-  pueblo?: { id: number; nombre: string; slug: string } | null;
+  pueblo?: { id: number; nombre: string; slug: string; provincia?: string | null; comunidad?: string | null } | null;
+  provincia?: string | null;
+  comunidad?: string | null;
   ofertas?: any[];
+  landingConfig?: Record<string, any> | null;
 };
 
 export type NegociosResponse = {
