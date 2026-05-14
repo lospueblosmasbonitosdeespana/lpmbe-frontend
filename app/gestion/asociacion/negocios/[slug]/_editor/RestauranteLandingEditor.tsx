@@ -4,7 +4,8 @@ import { useState, useCallback, useMemo } from 'react'
 import { Accordion } from '@/app/components/ui/accordion'
 import { Settings2, Store } from 'lucide-react'
 
-import { DEMO_CONFIG, type LandingConfig } from './landing-config'
+import { type LandingConfig } from './landing-config'
+import { legacyToV0, v0ToLegacy } from './landing-config-adapter'
 import { HeroEditor } from './hero-editor'
 import { ChefEditor } from './chef-editor'
 import { PhilosophyEditor } from './philosophy-editor'
@@ -40,27 +41,15 @@ function calcCompletion(cfg: LandingConfig): number {
 }
 
 /**
- * El editor V0 vive bajo `landingConfig.v0` para no chocar con el schema
- * legacy en español que consume la página pública (chef.nombre, menus.items[].cursos, etc.).
- * Si el negocio no tiene aún `landingConfig.v0`, arrancamos con DEMO_CONFIG.
+ * Lectura del landingConfig:
+ *   - Si raw.v0 ya existe (schema V0), úsalo.
+ *   - Si raw tiene claves legacy en español (chef.nombre, platos, menus.items[].cursos…),
+ *     adáptalas al schema V0 al vuelo para que el editor muestre los datos reales
+ *     (incluidas las fotos del seed).
+ *   - Si está vacío, DEMO_CONFIG.
  */
 function parseLandingConfig(raw: Record<string, any> | null | undefined): LandingConfig {
-  if (!raw || typeof raw !== 'object') return DEMO_CONFIG
-  const v0 = (raw as { v0?: Partial<LandingConfig> }).v0
-  if (!v0 || typeof v0 !== 'object') return DEMO_CONFIG
-  // Validación blanda: si no hay hero/chef/menus tipo V0, también devolvemos DEMO.
-  if (!v0.hero && !v0.chef && !v0.menus) return DEMO_CONFIG
-  return {
-    hero: v0.hero ?? DEMO_CONFIG.hero,
-    chef: v0.chef ?? DEMO_CONFIG.chef,
-    philosophy: v0.philosophy ?? DEMO_CONFIG.philosophy,
-    menus: v0.menus ?? DEMO_CONFIG.menus,
-    dishes: v0.dishes ?? DEMO_CONFIG.dishes,
-    ambiance: v0.ambiance ?? DEMO_CONFIG.ambiance,
-    practicalInfo: v0.practicalInfo ?? DEMO_CONFIG.practicalInfo,
-    access: v0.access ?? DEMO_CONFIG.access,
-    memberOffers: v0.memberOffers ?? DEMO_CONFIG.memberOffers,
-  }
+  return legacyToV0(raw)
 }
 
 interface RestauranteLandingEditorProps {
@@ -92,13 +81,17 @@ export default function RestauranteLandingEditor({
   const handleSave = useCallback(async () => {
     setIsSaving(true)
     try {
-      // Mergeamos con el landingConfig existente (campos legacy en español que
-      // consume la página pública) y sólo escribimos en `v0` para no destruirlos.
+      // Mergeamos: preservamos campos del raw que el adapter no conoce
+      // (template, etc.), regeneramos el legacy en español a partir del V0
+      // (para que la página pública refleje los cambios) y guardamos
+      // también el V0 íntegro bajo `v0` (para que el editor pueda releer
+      // exactamente lo que escribiste).
       const baseRaw =
         initialLandingConfig && typeof initialLandingConfig === 'object'
           ? initialLandingConfig
           : {}
-      const merged = { ...baseRaw, v0: config }
+      const legacy = v0ToLegacy(config)
+      const merged = { ...baseRaw, ...legacy, v0: config }
       const res = await fetch(`/api/club/negocios/${negocioId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
