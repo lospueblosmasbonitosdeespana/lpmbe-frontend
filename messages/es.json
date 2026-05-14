@@ -171,6 +171,7 @@
     "serviciosVisitante": {
       "togglePois": "Lugares de interés",
       "toggleServicios": "Servicios",
+      "toggleCargadores": "Cargadores eléctricos",
       "sinHorario": "Sin horario especificado",
       "goTo": "Ir a",
       "searchPlaceholder": "Buscar servicio...",

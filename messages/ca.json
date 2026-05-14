@@ -198,7 +198,8 @@
         "PLAYA": "Platja",
         "PARQUE_INFANTIL": "Parc infantil",
         "DESFIBRILADOR": "Desfibril·lador"
-      }
+      },
+      "toggleCargadores": "Càrregues elèctriques"
     },
     "howToGetThere": "Com arribar-hi",
     "actionShare": "Comparteix",

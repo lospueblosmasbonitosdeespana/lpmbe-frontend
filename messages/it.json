@@ -198,7 +198,8 @@
         "PLAYA": "Spiaggia",
         "PARQUE_INFANTIL": "Parco giochi per bambini",
         "DESFIBRILADOR": "Defibrillatore"
-      }
+      },
+      "toggleCargadores": "Caricabatterie elettrici"
     },
     "howToGetThere": "Come arrivare",
     "actionShare": "Condividi",

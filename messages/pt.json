@@ -198,7 +198,8 @@
         "PLAYA": "Praia",
         "PARQUE_INFANTIL": "Parque infantil",
         "DESFIBRILADOR": "Desfibrilhador"
-      }
+      },
+      "toggleCargadores": "Carregadores eléctricos"
     },
     "howToGetThere": "Como lá chegar",
     "actionShare": "Partilhar",

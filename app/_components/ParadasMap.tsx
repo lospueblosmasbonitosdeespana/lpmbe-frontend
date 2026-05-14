@@ -24,6 +24,20 @@ type PuntoServicio = {
   horario?: HorarioServicio | null;
 };
 
+type CargadorMapa = {
+  id: number;
+  nombre?: string | null;
+  lat: number;
+  lng: number;
+  potenciaKw?: number | null;
+  potenciaMaxKw?: number | null;
+  etiquetaPotencia?: string | null;
+  operador?: string | null;
+  distanciaKm?: number | null;
+  direccion?: string | null;
+  tipo: 'propio' | 'cercano';
+};
+
 function formatHorario(horario: HorarioServicio): string {
   const lineas: string[] = [];
   for (const { key, label } of DIAS_SEMANA) {
@@ -72,11 +86,13 @@ export default function ParadasMap({
   puebloNombre,
   resourceTipo,
   puntosServicio = [],
+  cargadores = [],
 }: {
   paradas: Parada[];
   puebloNombre?: string;
   resourceTipo?: string | null;
   puntosServicio?: PuntoServicio[];
+  cargadores?: CargadorMapa[];
 }) {
   const tServ = useTranslations('pueblo.serviciosVisitante');
   const [mounted, setMounted] = useState(false);
@@ -85,6 +101,7 @@ export default function ParadasMap({
 
   const [showPois, setShowPois] = useState(true);
   const [showServicios, setShowServicios] = useState(true);
+  const [showCargadores, setShowCargadores] = useState(false);
   const [servicioSearchText, setServicioSearchText] = useState('');
   const [highlightedServicioIds, setHighlightedServicioIds] = useState<number[]>([]);
   const mapCommandRef = useRef<{ flyTo: (lat: number, lng: number, zoom: number) => void; flyToBounds: (coords: [number, number][]) => void } | null>(null);
@@ -267,6 +284,33 @@ export default function ParadasMap({
     [L],
   );
 
+  const createCargadorIcon = useCallback(
+    (tipo: 'propio' | 'cercano') => {
+      if (!L) return undefined;
+      const color = tipo === 'propio' ? '#16a34a' : '#059669';
+      const size = tipo === 'propio' ? 36 : 30;
+      return L.divIcon({
+        className: '',
+        html: `<div style="
+          background: ${color};
+          color: white;
+          border-radius: 50%;
+          width: ${size}px;
+          height: ${size}px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2.5px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+        "><svg width="${size * 0.45}" height="${size * 0.45}" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M13 2L3 14h6v8l10-12h-6V2z"/></svg></div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        popupAnchor: [0, -(size / 2 + 4)],
+      });
+    },
+    [L],
+  );
+
   if (paradasConCoords.length === 0 && serviciosConCoords.length === 0) return null;
 
   if (!mounted || !L || !RL) {
@@ -325,6 +369,23 @@ export default function ParadasMap({
             />
             {tServ('toggleServicios')}
           </button>
+          {cargadores.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowCargadores((v) => !v)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
+                showCargadores
+                  ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
+                  : 'border-gray-300 bg-white text-gray-500 hover:border-gray-400'
+              }`}
+            >
+              <span
+                className="inline-block h-3 w-3 rounded-full border border-white/40"
+                style={{ background: showCargadores ? 'white' : '#059669' }}
+              />
+              ⚡ {tServ('toggleCargadores')}
+            </button>
+          )}
         </div>
       )}
 
@@ -551,6 +612,62 @@ export default function ParadasMap({
                         }}
                       >
                         {tServ('goTo')} (Google Maps) →
+                      </a>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+          {/* Marcadores de cargadores eléctricos */}
+          {showCargadores &&
+            cargadores.map((carg) => {
+              const icon = createCargadorIcon(carg.tipo);
+              const kw = carg.potenciaKw ?? carg.potenciaMaxKw;
+              return (
+                <Marker
+                  key={`cargador-${carg.tipo}-${carg.id}`}
+                  position={[carg.lat, carg.lng]}
+                  icon={icon}
+                >
+                  <Popup>
+                    <div style={{ minWidth: '160px', fontFamily: 'inherit' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '16px' }}>⚡</span>
+                        <strong style={{ fontSize: '13px' }}>
+                          {carg.etiquetaPotencia ?? 'Cargador eléctrico'}
+                          {kw ? ` (${kw} kW)` : ''}
+                        </strong>
+                      </div>
+                      {carg.operador && (
+                        <p style={{ fontSize: '12px', color: '#374151', margin: '2px 0' }}>
+                          {carg.operador}
+                        </p>
+                      )}
+                      {carg.direccion && (
+                        <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0' }}>
+                          {carg.direccion}
+                        </p>
+                      )}
+                      {carg.distanciaKm != null && carg.distanciaKm > 0 && (
+                        <p style={{ fontSize: '11px', color: '#9ca3af', margin: '2px 0' }}>
+                          A {carg.distanciaKm} km del pueblo
+                        </p>
+                      )}
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${carg.lat},${carg.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-block',
+                          marginTop: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: '#059669',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        Cómo llegar →
                       </a>
                     </div>
                   </Popup>

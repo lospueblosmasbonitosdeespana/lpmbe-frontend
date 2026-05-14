@@ -198,7 +198,8 @@
         "PLAYA": "Beach",
         "PARQUE_INFANTIL": "Playground",
         "DESFIBRILADOR": "Defibrillator"
-      }
+      },
+      "toggleCargadores": "Electric chargers"
     },
     "howToGetThere": "How to get there",
     "actionShare": "Share",

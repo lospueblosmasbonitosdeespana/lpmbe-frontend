@@ -1236,6 +1236,31 @@ export default async function PuebloPage({
                 }
                 puebloNombre={puebloSafe.nombre}
                 puntosServicio={puntosServicio}
+                cargadores={[
+                  ...cargaPropios
+                    .filter((c) => c.lat != null && c.lng != null)
+                    .map((c) => ({
+                      id: c.id,
+                      nombre: c.nombre,
+                      lat: c.lat!,
+                      lng: c.lng!,
+                      potenciaKw: c.potenciaKw,
+                      etiquetaPotencia: c.etiquetaPotencia,
+                      tipo: 'propio' as const,
+                    })),
+                  ...cargaCercanos.map((c) => ({
+                    id: c.id,
+                    nombre: c.nombre,
+                    lat: c.lat,
+                    lng: c.lng,
+                    potenciaMaxKw: c.potenciaMaxKw,
+                    etiquetaPotencia: c.etiquetaPotencia,
+                    operador: c.operador,
+                    distanciaKm: c.distanciaKm,
+                    direccion: c.direccion,
+                    tipo: 'cercano' as const,
+                  })),
+                ]}
               />
             </Container>
           </Section>
