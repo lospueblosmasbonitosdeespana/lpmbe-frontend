@@ -14,10 +14,12 @@ import NegocioDetail from "./NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
 import RestaurantePremiumDetail from "@/app/_components/restaurante/RestaurantePremiumDetail";
 import AlojamientoPremiumDetail from "@/app/_components/alojamiento/AlojamientoPremiumDetail";
+import ActividadPremiumDetail from "@/app/_components/actividad/ActividadPremiumDetail";
 import {
   RESTAURANTE_TRANSLATION_KEYS,
   esRestaurantePremium,
   esAlojamientoPremium,
+  esActividadPremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
 import { buildRestaurantJsonLd } from "@/app/_lib/seo/restaurant-json-ld";
 import { getNegocioCategoryRoute } from "@/app/_lib/club/club-helpers";
@@ -173,6 +175,7 @@ export default async function NegocioDetailPage({
   const isPremium = planNegocio === "PREMIUM" || planNegocio === "SELECTION";
   const isRestaurantePremium = esRestaurantePremium((recurso as any).tipo, planNegocio);
   const isAlojamientoPremium = esAlojamientoPremium((recurso as any).tipo, planNegocio);
+  const isActividadPremium = esActividadPremium((recurso as any).tipo, planNegocio);
 
   if (isRestaurantePremium) {
     const tRest = await getTranslations("premiumRestaurante");
@@ -197,6 +200,10 @@ export default async function NegocioDetailPage({
 
   if (isAlojamientoPremium) {
     return <AlojamientoPremiumDetail />;
+  }
+
+  if (isActividadPremium) {
+    return <ActividadPremiumDetail />;
   }
 
   if (isPremium) {

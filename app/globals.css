@@ -124,6 +124,14 @@
   --color-terracotta-light: oklch(0.72 0.12 55);
   --color-cream: oklch(0.97 0.01 80);
   --color-stone: oklch(0.94 0.008 80);
+
+  /* Premium activity: adventure green + ember + sand */
+  --color-adventure: oklch(0.45 0.18 155);
+  --color-adventure-light: oklch(0.60 0.14 155);
+  --color-ember: oklch(0.62 0.18 40);
+  --color-ember-light: oklch(0.75 0.14 50);
+  --color-sand: oklch(0.96 0.01 80);
+  --color-slate: oklch(0.20 0.02 250);
 }
 
 .dark {

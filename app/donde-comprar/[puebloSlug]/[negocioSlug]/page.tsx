@@ -12,8 +12,10 @@ import {
 } from "@/app/_lib/club/club-helpers";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
+import ActividadPremiumDetail from "@/app/_components/actividad/ActividadPremiumDetail";
 import {
   esComercioPremium,
+  esActividadPremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
 
 const PREMIUM_TRANSLATION_KEYS = [
@@ -73,6 +75,11 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
 
   const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
   const _isComercioPremium = esComercioPremium(recurso.tipo, recurso.planNegocio);
+  const isActividadPremium = esActividadPremium(recurso.tipo, recurso.planNegocio);
+
+  if (isActividadPremium) {
+    return <ActividadPremiumDetail />;
+  }
 
   // TODO: cuando exista ComercioPremiumDetail, activar aquí:
   // if (_isComercioPremium) { ... return <ComercioPremiumDetail /> }

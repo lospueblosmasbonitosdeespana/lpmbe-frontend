@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <path d="M16 2L4 7v10c0 7.5 5.5 12.5 12 14 6.5-1.5 12-6.5 12-14V7L16 2z" fill="#D4AF37"/>
+  <path d="M16 5L7 9v8c0 5.5 4 9.5 9 11 5-1.5 9-5.5 9-11V9L16 5z" fill="#1a472a"/>
+  <text x="16" y="18" text-anchor="middle" font-family="serif" font-size="8" font-weight="bold" fill="#D4AF37">LPMBE</text>
+</svg>

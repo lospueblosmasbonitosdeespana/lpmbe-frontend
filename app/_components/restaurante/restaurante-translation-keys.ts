@@ -32,10 +32,18 @@ export function esAlojamientoPremium(tipo: string | undefined, plan: string | un
   return (TIPOS_ALOJAMIENTO_PREMIUM as readonly string[]).includes(tipo);
 }
 
-export const TIPOS_COMERCIO_PREMIUM = ['COMERCIO', 'TIENDA_ARTESANIA', 'EXPERIENCIA'] as const;
+export const TIPOS_COMERCIO_PREMIUM = ['COMERCIO', 'TIENDA_ARTESANIA'] as const;
 
 export function esComercioPremium(tipo: string | undefined, plan: string | undefined): boolean {
   if (!tipo || !plan) return false;
   if (plan !== 'PREMIUM' && plan !== 'SELECTION') return false;
   return (TIPOS_COMERCIO_PREMIUM as readonly string[]).includes(tipo);
+}
+
+export const TIPOS_ACTIVIDAD_PREMIUM = ['EXPERIENCIA'] as const;
+
+export function esActividadPremium(tipo: string | undefined, plan: string | undefined): boolean {
+  if (!tipo || !plan) return false;
+  if (plan !== 'PREMIUM' && plan !== 'SELECTION') return false;
+  return (TIPOS_ACTIVIDAD_PREMIUM as readonly string[]).includes(tipo);
 }
