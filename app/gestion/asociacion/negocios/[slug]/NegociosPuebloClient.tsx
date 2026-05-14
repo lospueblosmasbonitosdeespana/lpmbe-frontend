@@ -26,6 +26,11 @@ const ActividadLandingEditor = dynamic(
   { ssr: false },
 );
 
+const ComercioLandingEditor = dynamic(
+  () => import('./_editor-comercio/ComercioLandingEditor'),
+  { ssr: false },
+);
+
 const TIPOS_NEGOCIO = [
   'HOTEL',
   'CASA_RURAL',
@@ -1102,6 +1107,9 @@ export default function NegociosPuebloClient({
             }
             if (tipo === 'EXPERIENCIA') {
               return <ActividadLandingEditor {...editorProps} />
+            }
+            if ((['COMERCIO', 'TIENDA_ARTESANIA', 'OTRO'] as string[]).includes(tipo)) {
+              return <ComercioLandingEditor {...editorProps} />
             }
             return <RestauranteLandingEditor {...editorProps} />
           })()}
