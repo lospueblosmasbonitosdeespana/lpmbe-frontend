@@ -16,6 +16,11 @@ const RestauranteLandingEditor = dynamic(
   { ssr: false },
 );
 
+const AlojamientoLandingEditor = dynamic(
+  () => import('./_editor-alojamiento/AlojamientoLandingEditor'),
+  { ssr: false },
+);
+
 const TIPOS_NEGOCIO = [
   'HOTEL',
   'CASA_RURAL',
@@ -1077,14 +1082,25 @@ export default function NegociosPuebloClient({
               {landingEditorNegocio.nombre}
             </span>
           </div>
-          <RestauranteLandingEditor
-            negocioId={landingEditorNegocio.id}
-            negocioNombre={landingEditorNegocio.nombre}
-            negocioSlug={landingEditorNegocio.slug}
-            puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
-            initialLandingConfig={landingEditorNegocio.landingConfig}
-            onSaved={() => load()}
-          />
+          {(['HOTEL', 'CASA_RURAL'] as string[]).includes(landingEditorNegocio.tipo) ? (
+            <AlojamientoLandingEditor
+              negocioId={landingEditorNegocio.id}
+              negocioNombre={landingEditorNegocio.nombre}
+              negocioSlug={landingEditorNegocio.slug}
+              puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
+              initialLandingConfig={landingEditorNegocio.landingConfig}
+              onSaved={() => load()}
+            />
+          ) : (
+            <RestauranteLandingEditor
+              negocioId={landingEditorNegocio.id}
+              negocioNombre={landingEditorNegocio.nombre}
+              negocioSlug={landingEditorNegocio.slug}
+              puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
+              initialLandingConfig={landingEditorNegocio.landingConfig}
+              onSaved={() => load()}
+            />
+          )}
         </div>
       )}
     </div>
