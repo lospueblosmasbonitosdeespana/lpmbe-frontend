@@ -1086,7 +1086,7 @@ export default function NegociosPuebloClient({
             <AlojamientoLandingEditor
               negocioId={landingEditorNegocio.id}
               negocioNombre={landingEditorNegocio.nombre}
-              negocioSlug={landingEditorNegocio.slug}
+              negocioSlug={landingEditorNegocio.slug ?? ''}
               puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
               initialLandingConfig={landingEditorNegocio.landingConfig}
               onSaved={() => load()}
@@ -1095,7 +1095,7 @@ export default function NegociosPuebloClient({
             <RestauranteLandingEditor
               negocioId={landingEditorNegocio.id}
               negocioNombre={landingEditorNegocio.nombre}
-              negocioSlug={landingEditorNegocio.slug}
+              negocioSlug={landingEditorNegocio.slug ?? ''}
               puebloSlug={landingEditorNegocio.pueblo?.slug ?? puebloSlug}
               initialLandingConfig={landingEditorNegocio.landingConfig}
               onSaved={() => load()}
