@@ -1,6 +1,7 @@
 'use client';
 
-import { Zap, Navigation, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { Zap, Navigation, MapPin, ChevronDown } from 'lucide-react';
 
 type CargadorPropio = {
   id: number; nombre: string | null; lat: number | null; lng: number | null;
@@ -107,63 +108,84 @@ export function CargaElectricaSection({
 
         {/* Cargadores cercanos (OCM) */}
         {cercanos.length > 0 && (
-          <div>
-            <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
-              Cerca del pueblo
-            </h3>
-            <div className="space-y-3">
-              {cercanos.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl border border-gray-100 p-4"
-                >
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5"
-                      style={{ backgroundColor: colorPotencia(c.potenciaMaxKw) }}
-                    />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-500">
-                          A {c.distanciaKm} km
-                        </span>
-                        {c.etiquetaPotencia && (
-                          <span
-                            className="text-xs font-semibold px-2 py-0.5 rounded-full text-white"
-                            style={{ backgroundColor: colorPotencia(c.potenciaMaxKw) }}
-                          >
-                            {c.etiquetaPotencia}
-                            {c.potenciaMaxKw ? ` · ${c.potenciaMaxKw} kW` : ''}
-                          </span>
-                        )}
-                      </div>
-                      <p className="font-medium text-gray-900 truncate">
-                        {c.operador && (
-                          <span className="text-gray-700">{c.operador} — </span>
-                        )}
-                        {c.direccion || c.nombre || 'Punto de carga'}
-                      </p>
-                      {c.localidad && (
-                        <p className="text-xs text-gray-400 flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {c.localidad}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 ml-3">
-                    <NavButton googleMapsUrl={c.googleMapsUrl} appleMapsUrl={c.appleMapsUrl} />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="mt-4 text-xs text-gray-400 text-center">
-              Datos de cargadores cercanos: <a href="https://openchargemap.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">OpenChargeMap</a> (CC BY 4.0)
-            </p>
-          </div>
+          <CercanosList cercanos={cercanos} />
         )}
       </div>
     </section>
+  );
+}
+
+const INITIAL_VISIBLE = 3;
+
+function CercanosList({ cercanos }: { cercanos: CargadorCercano[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const needsCollapse = cercanos.length > INITIAL_VISIBLE;
+  const visible = expanded ? cercanos : cercanos.slice(0, INITIAL_VISIBLE);
+
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
+        Cerca del pueblo
+        <span className="ml-2 text-xs font-normal normal-case text-gray-400">
+          ({cercanos.length} punto{cercanos.length !== 1 ? 's' : ''})
+        </span>
+      </h3>
+      <div className="space-y-2">
+        {visible.map((c) => (
+          <CargadorCercanoCard key={c.id} c={c} />
+        ))}
+      </div>
+
+      {needsCollapse && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          {expanded
+            ? 'Ver menos'
+            : `Ver ${cercanos.length - INITIAL_VISIBLE} cargadores más`}
+        </button>
+      )}
+
+      <p className="mt-4 text-xs text-gray-400 text-center">
+        Datos: <a href="https://openchargemap.org" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">OpenChargeMap</a> (CC BY 4.0)
+      </p>
+    </div>
+  );
+}
+
+function CargadorCercanoCard({ c }: { c: CargadorCercano }) {
+  return (
+    <div className="flex items-center justify-between bg-gray-50 rounded-xl border border-gray-100 px-4 py-3">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div
+          className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{ backgroundColor: colorPotencia(c.potenciaMaxKw) }}
+        />
+        <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+          <span className="text-sm text-gray-500 font-medium whitespace-nowrap">
+            A {c.distanciaKm} km
+          </span>
+          {c.etiquetaPotencia && (
+            <span
+              className="text-[11px] font-semibold px-2 py-0.5 rounded-full text-white whitespace-nowrap"
+              style={{ backgroundColor: colorPotencia(c.potenciaMaxKw) }}
+            >
+              {c.etiquetaPotencia} · {c.potenciaMaxKw} kW
+            </span>
+          )}
+          <span className="text-sm text-gray-900 truncate">
+            {c.operador && <span className="font-medium">{c.operador}</span>}
+            {c.operador && (c.direccion || c.localidad) && ' — '}
+            {c.direccion || c.localidad || c.nombre || ''}
+          </span>
+        </div>
+      </div>
+      <div className="flex-shrink-0 ml-2">
+        <NavButton googleMapsUrl={c.googleMapsUrl} appleMapsUrl={c.appleMapsUrl} />
+      </div>
+    </div>
   );
 }
