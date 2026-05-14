@@ -18,6 +18,7 @@ import {
   esComercioPremium,
   esActividadPremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
+import { buildBusinessJsonLd } from "@/app/_lib/seo/business-json-ld";
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -79,11 +80,23 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
   const isActividadPremium = esActividadPremium(recurso.tipo, recurso.planNegocio);
 
   if (isActividadPremium) {
-    return <ActividadPremiumDetail />;
+    const jsonLd = buildBusinessJsonLd(recurso as any, `/${ROUTE_SLUG}/${puebloSlug}/${negocioSlug}`, locale as SupportedLocale, { schemaType: 'TouristAttraction' });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <ActividadPremiumDetail recurso={recurso as any} />
+      </>
+    );
   }
 
   if (isComercioPremium) {
-    return <ComercioPremiumDetail recurso={recurso as any} />;
+    const jsonLd = buildBusinessJsonLd(recurso as any, `/${ROUTE_SLUG}/${puebloSlug}/${negocioSlug}`, locale as SupportedLocale, { schemaType: 'Store' });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <ComercioPremiumDetail recurso={recurso as any} />
+      </>
+    );
   }
 
   if (isPremium) {

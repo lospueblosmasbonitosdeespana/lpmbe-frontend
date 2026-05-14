@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { Fragment, useMemo, type ReactNode } from 'react'
 
 import { HeroSection } from './hero-section'
 import { StatsSection } from './stats-section'
@@ -21,19 +21,21 @@ import { MobileStickyBar } from './mobile-sticky-bar'
 
 import type { LandingConfig } from './comercio-config'
 import { defaultConfig } from './comercio-default-config'
+import { resolveLayout } from '@/app/_lib/landing/sections-layout'
+import { COMERCIO_PUBLIC_SECTION_KEYS } from './comercio-sections'
 
 /**
  * Orquestador de la plantilla pública premium para comercio / artesanía /
  * tipos genéricos (TIENDA_ARTESANIA, COMERCIO).
  *
- * Recibe el `landingConfig` del recurso. Por ahora, mientras los negocios
- * reales no tengan landingConfig propio, prioriza:
- *   1. raw.v0 (formato del editor V0 cuando exista)
- *   2. raw (legacy si tuviera estructura compatible)
- *   3. defaultConfig (datos demo "Quesos del Pirineo Pardo")
- *
- * Cuando llegue el editor V0 de comercio, el adapter conectará el legacy
- * con el V0 al guardar (mismo patrón que en RestauranteLandingEditor).
+ * Renderizado:
+ *   1. parsea `recurso.landingConfig.v0` como `LandingConfig` (o cae a
+ *      `defaultConfig`).
+ *   2. resuelve la "visibilidad y orden" desde `landingConfig.v0._layout`
+ *      (gestionado por el editor) o, en ausencia, usa el orden por defecto
+ *      del template con todas las secciones visibles.
+ *   3. rinde sólo las secciones marcadas como visibles, en el orden
+ *      indicado.
  */
 function parseLandingConfig(raw: unknown): LandingConfig {
   if (!raw || typeof raw !== 'object') return defaultConfig
@@ -101,27 +103,41 @@ export default function ComercioPremiumDetail({ recurso }: ComercioPremiumDetail
       : config.location.provincia,
   }), [config.location, recurso.lat, recurso.lng, recurso.pueblo])
 
+  const layout = useMemo(
+    () => resolveLayout((recurso.landingConfig as { v0?: { _layout?: unknown } })?.v0?._layout, COMERCIO_PUBLIC_SECTION_KEYS),
+    [recurso.landingConfig],
+  )
+
+  const renderers: Record<string, () => ReactNode> = {
+    hero:          () => <HeroSection config={heroConfig} />,
+    stats:         () => <StatsSection stats={config.stats} />,
+    history:       () => <HistorySection config={config.history} />,
+    products:      () => <ProductsSection products={config.products} />,
+    process:       () => <ProcessSection steps={config.process} />,
+    obrador:       () => <ObradorSection config={config.obrador} />,
+    experiences:   () => <ExperiencesSection experiences={config.experiences} />,
+    awards:        () => <AwardsSection config={config.awards} />,
+    testimonials:  () => <TestimonialsSection testimonials={config.testimonials} />,
+    practicalInfo: () => <PracticalInfoSection info={config.practicalInfo} />,
+    location:      () => <LocationSection config={locationConfig} />,
+    ctaReserva:    () => <CTAReservaSection config={ctaConfig} />,
+    clubOffers:    () => <ClubOffersSection config={config.clubOffers} />,
+    social:        () => <SocialSection links={config.socialLinks} />,
+    clubCTA:       () => <ClubCTASection config={config.clubCTA} />,
+  }
+
   return (
     <div data-theme="comercio">
-    <main className="grain-overlay relative">
-      <HeroSection config={heroConfig} />
-      <StatsSection stats={config.stats} />
-      <HistorySection config={config.history} />
-      <ProductsSection products={config.products} />
-      <ProcessSection steps={config.process} />
-      <ObradorSection config={config.obrador} />
-      <ExperiencesSection experiences={config.experiences} />
-      <AwardsSection config={config.awards} />
-      <TestimonialsSection testimonials={config.testimonials} />
-      <PracticalInfoSection info={config.practicalInfo} />
-      <LocationSection config={locationConfig} />
-      <CTAReservaSection config={ctaConfig} />
-      <ClubOffersSection config={config.clubOffers} />
-      <SocialSection links={config.socialLinks} />
-      <ClubCTASection config={config.clubCTA} />
-      <MobileStickyBar visitHref="#reserva" shopHref="#productos" />
-      <div className="h-16 md:hidden" />
-    </main>
+      <main className="grain-overlay relative">
+        {layout.map(({ key, visible }) => {
+          if (!visible) return null
+          const render = renderers[key]
+          if (!render) return null
+          return <Fragment key={key}>{render()}</Fragment>
+        })}
+        <MobileStickyBar visitHref="#reserva" shopHref="#productos" />
+        <div className="h-16 md:hidden" />
+      </main>
     </div>
   )
 }

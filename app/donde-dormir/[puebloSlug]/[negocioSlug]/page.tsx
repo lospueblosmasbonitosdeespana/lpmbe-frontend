@@ -16,6 +16,7 @@ import AlojamientoPremiumDetail from "@/app/_components/alojamiento/AlojamientoP
 import {
   esAlojamientoPremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
+import { buildBusinessJsonLd } from "@/app/_lib/seo/business-json-ld";
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -76,7 +77,13 @@ export default async function DondeDormirDetailPage({ params }: { params: Promis
   const isAlojamientoPremium = esAlojamientoPremium(recurso.tipo, recurso.planNegocio);
 
   if (isAlojamientoPremium) {
-    return <AlojamientoPremiumDetail />;
+    const jsonLd = buildBusinessJsonLd(recurso as any, `/${ROUTE_SLUG}/${puebloSlug}/${negocioSlug}`, locale as SupportedLocale, { schemaType: 'LodgingBusiness' });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <AlojamientoPremiumDetail recurso={recurso as any} />
+      </>
+    );
   }
 
   if (isPremium) {

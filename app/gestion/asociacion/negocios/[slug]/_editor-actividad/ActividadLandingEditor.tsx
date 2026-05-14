@@ -43,6 +43,12 @@ import {
   DirectionIcon,
   OfferIcon
 } from './activity-config'
+import { SectionsLayoutEditor } from '../_editor-shared/SectionsLayoutEditor'
+import { ACTIVIDAD_PUBLIC_SECTIONS } from '@/app/_components/actividad/actividad-sections'
+import {
+  resolveLayout,
+  type SectionLayoutItem,
+} from '@/app/_lib/landing/sections-layout'
 
 // Icon maps for selectors
 const statIcons: Record<StatIcon, React.ReactNode> = {
@@ -116,10 +122,20 @@ export default function ActividadLandingEditor({
   onSaved,
 }: Props) {
   const initialConfig = useMemo(() => parseInitial(initialLandingConfig), [initialLandingConfig])
+  const initialLayout = useMemo(
+    () =>
+      resolveLayout(
+        (initialLandingConfig as { v0?: { _layout?: unknown } } | null | undefined)
+          ?.v0?._layout,
+        ACTIVIDAD_PUBLIC_SECTIONS.map((s) => s.key),
+      ),
+    [initialLandingConfig],
+  )
   const [config, setConfig] = useState<ActivityLandingConfig>(initialConfig)
+  const [layout, setLayout] = useState<SectionLayoutItem[]>(initialLayout)
   const [isSaving, setIsSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
-  const [openSections, setOpenSections] = useState<string[]>(['hero'])
+  const [openSections, setOpenSections] = useState<string[]>(['_layout'])
 
   const updateConfig = <K extends keyof ActivityLandingConfig>(
     section: K,
@@ -148,7 +164,7 @@ export default function ActividadLandingEditor({
         initialLandingConfig && typeof initialLandingConfig === 'object'
           ? initialLandingConfig
           : {}
-      const merged = { ...baseRaw, v0: config }
+      const merged = { ...baseRaw, v0: { ...config, _layout: layout } }
       const res = await fetch(`/api/club/negocios/${negocioId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -237,6 +253,39 @@ export default function ActividadLandingEditor({
           onValueChange={setOpenSections}
           className="space-y-4"
         >
+          {/* Visibilidad y orden de secciones */}
+          <AccordionItem
+            value="_layout"
+            className="rounded-lg border bg-white shadow-sm"
+            style={{ borderColor: 'oklch(0.78 0.10 70)' }}
+          >
+            <AccordionTrigger className="px-6 hover:no-underline">
+              <div className="flex items-center gap-3 text-left">
+                <div
+                  className="flex h-8 w-8 items-center justify-center rounded-md"
+                  style={{ backgroundColor: 'oklch(0.92 0.06 70)' }}
+                >
+                  <GripVertical className="h-4 w-4" style={{ color: 'oklch(0.55 0.12 70)' }} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'oklch(0.25 0.02 250)' }}>
+                    Visibilidad y orden de secciones
+                  </p>
+                  <p className="text-xs" style={{ color: 'oklch(0.50 0.02 250)' }}>
+                    Decide qué bloques se muestran en tu página pública y en qué orden
+                  </p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-6 pb-6">
+              <SectionsLayoutEditor
+                sections={ACTIVIDAD_PUBLIC_SECTIONS}
+                value={layout}
+                onChange={setLayout}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
           {/* Hero Section */}
           <AccordionItem 
             value="hero" 

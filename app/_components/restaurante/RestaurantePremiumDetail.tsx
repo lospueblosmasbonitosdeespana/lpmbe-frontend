@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import { Fragment, type ReactNode } from 'react';
 import { SOCIAL_NETWORKS, type PlanNegocio } from '@/lib/plan-features';
+import { resolveLayout } from '@/app/_lib/landing/sections-layout';
+import { RESTAURANTE_PUBLIC_SECTION_KEYS } from './restaurante-sections';
 import RestauranteHeroSection from './RestauranteHeroSection';
 import RestauranteChefSection from './RestauranteChefSection';
 import RestauranteCuisinePhilosophy from './RestauranteCuisinePhilosophy';
@@ -158,17 +161,16 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
   if (acceso?.transportePublico) accessCards.push({ icon: 'bus', title: t('publicTransport'), text: acceso.transportePublico });
   if (acceso?.accesibilidad) accessCards.push({ icon: 'accessibility', title: t('accessibility'), text: acceso.accesibilidad });
 
-  return (
-    <main className="min-h-screen bg-background">
-      {/* Breadcrumb */}
-      <nav className="mx-auto max-w-7xl px-4 py-3 text-xs text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">Inicio</Link>
-        <span className="mx-1.5">/</span>
-        <Link href={backHref} className="hover:text-foreground">{backLabel}</Link>
-        <span className="mx-1.5">/</span>
-        <span className="text-foreground font-medium">{recurso.nombre}</span>
-      </nav>
+  // Layout (visibilidad y orden) gestionado desde el editor.
+  // Lo guardamos en `landingConfig.v0._layout` para no chocar con el legacy.
+  const layout = resolveLayout(
+    (recurso.landingConfig as { v0?: { _layout?: unknown } } | null | undefined)
+      ?.v0?._layout,
+    RESTAURANTE_PUBLIC_SECTION_KEYS,
+  );
 
+  const renderers: Record<string, () => ReactNode | null> = {
+    hero: () => (
       <RestauranteHeroSection
         images={images}
         nombre={recurso.nombre}
@@ -190,8 +192,9 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
           reviews: t('reviews'),
         }}
       />
-
-      {chef && (
+    ),
+    chef: () =>
+      chef ? (
         <RestauranteChefSection
           eyebrow={chef.eyebrow ?? t('chefEyebrow')}
           nombre={chef.nombre}
@@ -200,17 +203,17 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
           bio={chef.bio}
           stats={chef.stats}
         />
-      )}
-
-      {filosofia && (
+      ) : null,
+    filosofia: () =>
+      filosofia ? (
         <RestauranteCuisinePhilosophy
           eyebrow={filosofia.eyebrow ?? t('philosophyEyebrow')}
           title={filosofia.title ?? t('philosophyTitle')}
           pillars={filosofia.pillars}
         />
-      )}
-
-      {menus && (
+      ) : null,
+    menus: () =>
+      menus ? (
         <RestauranteMenusSection
           eyebrow={menus.eyebrow ?? t('menusEyebrow')}
           title={menus.title ?? t('menusTitle')}
@@ -219,18 +222,17 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
           bookingUrl={recurso.bookingUrl}
           telefono={recurso.telefono}
         />
-      )}
-
-      {platos && (
+      ) : null,
+    platos: () =>
+      platos ? (
         <RestauranteSignatureDishes
           eyebrow={platos.eyebrow ?? t('platosEyebrow')}
           title={platos.title ?? t('platosTitle')}
           dishes={platos.items}
         />
-      )}
-
-      {ambiente && <RestauranteAmbienteSection blocks={ambiente.blocks} />}
-
+      ) : null,
+    ambiente: () => (ambiente ? <RestauranteAmbienteSection blocks={ambiente.blocks} /> : null),
+    infoPractica: () => (
       <RestauranteInfoPractica
         eyebrow={t('infoEyebrow')}
         title={t('infoTitle')}
@@ -247,7 +249,8 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
         dietasLabel={t('dietasLabel')}
         noteLabel={t('noteLabel')}
       />
-
+    ),
+    reservaBanner: () => (
       <RestauranteReservaBanner
         eyebrow={t('reservaEyebrow')}
         title={t('reservaTitle')}
@@ -259,8 +262,9 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
         telefono={recurso.telefono}
         whatsapp={recurso.whatsapp}
       />
-
-      {recurso.lat != null && recurso.lng != null && (
+    ),
+    contactoUbicacion: () =>
+      recurso.lat != null && recurso.lng != null ? (
         <RestauranteContactoUbicacion
           eyebrow={t('encuentranos')}
           title={t('contactoUbicacionTitle')}
@@ -273,8 +277,8 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
           comoLlegarLabel={t('getDirections')}
           accessCards={accessCards}
         />
-      )}
-
+      ) : null,
+    ofertas: () => (
       <RestauranteOfertasSocios
         eyebrow={t('ofertasEyebrow')}
         title={t('ofertasTitle')}
@@ -283,11 +287,12 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
         nuevaLabel={t('nuevaLabel')}
         forMembersLabel={t('forMembers')}
       />
-
-      {socialLinks.length > 0 && (
+    ),
+    siguenos: () =>
+      socialLinks.length > 0 ? (
         <RestauranteSiguenosSection eyebrow={t('siguenosEyebrow')} socialLinks={socialLinks} />
-      )}
-
+      ) : null,
+    becomeMember: () => (
       <RestauranteBecomeMember
         eyebrow={t('clubEyebrow')}
         title={t('becomeMemberTitle')}
@@ -295,6 +300,26 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
         joinNowLabel={t('joinNow')}
         learnMoreLabel={t('learnMore')}
       />
+    ),
+  };
+
+  return (
+    <main className="min-h-screen bg-background">
+      {/* Breadcrumb */}
+      <nav className="mx-auto max-w-7xl px-4 py-3 text-xs text-muted-foreground">
+        <Link href="/" className="hover:text-foreground">Inicio</Link>
+        <span className="mx-1.5">/</span>
+        <Link href={backHref} className="hover:text-foreground">{backLabel}</Link>
+        <span className="mx-1.5">/</span>
+        <span className="text-foreground font-medium">{recurso.nombre}</span>
+      </nav>
+
+      {layout.map(({ key, visible }) => {
+        if (!visible) return null;
+        const node = renderers[key]?.();
+        if (!node) return null;
+        return <Fragment key={key}>{node}</Fragment>;
+      })}
     </main>
   );
 }

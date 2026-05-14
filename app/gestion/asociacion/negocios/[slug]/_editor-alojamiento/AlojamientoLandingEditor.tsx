@@ -32,6 +32,13 @@ import {
 import { defaultConfig } from './lodging-default-config'
 import type { LodgingLandingConfig } from './lodging-types'
 
+import { SectionsLayoutEditor } from '../_editor-shared/SectionsLayoutEditor'
+import { ALOJAMIENTO_PUBLIC_SECTIONS } from '@/app/_components/alojamiento/alojamiento-sections'
+import {
+  resolveLayout,
+  type SectionLayoutItem,
+} from '@/app/_lib/landing/sections-layout'
+
 import { HeroEditor }          from './HeroEditor'
 import { QuickStatsEditor }    from './QuickStatsEditor'
 import { StoryEditor }         from './StoryEditor'
@@ -107,10 +114,20 @@ export default function AlojamientoLandingEditor({
   onSaved,
 }: Props) {
   const initialConfig = useMemo(() => parseInitial(initialLandingConfig), [initialLandingConfig])
+  const initialLayout = useMemo(
+    () =>
+      resolveLayout(
+        (initialLandingConfig as { v0?: { _layout?: unknown } } | null | undefined)
+          ?.v0?._layout,
+        ALOJAMIENTO_PUBLIC_SECTIONS.map((s) => s.key),
+      ),
+    [initialLandingConfig],
+  )
   const [config, setConfig] = useState<LodgingLandingConfig>(initialConfig)
+  const [layout, setLayout] = useState<SectionLayoutItem[]>(initialLayout)
   const [showJson, setShowJson]     = useState(false)
   const [saved, setSaved]           = useState(false)
-  const [openSection, setOpenSection] = useState<string>(SECTIONS[0].key)
+  const [openSection, setOpenSection] = useState<string>('_layout')
 
   const update = useCallback(
     <K extends SectionKey>(key: K, value: LodgingLandingConfig[K]) => {
@@ -128,7 +145,7 @@ export default function AlojamientoLandingEditor({
         initialLandingConfig && typeof initialLandingConfig === 'object'
           ? initialLandingConfig
           : {}
-      const merged = { ...baseRaw, v0: config }
+      const merged = { ...baseRaw, v0: { ...config, _layout: layout } }
       const res = await fetch(`/api/club/negocios/${negocioId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -244,6 +261,51 @@ export default function AlojamientoLandingEditor({
           onValueChange={v => setOpenSection(v ?? '')}
           className="space-y-2"
         >
+          {/* Visibilidad y orden de secciones (público) */}
+          <AccordionItem
+            value="_layout"
+            className="rounded-xl overflow-hidden border-0"
+            style={{
+              background: '#fff',
+              boxShadow: openSection === '_layout'
+                ? '0 0 0 2px oklch(0.72 0.16 60), 0 4px 20px oklch(0.52 0.12 60 / 0.12)'
+                : '0 1px 4px oklch(0.52 0.12 60 / 0.07)',
+            }}
+          >
+            <AccordionTrigger className="px-5 py-4 hover:no-underline group" style={{ textDecoration: 'none' }}>
+              <div className="flex items-center gap-3 text-left">
+                <div
+                  className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
+                  style={{
+                    background: openSection === '_layout' ? 'oklch(0.72 0.16 60)' : 'oklch(0.72 0.16 60 / 0.12)',
+                  }}
+                >
+                  <Grid2x2
+                    size={15}
+                    style={{ color: openSection === '_layout' ? '#fff' : 'oklch(0.42 0.12 55)' }}
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold leading-none mb-0.5" style={{ color: 'oklch(0.28 0.07 50)' }}>
+                    Visibilidad y orden de secciones
+                  </p>
+                  <p className="text-xs" style={{ color: 'oklch(0.55 0.06 50)' }}>
+                    Decide qué bloques se muestran en tu página pública y en qué orden
+                  </p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-5 pb-6 pt-1">
+              <div className="pt-4 border-t" style={{ borderColor: 'oklch(0.92 0.010 70)' }}>
+                <SectionsLayoutEditor
+                  sections={ALOJAMIENTO_PUBLIC_SECTIONS}
+                  value={layout}
+                  onChange={setLayout}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
           {SECTIONS.map(({ key, label, description, icon: Icon }) => (
             <AccordionItem
               key={key}

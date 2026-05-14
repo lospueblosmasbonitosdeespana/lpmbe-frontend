@@ -117,6 +117,12 @@ import {
   HOW_TO_GET_ICONS,
 } from './commerce-types'
 import { defaultCommerceConfig, parseInitialConfig, generateId } from './commerce-default-config'
+import { SectionsLayoutEditor } from '../_editor-shared/SectionsLayoutEditor'
+import { COMERCIO_PUBLIC_SECTIONS } from '@/app/_components/comercio/comercio-sections'
+import {
+  resolveLayout,
+  type SectionLayoutItem,
+} from '@/app/_lib/landing/sections-layout'
 
 // Dynamic import for Leaflet to avoid SSR issues
 const MapPreview = dynamic(() => import('./MapPreview'), { ssr: false })
@@ -572,10 +578,23 @@ export default function ComercioLandingEditor({
   const [originalConfig, setOriginalConfig] = useState<CommerceLandingConfig>(() =>
     parseV0(initialLandingConfig)
   )
+  // Visibilidad y orden de las secciones de la PÁGINA PÚBLICA. Independiente
+  // del orden de los acordeones de edición. Se guarda en `landingConfig.v0._layout`.
+  const initialLayout = useMemo(
+    () =>
+      resolveLayout(
+        (initialLandingConfig as { v0?: { _layout?: unknown } } | null | undefined)
+          ?.v0?._layout,
+        COMERCIO_PUBLIC_SECTIONS.map((s) => s.key),
+      ),
+    [initialLandingConfig],
+  )
+  const [layout, setLayout] = useState<SectionLayoutItem[]>(initialLayout)
+  const [originalLayout, setOriginalLayout] = useState<SectionLayoutItem[]>(initialLayout)
   const [isSaving, setIsSaving] = useState(false)
   const [savedPill, setSavedPill] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState<{ type: string; id: string } | null>(null)
-  const [openSections, setOpenSections] = useState<string[]>(['identity'])
+  const [openSections, setOpenSections] = useState<string[]>(['_layout', 'identity'])
 
   const previewUrl = `/donde-comprar/${puebloSlug}/${negocioSlug}`
 
@@ -589,8 +608,11 @@ export default function ComercioLandingEditor({
 
   // Check if dirty
   const isDirty = useMemo(() => {
-    return JSON.stringify(config) !== JSON.stringify(originalConfig)
-  }, [config, originalConfig])
+    return (
+      JSON.stringify(config) !== JSON.stringify(originalConfig) ||
+      JSON.stringify(layout) !== JSON.stringify(originalLayout)
+    )
+  }, [config, originalConfig, layout, originalLayout])
 
   // Completion percentage
   const completionPercent = useMemo(() => getOverallCompletion(config), [config])
@@ -607,7 +629,10 @@ export default function ComercioLandingEditor({
           initialLandingConfig && typeof initialLandingConfig === 'object'
             ? (initialLandingConfig as Record<string, unknown>)
             : {}
-        const merged = { ...baseRaw, v0: config }
+        const merged = {
+          ...baseRaw,
+          v0: { ...config, _layout: layout },
+        }
         const res = await fetch(`/api/club/negocios/${negocioId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -616,6 +641,7 @@ export default function ComercioLandingEditor({
         if (!res.ok) throw new Error('Error al guardar')
       }
       setOriginalConfig(config)
+      setOriginalLayout(layout)
       setSavedPill(true)
       onSaved?.()
       setTimeout(() => setSavedPill(false), 2000)
@@ -625,7 +651,7 @@ export default function ComercioLandingEditor({
     } finally {
       setIsSaving(false)
     }
-  }, [config, onSave, onSaved, negocioId, initialLandingConfig])
+  }, [config, layout, onSave, onSaved, negocioId, initialLandingConfig])
 
   // Generic update helper
   const updateConfig = useCallback(
@@ -834,6 +860,30 @@ export default function ComercioLandingEditor({
           onValueChange={setOpenSections}
           className="space-y-3"
         >
+          {/* 0. Visibilidad y orden de secciones (público) */}
+          <AccordionItem value="_layout" className="rounded-xl border border-amber-200 bg-amber-50/40">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="flex items-center gap-3 text-left">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <GripVertical className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Visibilidad y orden de secciones</p>
+                  <p className="text-xs text-muted-foreground">
+                    Decide qué bloques se muestran en tu página pública y en qué orden
+                  </p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <SectionsLayoutEditor
+                sections={COMERCIO_PUBLIC_SECTIONS}
+                value={layout}
+                onChange={setLayout}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
           {/* 1. Identity Section */}
           <AccordionItem value="identity" className="rounded-xl border border-border bg-card">
             <AccordionTrigger className="px-4 py-3 hover:no-underline">

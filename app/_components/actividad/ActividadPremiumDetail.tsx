@@ -1,5 +1,6 @@
 'use client'
 
+import { Fragment, type ReactNode } from 'react'
 import dynamic from 'next/dynamic'
 import { HeroVideo } from './HeroVideo'
 import { ActivityHighlights } from './ActivityHighlights'
@@ -16,23 +17,44 @@ import { BookingBanner } from './BookingBanner'
 import { MemberOffers } from './MemberOffers'
 import { JoinCTA } from './JoinCTA'
 
-export default function ActividadPremiumDetail() {
+import { resolveLayout } from '@/app/_lib/landing/sections-layout'
+import { ACTIVIDAD_PUBLIC_SECTION_KEYS } from './actividad-sections'
+
+interface Props {
+  recurso?: { landingConfig?: any } | null
+}
+
+export default function ActividadPremiumDetail({ recurso }: Props = {}) {
+  const layout = resolveLayout(
+    (recurso?.landingConfig as { v0?: { _layout?: unknown } } | null | undefined)?.v0?._layout,
+    ACTIVIDAD_PUBLIC_SECTION_KEYS,
+  )
+
+  const renderers: Record<string, () => ReactNode> = {
+    hero: () => <HeroVideo />,
+    highlights: () => <ActivityHighlights />,
+    aboutStory: () => <AboutStory />,
+    activitiesGrid: () => <ActivitiesGrid />,
+    featured: () => <FeaturedExperience />,
+    guidesTeam: () => <GuidesTeam />,
+    seasonCalendar: () => <SeasonCalendar />,
+    testimonials: () => <TestimonialsSection />,
+    safety: () => <SafetyAndEquipment />,
+    practicalInfo: () => <PracticalInfo />,
+    location: () => <LocationMap />,
+    booking: () => <BookingBanner />,
+    memberOffers: () => <MemberOffers />,
+    joinCTA: () => <JoinCTA />,
+  }
+
   return (
     <main className="overflow-hidden">
-      <HeroVideo />
-      <ActivityHighlights />
-      <AboutStory />
-      <ActivitiesGrid />
-      <FeaturedExperience />
-      <GuidesTeam />
-      <SeasonCalendar />
-      <TestimonialsSection />
-      <SafetyAndEquipment />
-      <PracticalInfo />
-      <LocationMap />
-      <BookingBanner />
-      <MemberOffers />
-      <JoinCTA />
+      {layout.map(({ key, visible }) => {
+        if (!visible) return null
+        const node = renderers[key]?.()
+        if (!node) return null
+        return <Fragment key={key}>{node}</Fragment>
+      })}
     </main>
   )
 }

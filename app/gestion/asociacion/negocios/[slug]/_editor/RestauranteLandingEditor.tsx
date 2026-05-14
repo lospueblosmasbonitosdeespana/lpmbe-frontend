@@ -1,8 +1,13 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
-import { Accordion } from '@/app/components/ui/accordion'
-import { Settings2, Store } from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/app/components/ui/accordion'
+import { Settings2, Store, GripVertical } from 'lucide-react'
 
 import { type LandingConfig } from './landing-config'
 import { legacyToV0, v0ToLegacy } from './landing-config-adapter'
@@ -16,6 +21,12 @@ import { PracticalInfoEditor } from './practical-info-editor'
 import { AccessEditor } from './access-editor'
 import { MemberOffersEditor } from './member-offers-editor'
 import { SaveBar } from './save-bar'
+import { SectionsLayoutEditor } from '../_editor-shared/SectionsLayoutEditor'
+import { RESTAURANTE_PUBLIC_SECTIONS } from '@/app/_components/restaurante/restaurante-sections'
+import {
+  resolveLayout,
+  type SectionLayoutItem,
+} from '@/app/_lib/landing/sections-layout'
 
 function calcCompletion(cfg: LandingConfig): number {
   const checks: boolean[] = [
@@ -70,12 +81,25 @@ export default function RestauranteLandingEditor({
   onSaved,
 }: RestauranteLandingEditorProps) {
   const initial = useMemo(() => parseLandingConfig(initialLandingConfig), [initialLandingConfig])
+  const initialLayout = useMemo(
+    () =>
+      resolveLayout(
+        (initialLandingConfig as { v0?: { _layout?: unknown } } | null | undefined)
+          ?.v0?._layout,
+        RESTAURANTE_PUBLIC_SECTIONS.map((s) => s.key),
+      ),
+    [initialLandingConfig],
+  )
   const [config, setConfig] = useState<LandingConfig>(initial)
   const [savedConfig, setSavedConfig] = useState<LandingConfig>(initial)
+  const [layout, setLayout] = useState<SectionLayoutItem[]>(initialLayout)
+  const [savedLayout, setSavedLayout] = useState<SectionLayoutItem[]>(initialLayout)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
-  const isDirty = JSON.stringify(config) !== JSON.stringify(savedConfig)
+  const isDirty =
+    JSON.stringify(config) !== JSON.stringify(savedConfig) ||
+    JSON.stringify(layout) !== JSON.stringify(savedLayout)
   const completion = useMemo(() => calcCompletion(config), [config])
 
   const handleSave = useCallback(async () => {
@@ -91,7 +115,7 @@ export default function RestauranteLandingEditor({
           ? initialLandingConfig
           : {}
       const legacy = v0ToLegacy(config)
-      const merged = { ...baseRaw, ...legacy, v0: config }
+      const merged = { ...baseRaw, ...legacy, v0: { ...config, _layout: layout } }
       const res = await fetch(`/api/club/negocios/${negocioId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -99,6 +123,7 @@ export default function RestauranteLandingEditor({
       })
       if (res.ok) {
         setSavedConfig(config)
+        setSavedLayout(layout)
         setLastSaved(new Date())
         onSaved?.()
       }
@@ -106,13 +131,15 @@ export default function RestauranteLandingEditor({
     } finally {
       setIsSaving(false)
     }
-  }, [config, negocioId, onSaved, initialLandingConfig])
+  }, [config, layout, negocioId, onSaved, initialLandingConfig])
 
   const handleReset = useCallback(() => {
     setConfig(initial)
     setSavedConfig(initial)
+    setLayout(initialLayout)
+    setSavedLayout(initialLayout)
     setLastSaved(null)
-  }, [initial])
+  }, [initial, initialLayout])
 
   const handlePreview = useCallback(() => {
     if (puebloSlug && negocioSlug) {
@@ -159,9 +186,32 @@ export default function RestauranteLandingEditor({
 
         <Accordion
           type="multiple"
-          defaultValue={['hero', 'chef']}
+          defaultValue={['_layout', 'hero', 'chef']}
           className="space-y-3"
         >
+          <AccordionItem value="_layout" className="rounded-xl border border-amber-200 bg-amber-50/40">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="flex items-center gap-3 text-left">
+                <div className="flex size-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700 shrink-0">
+                  <GripVertical className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Visibilidad y orden de secciones</p>
+                  <p className="text-xs text-muted-foreground">
+                    Decide qué bloques se muestran en tu página pública y en qué orden
+                  </p>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <SectionsLayoutEditor
+                sections={RESTAURANTE_PUBLIC_SECTIONS}
+                value={layout}
+                onChange={setLayout}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
           <HeroEditor
             value={config.hero}
             onChange={(v) => update('hero', v)}
