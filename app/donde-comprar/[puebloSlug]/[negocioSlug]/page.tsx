@@ -13,6 +13,7 @@ import {
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
 import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
 import ActividadPremiumDetail from "@/app/_components/actividad/ActividadPremiumDetail";
+import ComercioPremiumDetail from "@/app/_components/comercio/ComercioPremiumDetail";
 import {
   esComercioPremium,
   esActividadPremium,
@@ -74,15 +75,16 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
   const tPremium = await getTranslations("premiumNegocio");
 
   const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
-  const _isComercioPremium = esComercioPremium(recurso.tipo, recurso.planNegocio);
+  const isComercioPremium = esComercioPremium(recurso.tipo, recurso.planNegocio);
   const isActividadPremium = esActividadPremium(recurso.tipo, recurso.planNegocio);
 
   if (isActividadPremium) {
     return <ActividadPremiumDetail />;
   }
 
-  // TODO: cuando exista ComercioPremiumDetail, activar aquí:
-  // if (_isComercioPremium) { ... return <ComercioPremiumDetail /> }
+  if (isComercioPremium) {
+    return <ComercioPremiumDetail recurso={recurso as any} />;
+  }
 
   if (isPremium) {
     const translations: Record<string, string> = {};
