@@ -701,7 +701,13 @@
     "catPatrimonio": "Kulturerbe",
     "catPetfriendly": "Haustierfreundlich",
     "catGastronomia": "Gastronomie",
-    "h1CategoriaEn": "{categoria} in {nombre}"
+    "h1CategoriaEn": "{categoria} in {nombre}",
+    "evCharging": "Elektrische Ladung",
+    "evChargingSubtitle": "Ladestationen für Elektrofahrzeuge",
+    "evInVillage": "In {Name}",
+    "evNearby": "In der Nähe des Dorfes",
+    "evHowToGet": "Wie man dorthin kommt",
+    "evAttribution": "Daten von Ladestationen in der Nähe: OpenChargeMap (CC BY 4.0)"
   },
   "poiPage": {
     "backTo": "← Zurück zu {nombre}",

@@ -701,7 +701,13 @@
     "catPatrimonio": "Patrimoine",
     "catPetfriendly": "Pet-friendly",
     "catGastronomia": "Gastronomie",
-    "h1CategoriaEn": "{categoria} à {nombre}"
+    "h1CategoriaEn": "{categoria} à {nombre}",
+    "evCharging": "Charge électrique",
+    "evChargingSubtitle": "Points de recharge pour véhicules électriques",
+    "evInVillage": "Dans {nom}",
+    "evNearby": "Près du village",
+    "evHowToGet": "Comment s'y rendre",
+    "evAttribution": "Données sur les chargeurs à proximité : OpenChargeMap (CC BY 4.0)"
   },
   "poiPage": {
     "backTo": "← Retour à {nombre}",

@@ -80,7 +80,7 @@ const SERVICIO_LABELS: Record<string, string> = {
   COCHE_ELECTRICO: 'Cargador EV', PICNIC: 'Picnic', POLICIA: 'Policía',
   SUPERMERCADO: 'Supermercado', GASOLINERA: 'Gasolinera', DESFIBRILADOR: 'Desfibrilador',
   TAXI: 'Taxi', BANO_NATURAL: 'Baño natural', PIPICAN: 'Pipicán', TREN: 'Tren',
-  ALQUILER_BICI: 'Alquiler bici', COCHE_ELECTRICO_ULTRA: 'Carga ultra-rápida',
+  ALQUILER_BICI: 'Alquiler bici',
   PLAYA: 'Playa',
 };
 

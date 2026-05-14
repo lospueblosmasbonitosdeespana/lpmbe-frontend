@@ -24,6 +24,7 @@ import TematicasPuebloTabs from "./TematicasPuebloTabs";
 import PueblosCercanosSection from "./_components/PueblosCercanosSection";
 import { CaracteristicasSection } from "./_components/CaracteristicasSection";
 import { QueHacerSection } from "./_components/QueHacerSection";
+import { CargaElectricaSection } from "./_components/CargaElectricaSection";
 import { DetailPageHero } from "@/app/components/ui/detail-page-hero";
 import { DetailIntroSection } from "@/app/components/ui/detail-section";
 import { DetailStatsBlock } from "@/app/components/village/detail-stats-block";
@@ -385,13 +386,14 @@ export default async function PuebloPage({
   const API_BASE = getApiUrl();
   const langQs = locale ? `?lang=${encodeURIComponent(locale)}` : "";
   const langParam = locale ? `&lang=${encodeURIComponent(locale)}` : "";
-  const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes, caracteristicasRes] = await Promise.all([
+  const [pueblo, pueblosLite, pagesRes, puntosServicioRes, alertasFeedRes, caracteristicasRes, cargaElectricaRes] = await Promise.all([
     getPuebloBySlug(slug, locale),
     getPueblosLite(locale),
     fetch(`${API_BASE}/public/pueblos/${slug}/pages${langQs}`).catch(() => null),
     fetch(`${API_BASE}/pueblos/${slug}/puntos-servicio`).catch(() => null),
     fetch(`${API_BASE}/public/notificaciones/feed?limit=200&tipos=ALERTA_PUEBLO${langParam}`).catch(() => null),
     fetch(`${API_BASE}/public/pueblos/${slug}/caracteristicas`, { next: { revalidate: 120 } }).catch(() => null),
+    fetch(`${API_BASE}/pueblos/${slug}/carga-electrica`, { next: { revalidate: 3600 } }).catch(() => null),
   ]);
 
   // Páginas temáticas del pueblo (contenidos temáticos) - ahora son arrays por categoría
@@ -450,6 +452,30 @@ export default async function PuebloPage({
     } catch {
       // ignorar
     }
+  }
+
+  // Datos de carga eléctrica (propios + cercanos OCM)
+  type CargadorPropio = {
+    id: number; nombre: string | null; lat: number | null; lng: number | null;
+    potenciaKw: number | null; etiquetaPotencia: string | null;
+    googleMapsUrl: string | null; appleMapsUrl: string | null;
+  };
+  type CargadorCercano = {
+    id: number; ocmId: number; nombre: string | null; direccion: string | null;
+    localidad: string | null; lat: number; lng: number;
+    potenciaMaxKw: number | null; numConectores: number | null;
+    operador: string | null; acceso: string | null; distanciaKm: number;
+    etiquetaPotencia: string | null;
+    googleMapsUrl: string; appleMapsUrl: string;
+  };
+  let cargaPropios: CargadorPropio[] = [];
+  let cargaCercanos: CargadorCercano[] = [];
+  if (cargaElectricaRes?.ok) {
+    try {
+      const cargaData = await cargaElectricaRes.json();
+      cargaPropios = cargaData.propios ?? [];
+      cargaCercanos = cargaData.cercanos ?? [];
+    } catch { /* ignorar */ }
   }
 
   const rawSemaforo = (pueblo as any).semaforo;
@@ -1215,6 +1241,13 @@ export default async function PuebloPage({
           </Section>
         </div>
       )}
+
+      {/* CARGA ELÉCTRICA - Cargadores propios + cercanos */}
+      <CargaElectricaSection
+        puebloNombre={puebloSafe.nombre}
+        propios={cargaPropios}
+        cercanos={cargaCercanos}
+      />
 
       {/* PUEBLOS CERCANOS */}
       <PueblosCercanosSection

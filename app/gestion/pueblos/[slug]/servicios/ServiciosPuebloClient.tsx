@@ -8,6 +8,8 @@ import {
   getTipoServicioConfig,
   toHorarioTramos,
   hasAnyTramo,
+  NIVELES_POTENCIA_EV,
+  etiquetaPotencia,
   type DiaSemana,
   type TipoServicio,
   type HorarioTramos,
@@ -24,6 +26,7 @@ type PuntoServicioRow = {
   horarioTramos?: HorarioTramos | null;
   orden?: number | null;
   principal?: boolean | null;
+  potenciaKw?: number | null;
 };
 
 type FormState = {
@@ -33,6 +36,7 @@ type FormState = {
   lng: number | null;
   horario: HorarioTramos;
   principal: boolean;
+  potenciaKw: number | null;
 };
 
 /**
@@ -66,6 +70,7 @@ function formVacio(): FormState {
     lng: null,
     horario: horarioVacio(),
     principal: false,
+    potenciaKw: null,
   };
 }
 
@@ -150,6 +155,7 @@ export default function ServiciosPuebloClient({
       lng: row.lng ?? null,
       horario: { ...horarioVacio(), ...tramos },
       principal: row.principal === true,
+      potenciaKw: row.potenciaKw ?? null,
     });
     setFormError(null);
     setShowHorario(hasAnyTramo(tramos));
@@ -190,6 +196,7 @@ export default function ServiciosPuebloClient({
             )
           : null,
         principal: tipoSoportaPrincipal(form.tipo) ? form.principal : false,
+        potenciaKw: form.tipo === "COCHE_ELECTRICO" ? form.potenciaKw : undefined,
       };
 
       let r: Response;
@@ -353,6 +360,36 @@ export default function ServiciosPuebloClient({
             </div>
           </div>
 
+          {/* Selector de potencia (solo para COCHE_ELECTRICO) */}
+          {form.tipo === "COCHE_ELECTRICO" && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-3 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+              <label className="mb-2 block text-xs font-medium text-foreground/80">
+                Potencia del cargador <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                {NIVELES_POTENCIA_EV.map((nivel) => (
+                  <button
+                    key={nivel.defaultKw}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, potenciaKw: nivel.defaultKw }))}
+                    className={`rounded-lg border p-2 text-xs text-center transition-all ${
+                      form.potenciaKw === nivel.defaultKw
+                        ? "border-emerald-500 bg-emerald-100 font-semibold text-emerald-800 shadow-sm"
+                        : "border-border bg-card text-muted-foreground hover:border-emerald-300"
+                    }`}
+                  >
+                    {nivel.label}
+                  </button>
+                ))}
+              </div>
+              {form.potenciaKw && (
+                <p className="mt-2 text-xs text-emerald-700">
+                  Clasificación: <strong>{etiquetaPotencia(form.potenciaKw)}</strong> ({form.potenciaKw} kW)
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Nombre opcional */}
           <div>
             <label className="mb-1 block text-xs font-medium text-foreground/80">
@@ -508,6 +545,11 @@ export default function ServiciosPuebloClient({
                         {row.principal === true && tipoSoportaPrincipal(row.tipo) && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
                             ★ Principal
+                          </span>
+                        )}
+                        {row.tipo === "COCHE_ELECTRICO" && row.potenciaKw && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
+                            ⚡ {etiquetaPotencia(row.potenciaKw)} ({row.potenciaKw} kW)
                           </span>
                         )}
                       </p>

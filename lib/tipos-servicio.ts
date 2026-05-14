@@ -12,7 +12,6 @@ export type TipoServicio =
   | 'TAXI'
   | 'AUTOBUS'
   | 'COCHE_ELECTRICO'
-  | 'COCHE_ELECTRICO_ULTRA'
   | 'ALQUILER_BICI'
   | 'FUENTE'
   | 'POLICIA'
@@ -155,25 +154,13 @@ export const TIPOS_SERVICIO: TipoServicioConfig[] = [
   },
   {
     tipo: 'COCHE_ELECTRICO',
-    etiqueta: 'Carga vehículo eléctrico',
+    etiqueta: 'Cargador eléctrico',
     i18nKey: 'COCHE_ELECTRICO',
     color: '#16a34a',
     emoji: '⚡',
     svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
       <path d="M20 11V7l-2-2h-2V3H8v2H6L4 7v9h2a2 2 0 0 0 4 0h4a2 2 0 0 0 4 0h2v-3l-2-2zM6 8.5l1-1.5h10l1 1.5V11H6V8.5zM8 17a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm1-5H7v-1h10v1zm1.5-4l1 1H14v-1h4.5z"/>
       <path d="M11 2l-4 6h3v4l4-6h-3V2z"/>
-    </svg>`,
-  },
-  {
-    tipo: 'COCHE_ELECTRICO_ULTRA',
-    etiqueta: 'Cargador ultra-rápido (150+ kW)',
-    i18nKey: 'COCHE_ELECTRICO_ULTRA',
-    color: '#059669',
-    emoji: '⚡',
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="20" height="20">
-      <path d="M11 2l-4 6h3v4l4-6h-3V2z"/>
-      <path d="M7 15l-3 5h3v2l3-5H7v-2z"/>
-      <path d="M17 15l-3 5h3v2l3-5h-3v-2z"/>
     </svg>`,
   },
   {
@@ -405,4 +392,31 @@ export function isValidTramo(t: Tramo): boolean {
     TIME_RE.test(t.cierra) &&
     t.abre < t.cierra
   );
+}
+
+/** Niveles de potencia EV para select en gestión. */
+export const NIVELES_POTENCIA_EV = [
+  { kw: 3.7, label: 'Lento (≤7 kW)', defaultKw: 3.7 },
+  { kw: 7, label: 'Semi-rápido (7-22 kW)', defaultKw: 11 },
+  { kw: 22, label: 'Rápido (22-50 kW)', defaultKw: 22 },
+  { kw: 50, label: 'Ultra-rápido (50-150 kW)', defaultKw: 50 },
+  { kw: 150, label: 'Mega-rápido (150+ kW)', defaultKw: 150 },
+] as const;
+
+export function etiquetaPotencia(kw: number | null | undefined): string | null {
+  if (kw == null) return null;
+  if (kw >= 150) return 'Mega-rápido';
+  if (kw >= 50) return 'Ultra-rápido';
+  if (kw >= 22) return 'Rápido';
+  if (kw >= 7) return 'Semi-rápido';
+  return 'Lento';
+}
+
+export function colorPotencia(kw: number | null | undefined): string {
+  if (kw == null) return '#16a34a';
+  if (kw >= 150) return '#7c3aed';
+  if (kw >= 50) return '#059669';
+  if (kw >= 22) return '#0891b2';
+  if (kw >= 7) return '#16a34a';
+  return '#6b7280';
 }

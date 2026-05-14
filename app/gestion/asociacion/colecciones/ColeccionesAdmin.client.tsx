@@ -96,7 +96,6 @@ const SERVICIOS_PARA_COLECCION: ServicioOption[] = [
   { tipo: 'BANO_NATURAL', etiqueta: 'Zona natural de baño', emoji: '🏊' },
   { tipo: 'PLAYA', etiqueta: 'Playa', emoji: '🏖️' },
   { tipo: 'COCHE_ELECTRICO', etiqueta: 'Cargador eléctrico', emoji: '⚡' },
-  { tipo: 'COCHE_ELECTRICO_ULTRA', etiqueta: 'Cargador ultra-rápido (150+ kW)', emoji: '⚡' },
   { tipo: 'PIPICAN', etiqueta: 'Pipicán (pet-friendly)', emoji: '🐕' },
   { tipo: 'ALQUILER_BICI', etiqueta: 'Alquiler de bicicletas', emoji: '🚲' },
   { tipo: 'PICNIC', etiqueta: 'Zona picnic / Merendero', emoji: '🧺' },
