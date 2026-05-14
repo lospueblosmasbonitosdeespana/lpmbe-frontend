@@ -21,7 +21,17 @@ interface Props {
   imprescindible?: boolean;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
   cerradoTemporal?: boolean;
-  t: (key: string) => string;
+  // Strings preresueltos en el server. No se puede pasar la función `t`
+  // a través del límite Server→Client porque las funciones no son serializables.
+  labels: {
+    noPhotos: string;
+    prevImage: string;
+    nextImage: string;
+    goToSlide: string;
+    imprescindible: string;
+    cerradoTemporal: string;
+    reviews: string;
+  };
 }
 
 export default function RestauranteHeroSection({
@@ -35,7 +45,7 @@ export default function RestauranteHeroSection({
   imprescindible,
   ratingVerificado,
   cerradoTemporal,
-  t,
+  labels,
 }: Props) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
     Autoplay({ delay: 5000, stopOnInteraction: true }),
@@ -57,7 +67,7 @@ export default function RestauranteHeroSection({
   if (images.length === 0) {
     return (
       <section className="relative w-full bg-muted aspect-[16/9] md:aspect-[21/9] flex items-center justify-center">
-        <p className="text-muted-foreground">{t('noPhotos')}</p>
+        <p className="text-muted-foreground">{labels.noPhotos}</p>
       </section>
     );
   }
@@ -97,7 +107,7 @@ export default function RestauranteHeroSection({
             </Badge>
             {imprescindible && (
               <Badge className="bg-amber-500/90 text-white border-0 rounded-full px-3 py-0.5 text-xs font-semibold">
-                {t('imprescindible')}
+                {labels.imprescindible}
               </Badge>
             )}
             {(badges ?? []).map((b) => (
@@ -110,7 +120,7 @@ export default function RestauranteHeroSection({
             ))}
             {cerradoTemporal && (
               <Badge className="bg-red-500/90 text-white border-0 rounded-full px-3 py-0.5 text-xs font-semibold">
-                {t('cerradoTemporal')}
+                {labels.cerradoTemporal}
               </Badge>
             )}
           </div>
@@ -137,7 +147,7 @@ export default function RestauranteHeroSection({
                   {ratingVerificado.rating.toFixed(1)}
                 </span>
                 {ratingVerificado.reviews != null && (
-                  <span className="text-white/60 text-xs">({ratingVerificado.reviews} {t('reviews')})</span>
+                  <span className="text-white/60 text-xs">({ratingVerificado.reviews} {labels.reviews})</span>
                 )}
               </span>
             )}
@@ -149,14 +159,14 @@ export default function RestauranteHeroSection({
         <>
           <button
             onClick={scrollPrev}
-            aria-label={t('prevImage')}
+            aria-label={labels.prevImage}
             className="absolute left-4 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
           >
             <ChevronLeft className="size-5" />
           </button>
           <button
             onClick={scrollNext}
-            aria-label={t('nextImage')}
+            aria-label={labels.nextImage}
             className="absolute right-4 top-1/2 -translate-y-1/2 size-11 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
           >
             <ChevronRight className="size-5" />
@@ -167,7 +177,7 @@ export default function RestauranteHeroSection({
               <button
                 key={i}
                 onClick={() => emblaApi?.scrollTo(i)}
-                aria-label={`${t('goToSlide')} ${i + 1}`}
+                aria-label={`${labels.goToSlide} ${i + 1}`}
                 className={cn(
                   'rounded-full transition-all duration-300',
                   i === selectedIndex ? 'bg-gold w-6 h-2' : 'bg-white/40 w-2 h-2 hover:bg-white/70',

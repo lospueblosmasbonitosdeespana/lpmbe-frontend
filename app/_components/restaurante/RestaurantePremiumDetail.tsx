@@ -180,7 +180,15 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
         imprescindible={recurso.imprescindible}
         ratingVerificado={recurso.ratingVerificado}
         cerradoTemporal={recurso.cerradoTemporal}
-        t={t}
+        labels={{
+          noPhotos: t('noPhotos'),
+          prevImage: t('prevImage'),
+          nextImage: t('nextImage'),
+          goToSlide: t('goToSlide'),
+          imprescindible: t('imprescindible'),
+          cerradoTemporal: t('cerradoTemporal'),
+          reviews: t('reviews'),
+        }}
       />
 
       {chef && (
