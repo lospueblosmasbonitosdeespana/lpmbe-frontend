@@ -18,6 +18,40 @@ import {
   esRestaurantePremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
 import { buildRestaurantJsonLd } from "@/app/_lib/seo/restaurant-json-ld";
+import { getNegocioCategoryRoute } from "@/app/_lib/club/club-helpers";
+
+/**
+ * Las páginas /pueblos/[slug]/club/[negocioSlug] son una vía de navegación
+ * secundaria desde la ficha del pueblo. La URL canónica del negocio para SEO
+ * es siempre /donde-comer|donde-dormir|donde-comprar/[puebloSlug]/[negocioSlug],
+ * porque los negocios son entidades independientes del pueblo y deben
+ * consolidar su autoridad SEO en una única URL. Por eso esta página declara
+ * canonical hacia esa ruta cuando el tipo es un negocio mapeable.
+ */
+async function fetchRecursoForMeta(negocioSlug: string, locale: string) {
+  try {
+    const res = await fetch(
+      `${getApiUrl()}/public/recursos/${negocioSlug}?lang=${locale}`,
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as { tipo?: string; pueblo?: { slug?: string } | null };
+  } catch {
+    return null;
+  }
+}
+
+function buildCanonicalPath(
+  fallbackSlug: string,
+  negocioSlug: string,
+  recurso: { tipo?: string; pueblo?: { slug?: string } | null } | null,
+): string {
+  const categoryRoute = getNegocioCategoryRoute(recurso?.tipo);
+  if (!categoryRoute) {
+    return `/pueblos/${fallbackSlug}/club/${negocioSlug}`;
+  }
+  const puebloSlug = recurso?.pueblo?.slug || fallbackSlug;
+  return `/${categoryRoute}/${puebloSlug}/${negocioSlug}`;
+}
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -40,21 +74,24 @@ export async function generateMetadata({
   const tSeo = await getTranslations("seo");
   const name = negocioSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const puebloName = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const path = `/pueblos/${slug}/club/${negocioSlug}`;
+
+  const recursoForMeta = await fetchRecursoForMeta(negocioSlug, locale);
+  const canonicalPath = buildCanonicalPath(slug, negocioSlug, recursoForMeta);
+
   const title = seoTitle(tSeo("clubNegocioTitle", { negocio: name, pueblo: puebloName }));
   const description = seoDescription(tSeo("clubNegocioDesc", { negocio: name, pueblo: puebloName }));
   return {
     title,
     description,
     alternates: {
-      canonical: getCanonicalUrl(path, locale as SupportedLocale),
-      languages: getLocaleAlternates(path),
+      canonical: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
+      languages: getLocaleAlternates(canonicalPath),
     },
     robots: { index: true, follow: true },
     openGraph: {
       title,
       description,
-      url: getCanonicalUrl(path, locale as SupportedLocale),
+      url: getCanonicalUrl(canonicalPath, locale as SupportedLocale),
       locale: getOGLocale(locale as SupportedLocale),
     },
   };
@@ -140,7 +177,8 @@ export default async function NegocioDetailPage({
     for (const key of RESTAURANTE_TRANSLATION_KEYS) {
       translations[key] = tRest(key as any);
     }
-    const jsonLd = buildRestaurantJsonLd(recurso as any, `/pueblos/${slug}/club/${negocioSlug}`);
+    const canonicalPath = buildCanonicalPath(slug, negocioSlug, recurso as any);
+    const jsonLd = buildRestaurantJsonLd(recurso as any, canonicalPath);
     return (
       <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

@@ -12,6 +12,26 @@ export const NEGOCIO_TIPO_BY_SLUG: Record<string, NegocioTipo[]> = {
   "donde-comprar": ["COMERCIO"],
 };
 
+const TIPO_TO_CATEGORY_ROUTE: Record<string, string> = {
+  RESTAURANTE: "donde-comer",
+  BAR: "donde-comer",
+  BODEGA: "donde-comer",
+  HOTEL: "donde-dormir",
+  CASA_RURAL: "donde-dormir",
+  COMERCIO: "donde-comprar",
+  TIENDA_ARTESANIA: "donde-comprar",
+};
+
+/**
+ * Devuelve el segmento de ruta canónica (`donde-comer`, `donde-dormir`,
+ * `donde-comprar`) según el tipo de negocio. Si el tipo no es un negocio
+ * mapeable, devuelve `null` (en cuyo caso no debe redirigirse).
+ */
+export function getNegocioCategoryRoute(tipo: string | null | undefined): string | null {
+  if (!tipo) return null;
+  return TIPO_TO_CATEGORY_ROUTE[tipo] ?? null;
+}
+
 export const CLUB_PAGE_LABELS: Record<string, Record<string, string>> = {
   "donde-comer": {
     es: "Dónde Comer",
