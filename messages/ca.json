@@ -2634,5 +2634,35 @@
       "placeholder": "Escriviu la vostra pregunta…",
       "errorRespuesta": "Ho sento, no he pogut respondre. Si us plau, torneu a provar d'aquí a uns segons."
     }
+  },
+  "premiumNegocio": {
+    "noPhotos": "No fotografies",
+    "prevImage": "Imatge anterior",
+    "nextImage": "Pròxima imatge",
+    "goToSlide": "Ves a la imatge",
+    "imprescindible": "Essencial",
+    "cerradoTemporal": "Tancat temporalment",
+    "servicesSubtitle": "Instal·lacions i serveis",
+    "servicesTitle": "Tot el que necessites",
+    "aboutSubtitle": "Sobre nosaltres",
+    "aboutTitle": "La nostra història",
+    "clubPoints": "Punts del Club LPMBE",
+    "contactSubtitle": "Posa't en contacte",
+    "contactTitle": "Com s'hi arriba?",
+    "phone": "Telèfon",
+    "email": "Correu electrònic",
+    "website": "Lloc web",
+    "bookNow": "Reserva ara",
+    "openingHours": "Horari",
+    "closed": "Tancat",
+    "locationSubtitle": "Ubicació",
+    "locationTitle": "Troba'ns",
+    "address": "Adreça",
+    "getDirections": "Com arribar-hi",
+    "offersSubtitle": "Beneficis exclusius",
+    "offersTitle": "Ofertes per a socis del Club",
+    "offersDescription": "Mostra la teva targeta de soci del Club LPMBE i gaudeix d'aquests avantatges exclusius.",
+    "forMembers": "per als membres",
+    "featured": "Destacat"
   }
 }

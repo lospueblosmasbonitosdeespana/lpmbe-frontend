@@ -2634,5 +2634,35 @@
       "placeholder": "Escreva a sua pergunta...",
       "errorRespuesta": "Desculpe, não consegui responder. Por favor, tente novamente dentro de alguns segundos."
     }
+  },
+  "premiumNegocio": {
+    "noPhotos": "Sem fotografias",
+    "prevImage": "Imagem anterior",
+    "nextImage": "Próxima imagem",
+    "goToSlide": "Ir para a imagem",
+    "imprescindible": "Essencial",
+    "cerradoTemporal": "Temporariamente encerrado",
+    "servicesSubtitle": "Instalações e serviços",
+    "servicesTitle": "Tudo o que precisa",
+    "aboutSubtitle": "Sobre nós",
+    "aboutTitle": "A nossa história",
+    "clubPoints": "Pontos do Clube LPMBE",
+    "contactSubtitle": "Contactar-nos",
+    "contactTitle": "Como contactar-nos?",
+    "phone": "Telefone",
+    "email": "Endereço eletrónico",
+    "website": "Sítio Web",
+    "bookNow": "Reservar agora",
+    "openingHours": "Horário de funcionamento",
+    "closed": "Fechado",
+    "locationSubtitle": "Localização",
+    "locationTitle": "Encontre-nos em",
+    "address": "Endereço",
+    "getDirections": "Como lá chegar",
+    "offersSubtitle": "Vantagens exclusivas",
+    "offersTitle": "Ofertas para os membros do Clube",
+    "offersDescription": "Apresente o seu cartão de membro do Clube LPMBE e beneficie destas vantagens exclusivas.",
+    "forMembers": "para parceiros",
+    "featured": "Em destaque"
   }
 }

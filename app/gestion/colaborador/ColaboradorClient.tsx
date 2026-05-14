@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { RESOURCE_TYPES, RESOURCE_TYPE_LABELS } from '@/lib/resource-types';
 import HorariosEditor, { HorarioDia, CierreEspecial } from '@/app/_components/editor/HorariosEditor';
 import MejorarPlanModal from '@/app/gestion/asociacion/negocios/[slug]/MejorarPlanModal';
-import { PLAN_LABELS, type PlanNegocio } from '@/lib/plan-features';
+import { PLAN_LABELS, type PlanNegocio, getPlanFeatures, SERVICIOS_DISPONIBLES, SOCIAL_NETWORKS } from '@/lib/plan-features';
 
 const TIPO_TO_PUBLIC_ROUTE: Record<string, string> = {
   HOTEL: 'donde-dormir',
@@ -31,6 +31,12 @@ type Recurso = {
   horarios?: string | null;
   contacto?: string | null;
   web?: string | null;
+  telefono?: string | null;
+  email?: string | null;
+  whatsapp?: string | null;
+  bookingUrl?: string | null;
+  servicios?: string[] | null;
+  socialLinks?: Record<string, string> | null;
   fotoUrl?: string | null;
   lat?: number | null;
   lng?: number | null;
@@ -335,6 +341,10 @@ function RecursoPanel({
 // ── Formulario de edición ─────────────────────────────────────────────────────
 
 function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: () => void }) {
+  const plan = (recurso.planNegocio ?? 'FREE') as PlanNegocio;
+  const features = getPlanFeatures(plan);
+  const isPremiumPlan = plan === 'PREMIUM' || plan === 'SELECTION';
+
   const [form, setForm] = useState({
     nombre: recurso.nombre,
     tipo: recurso.tipo,
@@ -342,6 +352,10 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
     horarios: recurso.horarios ?? '',
     contacto: recurso.contacto ?? '',
     web: recurso.web ?? '',
+    telefono: recurso.telefono ?? '',
+    email: recurso.email ?? '',
+    whatsapp: recurso.whatsapp ?? '',
+    bookingUrl: recurso.bookingUrl ?? '',
     fotoUrl: recurso.fotoUrl ?? '',
     lat: recurso.lat?.toString() ?? '',
     lng: recurso.lng?.toString() ?? '',
@@ -355,6 +369,8 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
     maxMenores: recurso.maxMenores,
     edadMaxMenor: recurso.edadMaxMenor,
   });
+  const [servicios, setServicios] = useState<string[]>(recurso.servicios ?? []);
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>(recurso.socialLinks ?? {});
   const [horariosSemana, setHorariosSemana] = useState<HorarioDia[]>(recurso.horariosSemana ?? []);
   const [cierresEspeciales, setCierresEspeciales] = useState<CierreEspecial[]>(recurso.cierresEspeciales ?? []);
   const [saving, setSaving] = useState(false);
@@ -407,6 +423,18 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
       if (form.fotoUrl.trim()) body.fotoUrl = form.fotoUrl.trim();
       body.descuentoPorcentaje = form.descuentoPorcentaje ? Number(form.descuentoPorcentaje) : null;
       body.precioCents = form.precioCents ? Math.round(Number(form.precioCents) * 100) : null;
+
+      if (form.telefono.trim()) body.telefono = form.telefono.trim();
+      else body.telefono = null;
+      if (form.email.trim()) body.email = form.email.trim();
+      else body.email = null;
+      if (form.whatsapp.trim()) body.whatsapp = form.whatsapp.trim();
+      else body.whatsapp = null;
+      if (form.bookingUrl.trim()) body.bookingUrl = form.bookingUrl.trim();
+      else body.bookingUrl = null;
+      body.servicios = servicios.length > 0 ? servicios : [];
+      const filteredLinks = Object.fromEntries(Object.entries(socialLinks).filter(([, v]) => v.trim()));
+      body.socialLinks = Object.keys(filteredLinks).length > 0 ? filteredLinks : null;
 
       const res = await fetch(`/api/colaborador/recursos/${recurso.id}`, {
         method: 'PATCH',
@@ -590,6 +618,91 @@ function EditarRecursoForm({ recurso, onSaved }: { recurso: Recurso; onSaved: ()
           onChange={(h, c) => { setHorariosSemana(h); setCierresEspeciales(c); }}
         />
       </div>
+
+      {/* ── Secciones Premium (solo si plan ≥ PREMIUM) ────────────────────────── */}
+      {isPremiumPlan && recurso.scope === 'NEGOCIO' && (
+        <>
+          {/* Contacto directo */}
+          <div className="rounded-xl border border-gold/30 bg-gold/5 p-5 space-y-4">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <span className="inline-block size-2 rounded-full bg-gold" />
+              Contacto directo (Premium)
+            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <input value={form.telefono} onChange={(e) => set('telefono', e.target.value)}
+                  placeholder="+34 600 000 000" className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email público</label>
+                <input value={form.email} onChange={(e) => set('email', e.target.value)}
+                  placeholder="info@negocio.es" className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+                <input value={form.whatsapp} onChange={(e) => set('whatsapp', e.target.value)}
+                  placeholder="+34600000000" className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Enlace de reserva</label>
+                <input value={form.bookingUrl} onChange={(e) => set('bookingUrl', e.target.value)}
+                  placeholder="https://booking.com/..." className="w-full rounded-lg border border-border px-3 py-2 text-sm" />
+              </div>
+            </div>
+          </div>
+
+          {/* Servicios */}
+          {features.serviceHighlightsEnabled && (
+            <div className="rounded-xl border border-gold/30 bg-gold/5 p-5">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <span className="inline-block size-2 rounded-full bg-gold" />
+                Servicios destacados (Premium)
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {SERVICIOS_DISPONIBLES.map((srv) => (
+                  <label key={srv.key} className="flex items-center gap-2 cursor-pointer rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted/30 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={servicios.includes(srv.key)}
+                      onChange={(e) => {
+                        if (e.target.checked) setServicios((p) => [...p, srv.key]);
+                        else setServicios((p) => p.filter((k) => k !== srv.key));
+                      }}
+                      className="rounded"
+                    />
+                    <span>{srv.icon}</span>
+                    {srv.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Redes sociales */}
+          {features.socialLinksEnabled && (
+            <div className="rounded-xl border border-gold/30 bg-gold/5 p-5">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <span className="inline-block size-2 rounded-full bg-gold" />
+                Redes sociales (Premium)
+              </h3>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {SOCIAL_NETWORKS.map((sn) => (
+                  <div key={sn.key}>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">{sn.label}</label>
+                    <input
+                      value={socialLinks[sn.key] ?? ''}
+                      onChange={(e) => setSocialLinks((p) => ({ ...p, [sn.key]: e.target.value }))}
+                      placeholder={`https://${sn.key}.com/...`}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {msg && (
         <p className={`rounded-lg px-4 py-2 text-sm ${msg.type === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>

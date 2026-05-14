@@ -2634,5 +2634,35 @@
       "placeholder": "Scrivi la tua domanda...",
       "errorRespuesta": "Spiacente, non sono riuscito a rispondere. Riprovi tra qualche secondo."
     }
+  },
+  "premiumNegocio": {
+    "noPhotos": "Nessuna fotografia",
+    "prevImage": "Immagine precedente",
+    "nextImage": "Immagine successiva",
+    "goToSlide": "Vai all'immagine",
+    "imprescindible": "Essenziale",
+    "cerradoTemporal": "Temporaneamente chiuso",
+    "servicesSubtitle": "Servizi e strutture",
+    "servicesTitle": "Tutto ciò che serve",
+    "aboutSubtitle": "Chi siamo",
+    "aboutTitle": "La nostra storia",
+    "clubPoints": "Punti Club LPMBE",
+    "contactSubtitle": "Contattateci",
+    "contactTitle": "Come raggiungerci?",
+    "phone": "Telefono",
+    "email": "Indirizzo e-mail",
+    "website": "Sito web",
+    "bookNow": "Prenota ora",
+    "openingHours": "Orari di apertura",
+    "closed": "Chiuso",
+    "locationSubtitle": "Posizione",
+    "locationTitle": "Ci trovate all'indirizzo",
+    "address": "Indirizzo",
+    "getDirections": "Come arrivare",
+    "offersSubtitle": "Vantaggi esclusivi",
+    "offersTitle": "Offerte per i soci del Club",
+    "offersDescription": "Presentate la vostra tessera LPMBE Club e godete di questi vantaggi esclusivi.",
+    "forMembers": "per i partner",
+    "featured": "In primo piano"
   }
 }

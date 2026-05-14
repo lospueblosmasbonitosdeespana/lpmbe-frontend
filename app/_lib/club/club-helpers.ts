@@ -77,21 +77,31 @@ export type NegocioPublic = {
   slug?: string | null;
   nombre: string;
   tipo: string;
+  scope?: string;
   descripcion?: string | null;
   fotoUrl?: string | null;
-  imagenes?: { id: number; url: string; alt?: string }[];
+  imagenes?: { id: number; url: string; alt?: string | null; orden: number }[];
   horarios?: string | null;
   horariosSemana?: any[];
   contacto?: string | null;
   telefono?: string | null;
   email?: string | null;
   web?: string | null;
+  whatsapp?: string | null;
+  bookingUrl?: string | null;
+  socialLinks?: Record<string, string> | null;
+  servicios?: string[] | null;
   lat?: number | null;
   lng?: number | null;
+  localidad?: string | null;
   cerradoTemporal?: boolean;
   descuentoPorcentaje?: number | null;
   imprescindible?: boolean;
+  planNegocio?: string;
+  puntosClub?: number | null;
   ratingVerificado?: { rating: number | null; reviews: number | null } | null;
+  pueblo?: { id: number; nombre: string; slug: string } | null;
+  ofertas?: any[];
 };
 
 export type NegociosResponse = {

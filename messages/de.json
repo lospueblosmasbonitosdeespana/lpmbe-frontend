@@ -2634,5 +2634,35 @@
       "placeholder": "Schreiben Sie Ihre Frage...",
       "errorRespuesta": "Es tut mir leid, ich konnte nicht antworten. Bitte versuchen Sie es in ein paar Sekunden erneut."
     }
+  },
+  "premiumNegocio": {
+    "noPhotos": "Keine Fotos",
+    "prevImage": "Vorheriges Bild",
+    "nextImage": "Nächstes Bild",
+    "goToSlide": "Zum Bild gehen",
+    "imprescindible": "Wesentlich",
+    "cerradoTemporal": "Vorübergehend geschlossen",
+    "servicesSubtitle": "Einrichtungen und Dienstleistungen",
+    "servicesTitle": "Alles was Sie brauchen",
+    "aboutSubtitle": "Über uns",
+    "aboutTitle": "Unsere Geschichte",
+    "clubPoints": "LPMBE Club-Punkte",
+    "contactSubtitle": "Kontakt",
+    "contactTitle": "Wie erreichen Sie uns?",
+    "phone": "Telefon",
+    "email": "E-Mail Adresse",
+    "website": "Website",
+    "bookNow": "Jetzt buchen",
+    "openingHours": "Die Öffnungszeiten",
+    "closed": "Geschlossen",
+    "locationSubtitle": "Standort",
+    "locationTitle": "Sie finden uns unter",
+    "address": "Adresse",
+    "getDirections": "Wie man dorthin kommt",
+    "offersSubtitle": "Exklusive Vorteile",
+    "offersTitle": "Angebote für Clubmitglieder",
+    "offersDescription": "Legen Sie Ihre LPMBE-Club-Mitgliedskarte vor und genießen Sie diese exklusiven Vorteile.",
+    "forMembers": "für Partner",
+    "featured": "Ausgewählt"
   }
 }

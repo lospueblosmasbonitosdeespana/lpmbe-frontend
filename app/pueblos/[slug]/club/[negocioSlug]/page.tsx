@@ -11,6 +11,7 @@ import {
   type SupportedLocale,
 } from "@/lib/seo";
 import NegocioDetail from "./NegocioDetail";
+import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
 
 export const revalidate = 60;
 export async function generateMetadata({
@@ -109,6 +110,21 @@ export default async function NegocioDetailPage({
           </Link>
         </div>
       </main>
+    );
+  }
+
+  const tPremium = await getTranslations("premiumNegocio");
+  const isPremium = (recurso as any).planNegocio === "PREMIUM" || (recurso as any).planNegocio === "SELECTION";
+
+  if (isPremium) {
+    return (
+      <NegocioPremiumDetail
+        recurso={recurso as any}
+        puebloSlug={slug}
+        backHref={pueblo ? `/pueblos/${pueblo.slug}/club` : `/pueblos/${slug}/club`}
+        backLabel={pueblo?.nombre ?? "Club"}
+        t={(key: string) => tPremium(key as any)}
+      />
     );
   }
 

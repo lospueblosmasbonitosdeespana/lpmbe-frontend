@@ -11,6 +11,7 @@ import {
   CLUB_PAGE_LABELS, getNegocioBySlug, getNegociosByPuebloSlug, NEGOCIO_TIPO_BY_SLUG, slugToTitle,
 } from "@/app/_lib/club/club-helpers";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
+import NegocioPremiumDetail from "@/app/_components/negocio/NegocioPremiumDetail";
 
 export const dynamic = "force-dynamic";
 const ROUTE_SLUG = "donde-dormir" as const;
@@ -55,6 +56,21 @@ export default async function DondeDormirDetailPage({ params }: { params: Promis
   const puebloNombre = slugToTitle(puebloSlug);
   const tRecursos = await getTranslations("recursos");
   const imprescindibleLabel = tRecursos("imprescindible");
+  const tPremium = await getTranslations("premiumNegocio");
+
+  const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
+
+  if (isPremium) {
+    return (
+      <NegocioPremiumDetail
+        recurso={recurso as any}
+        puebloSlug={puebloSlug}
+        backHref={`/${ROUTE_SLUG}/${puebloSlug}`}
+        backLabel={label}
+        t={(key: string) => tPremium(key as any)}
+      />
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">

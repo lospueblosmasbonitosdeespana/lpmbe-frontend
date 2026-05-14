@@ -2542,5 +2542,35 @@
         "tagline": "Casas-cueva integradas en la roca"
       }
     }
+  },
+  "premiumNegocio": {
+    "noPhotos": "Sin fotografías",
+    "prevImage": "Imagen anterior",
+    "nextImage": "Imagen siguiente",
+    "goToSlide": "Ir a imagen",
+    "imprescindible": "Imprescindible",
+    "cerradoTemporal": "Cerrado temporalmente",
+    "servicesSubtitle": "Comodidades y servicios",
+    "servicesTitle": "Todo lo que necesitas",
+    "aboutSubtitle": "Sobre nosotros",
+    "aboutTitle": "Nuestra historia",
+    "clubPoints": "Puntos Club LPMBE",
+    "contactSubtitle": "Ponte en contacto",
+    "contactTitle": "¿Cómo llegar hasta nosotros?",
+    "phone": "Teléfono",
+    "email": "Correo electrónico",
+    "website": "Sitio web",
+    "bookNow": "Reserva ahora",
+    "openingHours": "Horario de apertura",
+    "closed": "Cerrado",
+    "locationSubtitle": "Ubicación",
+    "locationTitle": "Encuéntranos",
+    "address": "Dirección",
+    "getDirections": "Cómo llegar",
+    "offersSubtitle": "Ventajas exclusivas",
+    "offersTitle": "Ofertas para socios del Club",
+    "offersDescription": "Presenta tu tarjeta de socio del Club LPMBE y disfruta de estas ventajas exclusivas.",
+    "forMembers": "para socios",
+    "featured": "Destacada"
   }
 }
