@@ -3,40 +3,34 @@
 import { useState } from 'react'
 import { MapPin, Car, Bus, Plane, Copy, ExternalLink, ChevronDown } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
+import { useLodgingSlice, useLodgingMeta } from './lodging-config-context'
 
-const address = 'Plaza Mayor, 2 · 22330 Aínsa, Huesca, Aragón'
+const ICONS = { car: Car, bus: Bus, plane: Plane } as const
 
-const nearbyPoi = [
-  { name: 'Parque Nacional Ordesa y Monte Perdido', distance: '25 min en coche' },
-  { name: 'Cañón de Añisclo', distance: '20 min en coche' },
-  { name: 'Lago de Bujaruelo', distance: '35 min en coche' },
-  { name: 'Castillo Medieval de Aínsa', distance: '5 min a pie' },
+const DEFAULT_ADDRESS = 'Plaza Mayor, 2 · 22330 Aínsa, Huesca, Aragón'
+const DEFAULT_NEARBY = [
+  { id: 'n1', name: 'Parque Nacional Ordesa y Monte Perdido', distance: '25 min en coche' },
+  { id: 'n2', name: 'Cañón de Añisclo',                       distance: '20 min en coche' },
+  { id: 'n3', name: 'Lago de Bujaruelo',                      distance: '35 min en coche' },
+  { id: 'n4', name: 'Castillo Medieval de Aínsa',             distance: '5 min a pie' },
 ]
-
-const directions = [
-  {
-    icon: Car,
-    title: 'En coche',
-    content:
-      'Desde Huesca capital: N-240 hasta Barbastro, luego A-138 hasta Aínsa (110 km · ±1 h 30 min). GPS: Plaza Mayor, 2, Aínsa. Aparcamiento privado gratuito para huéspedes.',
-  },
-  {
-    icon: Bus,
-    title: 'Transporte público',
-    content:
-      'Autobús Alosa desde Huesca con parada en Aínsa (3 servicios/día). También desde Barbastro. La parada de autobús se encuentra a 100 m del hotel.',
-  },
-  {
-    icon: Plane,
-    title: 'Desde el aeropuerto',
-    content:
-      'Aeropuerto de Zaragoza (ZAZ): 155 km · ±1 h 45 min. Aeropuerto de Huesca-Pirineos (HSK): 85 km · ±55 min. Servicio de transfer privado bajo reserva.',
-  },
+const DEFAULT_DIRECTIONS = [
+  { id: 'd1', icon: 'car'   as const, title: 'En coche',              content: 'Desde Huesca capital: N-240 hasta Barbastro, luego A-138 hasta Aínsa (110 km · ±1 h 30 min). GPS: Plaza Mayor, 2, Aínsa. Aparcamiento privado gratuito para huéspedes.' },
+  { id: 'd2', icon: 'bus'   as const, title: 'Transporte público',    content: 'Autobús Alosa desde Huesca con parada en Aínsa (3 servicios/día). También desde Barbastro. La parada de autobús se encuentra a 100 m del hotel.' },
+  { id: 'd3', icon: 'plane' as const, title: 'Desde el aeropuerto',   content: 'Aeropuerto de Zaragoza (ZAZ): 155 km · ±1 h 45 min. Aeropuerto de Huesca-Pirineos (HSK): 85 km · ±55 min. Servicio de transfer privado bajo reserva.' },
 ]
 
 export default function LocationSection() {
   const [openDir, setOpenDir] = useState<number | null>(null)
   const [copied, setCopied] = useState(false)
+  const slice = useLodgingSlice('location')
+  const meta = useLodgingMeta()
+  const address = slice?.address || DEFAULT_ADDRESS
+  const nearbyPoi = slice?.nearbyPoi && slice.nearbyPoi.length > 0 ? slice.nearbyPoi : DEFAULT_NEARBY
+  const directions = slice?.directions && slice.directions.length > 0 ? slice.directions : DEFAULT_DIRECTIONS
+  const mapsUrl = meta.lat != null && meta.lng != null
+    ? `https://maps.google.com/?q=${meta.lat},${meta.lng}`
+    : `https://maps.google.com/?q=${encodeURIComponent(address)}`
 
   function copyAddress() {
     navigator.clipboard.writeText(address)
@@ -112,7 +106,7 @@ export default function LocationSection() {
             {/* How to get here — accordion */}
             <div className="flex flex-col gap-2">
               {directions.map((dir, i) => {
-                const Icon = dir.icon
+                const Icon = ICONS[dir.icon as keyof typeof ICONS] ?? Car
                 return (
                   <div
                     key={i}
@@ -153,8 +147,8 @@ export default function LocationSection() {
                 Puntos de interés cercanos
               </p>
               <ul className="space-y-2">
-                {nearbyPoi.map((poi, i) => (
-                  <li key={i} className="flex items-center justify-between text-sm">
+                {nearbyPoi.map((poi) => (
+                  <li key={poi.id} className="flex items-center justify-between text-sm">
                     <span style={{ color: 'var(--color-midnight)' }}>{poi.name}</span>
                     <span
                       className="text-xs px-2 py-0.5 rounded-full"
@@ -174,7 +168,7 @@ export default function LocationSection() {
               asChild
             >
               <a
-                href="https://maps.google.com/?q=Aínsa+Huesca+Spain"
+                href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >

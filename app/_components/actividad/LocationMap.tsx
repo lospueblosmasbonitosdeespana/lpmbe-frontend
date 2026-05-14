@@ -3,44 +3,39 @@
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useState } from 'react'
 import { MapPin, Car, Bus, Plane, ChevronDown } from 'lucide-react'
+import { useActivitySlice, useActivityMeta } from './activity-config-context'
 
-const transportOptions = [
-  {
-    id: 'car',
-    icon: Car,
-    title: 'En coche',
-    content: 'Desde Huesca: A-138 dirección Barbastro, luego N-260 hasta Aínsa (1h 15min). Desde Zaragoza: A-23 hasta Huesca, luego A-138 (2h). Parking gratuito junto a la muralla.',
-  },
-  {
-    id: 'bus',
-    icon: Bus,
-    title: 'En autobús',
-    content: 'Línea regular Alosa desde Barbastro (1h). Conexiones desde Huesca y Zaragoza con transbordo en Barbastro. Horarios en alosa.es',
-  },
-  {
-    id: 'plane',
-    icon: Plane,
-    title: 'En avión',
-    content: 'Aeropuerto más cercano: Huesca-Pirineos (a 1h 15min en coche). Alternativas: Zaragoza (2h) o Barcelona (3h 30min).',
-  },
+const ICONS = { car: Car, bus: Bus, plane: Plane } as const
+
+const DEFAULT_TRANSPORT = [
+  { id: 'car',   icon: 'car'   as const, title: 'En coche',  content: 'Desde Huesca: A-138 dirección Barbastro, luego N-260 hasta Aínsa (1h 15min). Desde Zaragoza: A-23 hasta Huesca, luego A-138 (2h). Parking gratuito junto a la muralla.' },
+  { id: 'bus',   icon: 'bus'   as const, title: 'En autobús', content: 'Línea regular Alosa desde Barbastro (1h). Conexiones desde Huesca y Zaragoza con transbordo en Barbastro. Horarios en alosa.es' },
+  { id: 'plane', icon: 'plane' as const, title: 'En avión',  content: 'Aeropuerto más cercano: Huesca-Pirineos (a 1h 15min en coche). Alternativas: Zaragoza (2h) o Barcelona (3h 30min).' },
 ]
 
-const nearbyPOIs = [
-  { name: 'Parque Nacional de Ordesa', distance: '25 min' },
-  { name: 'Cañón de Añisclo', distance: '30 min' },
-  { name: 'Sierra de Guara', distance: '45 min' },
-  { name: 'Valle de Pineta', distance: '40 min' },
+const DEFAULT_POIS = [
+  { id: 'p1', name: 'Parque Nacional de Ordesa', detail: '25 min' },
+  { id: 'p2', name: 'Cañón de Añisclo',          detail: '30 min' },
+  { id: 'p3', name: 'Sierra de Guara',           detail: '45 min' },
+  { id: 'p4', name: 'Valle de Pineta',           detail: '40 min' },
 ]
 
 export function LocationMap() {
   const [mounted, setMounted] = useState(false)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
+  const slice = useActivitySlice('location')
+  const meta = useActivityMeta()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const coordinates: [number, number] = [42.4171, 0.1391] // Aínsa coordinates
+  const coordinates: [number, number] =
+    meta.lat != null && meta.lng != null ? [meta.lat, meta.lng] : [42.4171, 0.1391]
+  const businessName = meta.nombre || 'Sobrarbe Aventura'
+  const address = slice?.address || 'Plaza Mayor, 1\n22330 Aínsa, Huesca\nEspaña'
+  const transports = slice?.directions && slice.directions.length > 0 ? slice.directions : DEFAULT_TRANSPORT
+  const pois = slice?.nearbyMeetingPoints && slice.nearbyMeetingPoints.length > 0 ? slice.nearbyMeetingPoints : DEFAULT_POIS
 
   return (
     <section className="py-16 md:py-24 bg-white">
@@ -65,7 +60,7 @@ export function LocationMap() {
           {/* Map */}
           <div className="h-[400px] rounded-2xl overflow-hidden bg-gray-100">
             {mounted ? (
-              <MapComponent coordinates={coordinates} />
+              <MapComponent coordinates={coordinates} businessName={businessName} address={address} />
             ) : (
               <div 
                 className="w-full h-full flex items-center justify-center"
@@ -95,15 +90,13 @@ export function LocationMap() {
                     className="font-semibold mb-1"
                     style={{ color: 'var(--color-slate)' }}
                   >
-                    Sobrarbe Aventura
+                    {businessName}
                   </p>
                   <p 
-                    className="text-sm"
+                    className="text-sm whitespace-pre-line"
                     style={{ color: 'var(--color-slate)', opacity: 0.7 }}
                   >
-                    Plaza Mayor, 1<br />
-                    22330 Aínsa, Huesca<br />
-                    España
+                    {address}
                   </p>
                 </div>
               </div>
@@ -118,7 +111,9 @@ export function LocationMap() {
             </h3>
 
             <div className="space-y-2 mb-6">
-              {transportOptions.map(option => (
+              {transports.map((option) => {
+                const Icon = ICONS[option.icon as keyof typeof ICONS] ?? Car
+                return (
                 <div 
                   key={option.id}
                   className="rounded-xl overflow-hidden"
@@ -129,7 +124,7 @@ export function LocationMap() {
                     className="w-full flex items-center justify-between p-4 text-left"
                   >
                     <div className="flex items-center gap-3">
-                      <option.icon 
+                      <Icon 
                         className="w-5 h-5"
                         style={{ color: 'var(--color-adventure)' }}
                       />
@@ -154,7 +149,8 @@ export function LocationMap() {
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
             </div>
 
             {/* Nearby POIs */}
@@ -165,9 +161,9 @@ export function LocationMap() {
               Puntos de interés cercanos
             </h3>
             <div className="grid grid-cols-2 gap-2">
-              {nearbyPOIs.map((poi, i) => (
+              {pois.map((poi) => (
                 <div 
-                  key={i}
+                  key={poi.id}
                   className="flex items-center justify-between p-3 rounded-xl"
                   style={{ backgroundColor: 'var(--color-sand)' }}
                 >
@@ -181,7 +177,7 @@ export function LocationMap() {
                     className="text-xs"
                     style={{ color: 'var(--color-adventure)' }}
                   >
-                    {poi.distance}
+                    {poi.detail}
                   </span>
                 </div>
               ))}
@@ -193,7 +189,7 @@ export function LocationMap() {
   )
 }
 
-function MapComponent({ coordinates }: { coordinates: [number, number] }) {
+function MapComponent({ coordinates, businessName, address }: { coordinates: [number, number]; businessName: string; address: string }) {
   const [MapContainer, setMapContainer] = useState<any>(null)
   const [TileLayer, setTileLayer] = useState<any>(null)
   const [Marker, setMarker] = useState<any>(null)
@@ -234,8 +230,9 @@ function MapComponent({ coordinates }: { coordinates: [number, number] }) {
       />
       <Marker position={coordinates}>
         <Popup>
-          <strong>Sobrarbe Aventura</strong><br />
-          Plaza Mayor, Aínsa
+          <strong>{businessName}</strong>
+          <br />
+          {address.split('\n')[0]}
         </Popup>
       </Marker>
     </MapContainer>

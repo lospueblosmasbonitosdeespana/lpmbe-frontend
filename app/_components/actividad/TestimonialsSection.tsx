@@ -1,33 +1,19 @@
-import { Star, Quote } from 'lucide-react'
+'use client'
 
-const testimonials = [
-  {
-    id: 1,
-    quote: 'Una experiencia increíble. Carlos y su equipo nos hicieron sentir seguros en todo momento mientras disfrutábamos de paisajes de ensueño. Volveremos seguro.',
-    author: 'Miguel Fernández',
-    origin: 'Madrid',
-    rating: 5,
-    date: 'Octubre 2024',
-  },
-  {
-    id: 2,
-    quote: 'La ruta por el Cañón de Añisclo fue espectacular. Los guías conocen cada rincón y te cuentan historias fascinantes. Muy recomendable.',
-    author: 'Laura Sánchez',
-    origin: 'Barcelona',
-    rating: 5,
-    date: 'Agosto 2024',
-  },
-  {
-    id: 3,
-    quote: 'Llevamos a toda la familia y fue perfecto. Adaptaron la actividad para que los niños disfrutaran también. Profesionalidad y buen humor.',
-    author: 'David Martínez',
-    origin: 'Valencia',
-    rating: 5,
-    date: 'Julio 2024',
-  },
+import { Star, Quote } from 'lucide-react'
+import { useActivitySlice } from './activity-config-context'
+
+const DEFAULT_TESTIMONIALS = [
+  { id: '1', quote: 'Una experiencia increíble. Carlos y su equipo nos hicieron sentir seguros en todo momento mientras disfrutábamos de paisajes de ensueño. Volveremos seguro.', author: 'Miguel Fernández', origin: 'Madrid',    stars: 5, activity: '', date: 'Octubre 2024' },
+  { id: '2', quote: 'La ruta por el Cañón de Añisclo fue espectacular. Los guías conocen cada rincón y te cuentan historias fascinantes. Muy recomendable.',                       author: 'Laura Sánchez',    origin: 'Barcelona', stars: 5, activity: '', date: 'Agosto 2024' },
+  { id: '3', quote: 'Llevamos a toda la familia y fue perfecto. Adaptaron la actividad para que los niños disfrutaran también. Profesionalidad y buen humor.',                     author: 'David Martínez',   origin: 'Valencia',  stars: 5, activity: '', date: 'Julio 2024' },
 ]
 
 export function TestimonialsSection() {
+  const slice = useActivitySlice('testimonials')
+  const overallRating = slice?.overallRating || '4.9'
+  const totalReviews = slice?.totalReviews || '89'
+  const testimonials = slice?.items && slice.items.length > 0 ? slice.items : DEFAULT_TESTIMONIALS
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -52,7 +38,7 @@ export function TestimonialsSection() {
               className="text-5xl font-bold"
               style={{ color: 'var(--color-slate)' }}
             >
-              4.9
+              {overallRating}
             </span>
             <div>
               <div className="flex gap-1 mb-1">
@@ -69,7 +55,7 @@ export function TestimonialsSection() {
                 className="text-sm"
                 style={{ color: 'var(--color-slate)', opacity: 0.6 }}
               >
-                Basado en 89 reseñas
+                Basado en {totalReviews} reseñas
               </p>
             </div>
           </div>
@@ -91,7 +77,7 @@ export function TestimonialsSection() {
 
               {/* Stars */}
               <div className="flex gap-1 mb-4">
-                {[...Array(testimonial.rating)].map((_, i) => (
+                {[...Array(testimonial.stars)].map((_, i) => (
                   <Star 
                     key={i} 
                     className="w-4 h-4" 

@@ -1,43 +1,22 @@
+'use client'
+
 import Image from 'next/image'
 import { Users, BedDouble, ChevronRight } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
+import { useLodgingSlice } from './lodging-config-context'
 
-const rooms = [
-  {
-    image: '/images/room-1.jpg',
-    name: 'Habitación Superior Pirenaica',
-    description: 'Vistas panorámicas al Cotiella, vigas de roble y bañera exenta de cobre en el baño.',
-    guests: 2,
-    beds: 'Cama king',
-    price: 'Desde 165 €/noche',
-  },
-  {
-    image: '/images/room-2.jpg',
-    name: 'Junior Suite El Sobrarbe',
-    description: 'El mayor espacio del hotel: sala de estar independiente, chimenea y terraza privada.',
-    guests: 2,
-    beds: 'Cama king',
-    price: 'Desde 220 €/noche',
-  },
-  {
-    image: '/images/room-3.jpg',
-    name: 'Estancia Familiar con Buhardilla',
-    description: 'Planta baja con acceso directo al jardín y altillo con dos camas para los más pequeños.',
-    guests: 4,
-    beds: '1 matrimonio + 2 individuales',
-    price: 'Desde 195 €/noche',
-  },
-  {
-    image: '/images/hero-2.jpg',
-    name: 'Habitación Clásica Medieval',
-    description: 'El espíritu original de la casona: bóvedas de sillería, suelo de terracota y luz suave.',
-    guests: 2,
-    beds: 'Cama queen',
-    price: 'Desde 120 €/noche',
-  },
+const DEFAULT_ROOMS = [
+  { id: 'r1', imageUrl: '/images/room-1.jpg', name: 'Habitación Superior Pirenaica',     description: 'Vistas panorámicas al Cotiella, vigas de roble y bañera exenta de cobre en el baño.', guests: 2, beds: 'Cama king',                       price: 'Desde 165 €/noche' },
+  { id: 'r2', imageUrl: '/images/room-2.jpg', name: 'Junior Suite El Sobrarbe',          description: 'El mayor espacio del hotel: sala de estar independiente, chimenea y terraza privada.',   guests: 2, beds: 'Cama king',                       price: 'Desde 220 €/noche' },
+  { id: 'r3', imageUrl: '/images/room-3.jpg', name: 'Estancia Familiar con Buhardilla',  description: 'Planta baja con acceso directo al jardín y altillo con dos camas para los más pequeños.', guests: 4, beds: '1 matrimonio + 2 individuales',   price: 'Desde 195 €/noche' },
+  { id: 'r4', imageUrl: '/images/hero-2.jpg', name: 'Habitación Clásica Medieval',       description: 'El espíritu original de la casona: bóvedas de sillería, suelo de terracota y luz suave.', guests: 2, beds: 'Cama queen',                      price: 'Desde 120 €/noche' },
 ]
 
 export default function RoomsSection() {
+  const slice = useLodgingSlice('rooms')
+  const eyebrow = slice?.eyebrow || 'Nuestras estancias'
+  const title = slice?.title || 'Ocho formas de dormir\nentre piedra y montaña'
+  const rooms = slice?.items && slice.items.length > 0 ? slice.items : DEFAULT_ROOMS
   return (
     <section
       className="py-20 md:py-28 px-6 md:px-14 lg:px-20"
@@ -52,14 +31,14 @@ export default function RoomsSection() {
               className="text-xs font-semibold tracking-widest uppercase mb-3"
               style={{ color: 'var(--color-terracotta)' }}
             >
-              Nuestras estancias
+              {eyebrow}
             </p>
             <h2
               id="rooms-heading"
-              className="font-serif text-3xl md:text-4xl font-bold text-balance"
+              className="font-serif text-3xl md:text-4xl font-bold text-balance whitespace-pre-line"
               style={{ color: 'var(--color-midnight)' }}
             >
-              Ocho formas de dormir<br />entre piedra y montaña
+              {title}
             </h2>
           </div>
           <Button
@@ -96,7 +75,7 @@ export default function RoomsSection() {
               {/* Image */}
               <div className="relative aspect-video overflow-hidden">
                 <Image
-                  src={room.image}
+                  src={room.imageUrl}
                   alt={room.name}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"

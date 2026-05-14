@@ -5,8 +5,9 @@ import Autoplay from 'embla-carousel-autoplay'
 import Image from 'next/image'
 import { useCallback, useEffect, useState } from 'react'
 import { MapPin, Star, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useLodgingSlice, useLodgingMeta } from './lodging-config-context'
 
-const slides = [
+const DEFAULT_SLIDES = [
   { src: '/images/hero-1.jpg', alt: 'Fachada exterior del Hotel La Posada del Sobrarbe' },
   { src: '/images/hero-2.jpg', alt: 'Habitación superior con vigas de madera y vistas a la montaña' },
   { src: '/images/hero-3.jpg', alt: 'Terraza panorámica con vistas al Pirineo' },
@@ -18,6 +19,14 @@ export default function HeroCarousel() {
     Autoplay({ delay: 6000, stopOnInteraction: false }),
   ])
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const slice = useLodgingSlice('hero')
+  const meta = useLodgingMeta()
+  const slides = meta.heroImages && meta.heroImages.length > 0 ? meta.heroImages : DEFAULT_SLIDES
+  const propertyType = slice?.propertyType || meta.propertyTypeLabel || 'Hotel Rural'
+  const tagline = slice?.tagline || 'Donde el tiempo se detiene y el Pirineo susurra'
+  const locationText = slice?.locationText || meta.locationText || 'Aínsa · Huesca, Aragón'
+  const badges = slice?.badges && slice.badges.length > 0 ? slice.badges : [{ id: 'b0', text: 'Imprescindible LPMBE' }]
+  const hotelName = meta.nombre || 'Hotel La Posada del Sobrarbe'
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
@@ -64,31 +73,34 @@ export default function HeroCarousel() {
             className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold tracking-widest uppercase"
             style={{ background: 'var(--color-terracotta)', color: '#fff' }}
           >
-            Hotel Rural
+            {propertyType}
           </span>
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-            style={{ background: 'oklch(1 0 0 / 0.15)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid oklch(1 0 0 / 0.25)' }}
-          >
-            <ShieldCheck size={12} />
-            Imprescindible LPMBE
-          </span>
+          {badges.map((badge) => (
+            <span
+              key={badge.id}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{ background: 'oklch(1 0 0 / 0.15)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid oklch(1 0 0 / 0.25)' }}
+            >
+              <ShieldCheck size={12} />
+              {badge.text}
+            </span>
+          ))}
         </div>
 
         <h1
           className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight text-balance mb-3"
         >
-          Hotel La Posada<br className="hidden md:block" /> del Sobrarbe
+          {hotelName}
         </h1>
 
         <p className="text-white/80 text-lg md:text-xl italic font-serif mb-4 text-pretty">
-          Donde el tiempo se detiene y el Pirineo susurra
+          {tagline}
         </p>
 
         <div className="flex flex-wrap items-center gap-4 text-white/90">
           <span className="flex items-center gap-1.5 text-sm font-medium">
             <MapPin size={14} className="opacity-70" />
-            Aínsa · Huesca, Aragón
+            {locationText}
           </span>
           <span className="flex items-center gap-1 text-sm font-semibold">
             <Star size={13} fill="currentColor" style={{ color: 'var(--color-terracotta-light)' }} />

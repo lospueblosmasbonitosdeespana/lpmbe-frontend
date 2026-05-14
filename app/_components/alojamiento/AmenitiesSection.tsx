@@ -1,46 +1,51 @@
+'use client'
+
 import {
   Wifi, ParkingSquare, Flame, Wind, Waves, UtensilsCrossed,
   PawPrint, Baby, Accessibility, Dumbbell, Flower2, Car,
-  ShowerHead, Tv, BookOpen, Phone,
+  ShowerHead, Tv, BookOpen, Phone, Star,
 } from 'lucide-react'
+import { useLodgingSlice } from './lodging-config-context'
 
-const categories = [
-  {
-    title: 'En la habitación',
-    items: [
-      { icon: Wifi, label: 'WiFi gratuito' },
-      { icon: ShowerHead, label: 'Baño privado' },
-      { icon: Flame, label: 'Calefacción' },
-      { icon: Wind, label: 'Ventilador' },
-      { icon: Tv, label: 'Smart TV' },
-      { icon: Phone, label: 'Teléfono' },
-    ],
-  },
-  {
-    title: 'En el alojamiento',
-    items: [
-      { icon: UtensilsCrossed, label: 'Restaurante' },
-      { icon: BookOpen, label: 'Biblioteca' },
-      { icon: Dumbbell, label: 'Zona fitness' },
-      { icon: Flower2, label: 'Spa & bienestar' },
-      { icon: Baby, label: 'Zona infantil' },
-      { icon: Accessibility, label: 'Accesible' },
-    ],
-  },
-  {
-    title: 'Exterior',
-    items: [
-      { icon: Waves, label: 'Jacuzzi exterior' },
-      { icon: ParkingSquare, label: 'Aparcamiento' },
-      { icon: Car, label: 'Garaje privado' },
-      { icon: PawPrint, label: 'Admite mascotas' },
-      { icon: Flower2, label: 'Jardín y terraza' },
-      { icon: Wifi, label: 'WiFi en jardín' },
-    ],
-  },
+const ICONS: Record<string, React.ElementType> = {
+  wifi: Wifi, 'parking-square': ParkingSquare, parking: ParkingSquare, flame: Flame, wind: Wind,
+  waves: Waves, 'utensils-crossed': UtensilsCrossed, restaurant: UtensilsCrossed,
+  'paw-print': PawPrint, paw: PawPrint, baby: Baby, accessibility: Accessibility,
+  dumbbell: Dumbbell, 'flower-2': Flower2, flower: Flower2, car: Car,
+  'shower-head': ShowerHead, shower: ShowerHead, tv: Tv, 'book-open': BookOpen, book: BookOpen,
+  phone: Phone, star: Star,
+}
+
+const DEFAULT_CATEGORIES = [
+  { id: 'c1', title: 'En la habitación',   items: [
+    { id: 'i1', icon: 'wifi',         label: 'WiFi gratuito' },
+    { id: 'i2', icon: 'shower-head',  label: 'Baño privado' },
+    { id: 'i3', icon: 'flame',        label: 'Calefacción' },
+    { id: 'i4', icon: 'wind',         label: 'Ventilador' },
+    { id: 'i5', icon: 'tv',           label: 'Smart TV' },
+    { id: 'i6', icon: 'phone',        label: 'Teléfono' },
+  ]},
+  { id: 'c2', title: 'En el alojamiento', items: [
+    { id: 'i7', icon: 'utensils-crossed', label: 'Restaurante' },
+    { id: 'i8', icon: 'book-open',        label: 'Biblioteca' },
+    { id: 'i9', icon: 'dumbbell',         label: 'Zona fitness' },
+    { id: 'i10', icon: 'flower-2',        label: 'Spa & bienestar' },
+    { id: 'i11', icon: 'baby',            label: 'Zona infantil' },
+    { id: 'i12', icon: 'accessibility',   label: 'Accesible' },
+  ]},
+  { id: 'c3', title: 'Exterior', items: [
+    { id: 'i13', icon: 'waves',           label: 'Jacuzzi exterior' },
+    { id: 'i14', icon: 'parking-square',  label: 'Aparcamiento' },
+    { id: 'i15', icon: 'car',             label: 'Garaje privado' },
+    { id: 'i16', icon: 'paw-print',       label: 'Admite mascotas' },
+    { id: 'i17', icon: 'flower-2',        label: 'Jardín y terraza' },
+    { id: 'i18', icon: 'wifi',            label: 'WiFi en jardín' },
+  ]},
 ]
 
 export default function AmenitiesSection() {
+  const slice = useLodgingSlice('amenities')
+  const categories = slice?.categories && slice.categories.length > 0 ? slice.categories : DEFAULT_CATEGORIES
   return (
     <section
       className="py-20 md:py-28 px-6 md:px-14 lg:px-20"
@@ -67,8 +72,8 @@ export default function AmenitiesSection() {
 
         {/* Category grids */}
         <div className="space-y-10">
-          {categories.map((cat, ci) => (
-            <div key={ci}>
+          {categories.map((cat) => (
+            <div key={cat.id}>
               <h3
                 className="text-xs font-semibold tracking-widest uppercase mb-5"
                 style={{ color: 'oklch(0.50 0.03 250)' }}
@@ -76,11 +81,11 @@ export default function AmenitiesSection() {
                 {cat.title}
               </h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {cat.items.map((item, ii) => {
-                  const Icon = item.icon
+                {cat.items.map((item) => {
+                  const Icon = ICONS[item.icon] ?? Star
                   return (
                     <div
-                      key={ii}
+                      key={item.id}
                       className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl text-center"
                       style={{
                         background: '#fff',

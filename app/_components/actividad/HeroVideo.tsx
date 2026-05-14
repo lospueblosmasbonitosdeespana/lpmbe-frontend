@@ -2,9 +2,23 @@
 
 import { ChevronLeft, ChevronRight, MapPin, Star, Play } from 'lucide-react'
 import { useState } from 'react'
+import { useActivitySlice, useActivityMeta } from './activity-config-context'
 
 export function HeroVideo() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const slice = useActivitySlice('hero')
+  const testimonials = useActivitySlice('testimonials')
+  const meta = useActivityMeta()
+
+  const businessName = meta.nombre || 'Sobrarbe Aventura'
+  const tagline = slice?.tagline || 'Descubre la magia del Pirineo aragonés con experiencias guiadas que conectan con la naturaleza'
+  const locationText = slice?.locationText || meta.locationText || 'Aínsa, Huesca'
+  const categoryLabel = slice?.categoryLabel || 'Aventura y Naturaleza'
+  const badges = slice?.badges && slice.badges.length > 0 ? slice.badges : [{ id: 'b0', text: 'Club LPMBE' }]
+  const heroImage =
+    (meta.heroImages && meta.heroImages[0]?.src) || slice?.posterImageUrl || '/images/activity-hero.jpg'
+  const overallRating = testimonials?.overallRating || '4.9'
+  const totalReviews = testimonials?.totalReviews || '89'
 
   return (
     <section className="relative h-[92vh] w-full overflow-hidden">
@@ -13,7 +27,7 @@ export function HeroVideo() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url(/images/activity-hero.jpg)',
+            backgroundImage: `url(${heroImage})`,
           }}
         />
       </div>
@@ -47,26 +61,29 @@ export function HeroVideo() {
               className="px-4 py-1.5 rounded-full text-sm font-medium text-white"
               style={{ backgroundColor: 'var(--color-adventure)' }}
             >
-              Aventura y Naturaleza
+              {categoryLabel}
             </span>
-            <span 
-              className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5"
-              style={{ 
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                backdropFilter: 'blur(10px)',
-                color: 'white',
-              }}
-            >
-              <img src="/images/lpmbe-shield.svg" alt="LPMBE" className="w-4 h-4" />
-              Club LPMBE
-            </span>
+            {badges.map((badge) => (
+              <span
+                key={badge.id}
+                className="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5"
+                style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                }}
+              >
+                <img src="/images/lpmbe-shield.svg" alt="LPMBE" className="w-4 h-4" />
+                {badge.text}
+              </span>
+            ))}
           </div>
 
           {/* Title */}
           <h1 
             className="font-serif text-4xl md:text-5xl lg:text-7xl text-white font-bold mb-4 text-balance max-w-4xl"
           >
-            Sobrarbe Aventura
+            {businessName}
           </h1>
 
           {/* Tagline */}
@@ -74,14 +91,14 @@ export function HeroVideo() {
             className="font-serif italic text-lg md:text-xl mb-6 max-w-2xl"
             style={{ color: 'rgba(255,255,255,0.8)' }}
           >
-            Descubre la magia del Pirineo aragonés con experiencias guiadas que conectan con la naturaleza
+            {tagline}
           </p>
 
           {/* Location & Rating */}
           <div className="flex flex-wrap items-center gap-4 text-white">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5" />
-              <span>Aínsa, Huesca</span>
+              <span>{locationText}</span>
             </div>
             <div className="flex items-center gap-1.5">
               {[...Array(5)].map((_, i) => (
@@ -92,7 +109,7 @@ export function HeroVideo() {
                   style={{ color: 'var(--color-ember)' }}
                 />
               ))}
-              <span className="ml-1">4.9 (89 reseñas)</span>
+              <span className="ml-1">{overallRating} ({totalReviews} reseñas)</span>
             </div>
           </div>
         </div>

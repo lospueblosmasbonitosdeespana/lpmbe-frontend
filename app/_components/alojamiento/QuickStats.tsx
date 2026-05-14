@@ -1,34 +1,29 @@
-import { Clock, BedDouble, Banknote, Star, CalendarCheck } from 'lucide-react'
+'use client'
 
-const stats = [
-  {
-    icon: Clock,
-    label: 'Check-in / Check-out',
-    value: '15:00 — 12:00',
-  },
-  {
-    icon: BedDouble,
-    label: 'Habitaciones',
-    value: '8 estancias',
-  },
-  {
-    icon: Banknote,
-    label: 'Desde',
-    value: '120 €/noche',
-  },
-  {
-    icon: Star,
-    label: 'Valoración media',
-    value: '4.8 / 5',
-  },
-  {
-    icon: CalendarCheck,
-    label: 'Renovado',
-    value: '2019',
-  },
+import { Clock, BedDouble, Banknote, Star, CalendarCheck, Mountain, Users } from 'lucide-react'
+import { useLodgingSlice } from './lodging-config-context'
+
+const ICONS = {
+  clock: Clock,
+  bed: BedDouble,
+  banknote: Banknote,
+  star: Star,
+  calendar: CalendarCheck,
+  mountain: Mountain,
+  users: Users,
+} as const
+
+const DEFAULT_STATS = [
+  { id: 'd1', icon: 'clock'    as const, label: 'Check-in / Check-out', value: '15:00 — 12:00' },
+  { id: 'd2', icon: 'bed'      as const, label: 'Habitaciones',          value: '8 estancias'   },
+  { id: 'd3', icon: 'banknote' as const, label: 'Desde',                 value: '120 €/noche'   },
+  { id: 'd4', icon: 'star'     as const, label: 'Valoración media',      value: '4.8 / 5'       },
+  { id: 'd5', icon: 'calendar' as const, label: 'Renovado',              value: '2019'          },
 ]
 
 export default function QuickStats() {
+  const slice = useLodgingSlice('quickStats')
+  const stats = slice?.items && slice.items.length > 0 ? slice.items : DEFAULT_STATS
   return (
     <section aria-label="Datos rápidos del alojamiento">
       <div
@@ -45,7 +40,7 @@ export default function QuickStats() {
           }}
         >
           {stats.map((stat, i) => {
-            const Icon = stat.icon
+            const Icon = ICONS[stat.icon as keyof typeof ICONS] ?? Clock
             return (
               <div
                 key={i}

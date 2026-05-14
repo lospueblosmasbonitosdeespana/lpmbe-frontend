@@ -1,24 +1,38 @@
-import { Shield, Backpack, Check, HardHat, Compass, Shirt, Droplets } from 'lucide-react'
+'use client'
 
-const safetyMeasures = [
-  'Guías con certificación AEGM y primeros auxilios',
-  'Material revisado y homologado cada temporada',
-  'Comunicación vía radio y teléfono satélite',
-  'Seguros de accidentes y responsabilidad civil',
-  'Protocolos de emergencia establecidos',
-  'Grupos reducidos para mayor seguridad',
+import { Shield, Backpack, Check, HardHat, Compass, Shirt, Droplets, Phone, BadgePlus, Award } from 'lucide-react'
+import { useActivitySlice } from './activity-config-context'
+
+const SAFETY_ICONS: Record<string, React.ElementType> = {
+  shield: Shield, phone: Phone, 'first-aid': BadgePlus, helmet: HardHat, license: Award, check: Check,
+}
+const EQUIP_ICONS: Record<string, React.ElementType> = {
+  backpack: Backpack, helmet: HardHat, rope: Shield, paddle: Shirt, bike: Compass, snowshoe: Droplets, binoculars: Compass,
+}
+
+const DEFAULT_SAFETY = [
+  { id: '1', icon: 'check' as const, text: 'Guías con certificación AEGM y primeros auxilios' },
+  { id: '2', icon: 'check' as const, text: 'Material revisado y homologado cada temporada' },
+  { id: '3', icon: 'check' as const, text: 'Comunicación vía radio y teléfono satélite' },
+  { id: '4', icon: 'check' as const, text: 'Seguros de accidentes y responsabilidad civil' },
+  { id: '5', icon: 'check' as const, text: 'Protocolos de emergencia establecidos' },
+  { id: '6', icon: 'check' as const, text: 'Grupos reducidos para mayor seguridad' },
 ]
-
-const equipment = [
-  { name: 'Casco', icon: HardHat },
-  { name: 'Arnés', icon: Shield },
-  { name: 'GPS', icon: Compass },
-  { name: 'Neopreno', icon: Shirt },
-  { name: 'Bidón estanco', icon: Droplets },
-  { name: 'Mochila', icon: Backpack },
+const DEFAULT_EQUIPMENT = [
+  { id: '1', icon: 'helmet'   as const, text: 'Casco' },
+  { id: '2', icon: 'rope'     as const, text: 'Arnés' },
+  { id: '3', icon: 'binoculars' as const, text: 'GPS' },
+  { id: '4', icon: 'paddle'   as const, text: 'Neopreno' },
+  { id: '5', icon: 'snowshoe' as const, text: 'Bidón estanco' },
+  { id: '6', icon: 'backpack' as const, text: 'Mochila' },
 ]
 
 export function SafetyAndEquipment() {
+  const slice = useActivitySlice('safety')
+  const measures = slice?.measures && slice.measures.length > 0 ? slice.measures : DEFAULT_SAFETY
+  const equipment = slice?.equipment && slice.equipment.length > 0 ? slice.equipment : DEFAULT_EQUIPMENT
+  const inclusionNote = slice?.inclusionNote || 'Todo incluido en el precio'
+  const safetyTitle = slice?.title || 'Tu seguridad, nuestra prioridad'
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -42,25 +56,28 @@ export function SafetyAndEquipment() {
                 className="font-serif text-2xl font-bold"
                 style={{ color: 'var(--color-slate)' }}
               >
-                Tu seguridad, nuestra prioridad
+                {safetyTitle}
               </h3>
             </div>
 
             <ul className="space-y-3">
-              {safetyMeasures.map((measure, i) => (
-                <li 
-                  key={i}
-                  className="flex items-start gap-3"
-                >
-                  <Check 
-                    className="w-5 h-5 mt-0.5 flex-shrink-0"
-                    style={{ color: 'var(--color-adventure)' }}
-                  />
-                  <span style={{ color: 'var(--color-slate)' }}>
-                    {measure}
-                  </span>
-                </li>
-              ))}
+              {measures.map((measure) => {
+                const Icon = SAFETY_ICONS[measure.icon] ?? Check
+                return (
+                  <li 
+                    key={measure.id}
+                    className="flex items-start gap-3"
+                  >
+                    <Icon 
+                      className="w-5 h-5 mt-0.5 flex-shrink-0"
+                      style={{ color: 'var(--color-adventure)' }}
+                    />
+                    <span style={{ color: 'var(--color-slate)' }}>
+                      {measure.text}
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
           </div>
 
@@ -88,23 +105,26 @@ export function SafetyAndEquipment() {
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-6">
-              {equipment.map((item, i) => (
-                <div 
-                  key={i}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white"
-                >
-                  <item.icon 
-                    className="w-6 h-6"
-                    style={{ color: 'var(--color-adventure)' }}
-                  />
-                  <span 
-                    className="text-sm text-center"
-                    style={{ color: 'var(--color-slate)' }}
+              {equipment.map((item) => {
+                const Icon = EQUIP_ICONS[item.icon] ?? Backpack
+                return (
+                  <div 
+                    key={item.id}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white"
                   >
-                    {item.name}
-                  </span>
-                </div>
-              ))}
+                    <Icon 
+                      className="w-6 h-6"
+                      style={{ color: 'var(--color-adventure)' }}
+                    />
+                    <span 
+                      className="text-sm text-center"
+                      style={{ color: 'var(--color-slate)' }}
+                    >
+                      {item.text}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
 
             {/* Callout */}
@@ -115,8 +135,7 @@ export function SafetyAndEquipment() {
                 color: 'white',
               }}
             >
-              <p className="font-medium">✓ Todo incluido en el precio</p>
-              <p className="text-sm opacity-80">No necesitas traer material técnico</p>
+              <p className="font-medium">✓ {inclusionNote}</p>
             </div>
           </div>
         </div>

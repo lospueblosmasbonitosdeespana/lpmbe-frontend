@@ -1,39 +1,19 @@
-const guides = [
-  {
-    id: 1,
-    name: 'Carlos Pérez',
-    role: 'Fundador y Guía de Montaña',
-    bio: 'Más de 20 años explorando el Pirineo. Especialista en alta montaña y travesías.',
-    certifications: ['AEGM', 'Primeros Auxilios'],
-    image: '/images/guide-1.jpg',
-  },
-  {
-    id: 2,
-    name: 'María García',
-    role: 'Guía de Barrancos y Kayak',
-    bio: 'Apasionada del agua y los deportes acuáticos. Instructora de kayak certificada.',
-    certifications: ['Técnico Deportivo', 'Kayak'],
-    image: '/images/guide-2.jpg',
-  },
-  {
-    id: 3,
-    name: 'Javier Martín',
-    role: 'Guía de Escalada',
-    bio: 'Especialista en vías ferratas y escalada. Conoce cada roca del Sobrarbe.',
-    certifications: ['FAM', 'Rescate'],
-    image: '/images/guide-3.jpg',
-  },
-  {
-    id: 4,
-    name: 'Ana López',
-    role: 'Guía Cultural',
-    bio: 'Historiadora y amante del patrimonio aragonés. Experta en rutas culturales.',
-    certifications: ['Guía Turística', 'Patrimonio'],
-    image: '/images/guide-4.jpg',
-  },
+'use client'
+
+import { useActivitySlice } from './activity-config-context'
+
+const DEFAULT_GUIDES = [
+  { id: '1', name: 'Carlos Pérez',  role: 'Fundador y Guía de Montaña',     bio: 'Más de 20 años explorando el Pirineo. Especialista en alta montaña y travesías.',  certifications: [{ id: 'c1', text: 'AEGM' }, { id: 'c2', text: 'Primeros Auxilios' }], photoUrl: '/images/guide-1.jpg' },
+  { id: '2', name: 'María García',  role: 'Guía de Barrancos y Kayak',      bio: 'Apasionada del agua y los deportes acuáticos. Instructora de kayak certificada.',  certifications: [{ id: 'c1', text: 'Técnico Deportivo' }, { id: 'c2', text: 'Kayak' }], photoUrl: '/images/guide-2.jpg' },
+  { id: '3', name: 'Javier Martín', role: 'Guía de Escalada',                bio: 'Especialista en vías ferratas y escalada. Conoce cada roca del Sobrarbe.',         certifications: [{ id: 'c1', text: 'FAM' }, { id: 'c2', text: 'Rescate' }],            photoUrl: '/images/guide-3.jpg' },
+  { id: '4', name: 'Ana López',     role: 'Guía Cultural',                   bio: 'Historiadora y amante del patrimonio aragonés. Experta en rutas culturales.',     certifications: [{ id: 'c1', text: 'Guía Turística' }, { id: 'c2', text: 'Patrimonio' }], photoUrl: '/images/guide-4.jpg' },
 ]
 
 export function GuidesTeam() {
+  const slice = useActivitySlice('guides')
+  const eyebrow = slice?.eyebrow || 'Nuestro equipo'
+  const title = slice?.title || 'Guías expertos'
+  const guides = slice?.members && slice.members.length > 0 ? slice.members : DEFAULT_GUIDES
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -43,13 +23,13 @@ export function GuidesTeam() {
             className="text-sm font-medium tracking-wider uppercase mb-3"
             style={{ color: 'var(--color-adventure)' }}
           >
-            Nuestro equipo
+            {eyebrow}
           </p>
           <h2 
             className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold"
             style={{ color: 'var(--color-slate)' }}
           >
-            Guías expertos
+            {title}
           </h2>
         </div>
 
@@ -68,7 +48,7 @@ export function GuidesTeam() {
                 }}
               >
                 <img 
-                  src={guide.image} 
+                  src={guide.photoUrl} 
                   alt={guide.name}
                   className="w-full h-full object-cover"
                 />
@@ -96,16 +76,16 @@ export function GuidesTeam() {
 
               {/* Certifications */}
               <div className="flex flex-wrap justify-center gap-2">
-                {guide.certifications.map((cert, i) => (
+                {guide.certifications.map((cert) => (
                   <span 
-                    key={i}
+                    key={cert.id}
                     className="px-3 py-1 rounded-full text-xs font-medium"
                     style={{ 
                       backgroundColor: 'var(--color-sand)',
                       color: 'var(--color-slate)',
                     }}
                   >
-                    {cert}
+                    {cert.text}
                   </span>
                 ))}
               </div>

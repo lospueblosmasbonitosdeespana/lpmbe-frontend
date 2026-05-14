@@ -1,52 +1,31 @@
+'use client'
+
 import {
   Clock, CreditCard, Globe, Baby, PawPrint, Accessibility,
   ShieldCheck, XCircle,
 } from 'lucide-react'
+import { useLodgingSlice } from './lodging-config-context'
 
-const infoItems = [
-  {
-    icon: Clock,
-    label: 'Check-in / Check-out',
-    detail: 'Entrada: 15:00 – 21:00 h · Salida: hasta las 12:00 h · Early check-in bajo petición',
-  },
-  {
-    icon: XCircle,
-    label: 'Política de cancelación',
-    detail: 'Cancelación gratuita hasta 72 h antes. Reservas no reembolsables con descuento del 15 %.',
-  },
-  {
-    icon: CreditCard,
-    label: 'Formas de pago',
-    detail: 'Tarjeta de crédito/débito, Bizum y efectivo. No se acepta American Express.',
-  },
-  {
-    icon: Globe,
-    label: 'Idiomas',
-    detail: 'Español · Inglés · Francés · Aragonés',
-  },
-  {
-    icon: Baby,
-    label: 'Política de niños',
-    detail: 'Se admiten niños de todas las edades. Cuna disponible sin cargo (bajo reserva). Menú infantil.',
-  },
-  {
-    icon: PawPrint,
-    label: 'Mascotas',
-    detail: 'Se admiten mascotas pequeñas (hasta 10 kg). Suplemento de 15 €/noche. Deben estar vacunadas.',
-  },
-  {
-    icon: ShieldCheck,
-    label: 'Medidas sanitarias',
-    detail: 'Alojamiento con protocolo de limpieza reforzado. Certificado de calidad turística aragonesa.',
-  },
-  {
-    icon: Accessibility,
-    label: 'Accesibilidad',
-    detail: 'Planta baja accesible. Rampa de acceso. Dos habitaciones adaptadas disponibles.',
-  },
+const ICONS = {
+  clock: Clock, 'x-circle': XCircle, 'credit-card': CreditCard,
+  globe: Globe, baby: Baby, 'paw-print': PawPrint,
+  shield: ShieldCheck, accessibility: Accessibility,
+} as const
+
+const DEFAULT_ITEMS = [
+  { id: 'p1', icon: 'clock'        as const, label: 'Check-in / Check-out',     detail: 'Entrada: 15:00 – 21:00 h · Salida: hasta las 12:00 h · Early check-in bajo petición' },
+  { id: 'p2', icon: 'x-circle'     as const, label: 'Política de cancelación',  detail: 'Cancelación gratuita hasta 72 h antes. Reservas no reembolsables con descuento del 15 %.' },
+  { id: 'p3', icon: 'credit-card'  as const, label: 'Formas de pago',           detail: 'Tarjeta de crédito/débito, Bizum y efectivo. No se acepta American Express.' },
+  { id: 'p4', icon: 'globe'        as const, label: 'Idiomas',                  detail: 'Español · Inglés · Francés · Aragonés' },
+  { id: 'p5', icon: 'baby'         as const, label: 'Política de niños',        detail: 'Se admiten niños de todas las edades. Cuna disponible sin cargo (bajo reserva). Menú infantil.' },
+  { id: 'p6', icon: 'paw-print'    as const, label: 'Mascotas',                 detail: 'Se admiten mascotas pequeñas (hasta 10 kg). Suplemento de 15 €/noche. Deben estar vacunadas.' },
+  { id: 'p7', icon: 'shield'       as const, label: 'Medidas sanitarias',       detail: 'Alojamiento con protocolo de limpieza reforzado. Certificado de calidad turística aragonesa.' },
+  { id: 'p8', icon: 'accessibility'as const, label: 'Accesibilidad',            detail: 'Planta baja accesible. Rampa de acceso. Dos habitaciones adaptadas disponibles.' },
 ]
 
 export default function PracticalInfo() {
+  const slice = useLodgingSlice('practicalInfo')
+  const infoItems = slice?.items && slice.items.length > 0 ? slice.items : DEFAULT_ITEMS
   return (
     <section
       className="py-20 md:py-28 px-6 md:px-14 lg:px-20"
@@ -73,11 +52,11 @@ export default function PracticalInfo() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {infoItems.map((item, i) => {
-            const Icon = item.icon
+          {infoItems.map((item) => {
+            const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Clock
             return (
               <div
-                key={i}
+                key={item.id}
                 className="flex flex-col gap-3 p-5 rounded-xl"
                 style={{
                   background: '#fff',

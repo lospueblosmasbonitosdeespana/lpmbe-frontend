@@ -1,25 +1,18 @@
-import { Star, Quote } from 'lucide-react'
+'use client'
 
-const reviews = [
-  {
-    quote:
-      'Una experiencia que supera cualquier expectativa. El desayuno con vistas a los picos del Pirineo, la atención del equipo y la autenticidad de cada detalle hacen de La Posada del Sobrarbe un lugar al que regresaremos cada año.',
-    author: 'María G.',
-    origin: 'Madrid',
-    stars: 5,
-    date: 'Octubre 2024',
-  },
-  {
-    quote:
-      'Llevábamos años buscando un hotel rural así: con alma, con historia y sin renunciar al confort. Lo hemos encontrado en Aínsa. La habitación con chimenea y el spa de piedra son sencillamente perfectos.',
-    author: 'Javier M.',
-    origin: 'Barcelona',
-    stars: 5,
-    date: 'Septiembre 2024',
-  },
+import { Star, Quote } from 'lucide-react'
+import { useLodgingSlice } from './lodging-config-context'
+
+const DEFAULT_REVIEWS = [
+  { id: 'rv1', quote: 'Una experiencia que supera cualquier expectativa. El desayuno con vistas a los picos del Pirineo, la atención del equipo y la autenticidad de cada detalle hacen de La Posada del Sobrarbe un lugar al que regresaremos cada año.', author: 'María G.',  origin: 'Madrid',     stars: 5, date: 'Octubre 2024' },
+  { id: 'rv2', quote: 'Llevábamos años buscando un hotel rural así: con alma, con historia y sin renunciar al confort. Lo hemos encontrado en Aínsa. La habitación con chimenea y el spa de piedra son sencillamente perfectos.',                          author: 'Javier M.', origin: 'Barcelona',  stars: 5, date: 'Septiembre 2024' },
 ]
 
 export default function ReviewsSection() {
+  const slice = useLodgingSlice('reviews')
+  const overallRating = slice?.overallRating || '4.8'
+  const totalReviews = slice?.totalReviews || '127'
+  const reviews = slice?.items && slice.items.length > 0 ? slice.items : DEFAULT_REVIEWS
   return (
     <section
       className="py-20 md:py-28 px-6 md:px-14 lg:px-20"
@@ -41,7 +34,7 @@ export default function ReviewsSection() {
               className="font-serif text-6xl font-bold"
               style={{ color: 'var(--color-midnight)' }}
             >
-              4.8
+              {overallRating}
             </span>
             <div className="flex flex-col items-start gap-1">
               <div className="flex gap-0.5">
@@ -50,7 +43,7 @@ export default function ReviewsSection() {
                 ))}
               </div>
               <span className="text-sm" style={{ color: 'oklch(0.50 0.02 250)' }}>
-                127 reseñas verificadas
+                {totalReviews} reseñas verificadas
               </span>
             </div>
           </div>
@@ -65,9 +58,9 @@ export default function ReviewsSection() {
 
         {/* Review cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {reviews.map((review, i) => (
+          {reviews.map((review) => (
             <blockquote
-              key={i}
+              key={review.id}
               className="flex flex-col gap-5 p-8 rounded-2xl"
               style={{
                 background: 'var(--color-cream)',
@@ -110,7 +103,7 @@ export default function ReviewsSection() {
             className="text-sm font-semibold underline underline-offset-4 transition-opacity hover:opacity-60"
             style={{ color: 'var(--color-midnight)' }}
           >
-            Ver todas las 127 reseñas
+            Ver todas las {totalReviews} reseñas
           </button>
         </div>
       </div>

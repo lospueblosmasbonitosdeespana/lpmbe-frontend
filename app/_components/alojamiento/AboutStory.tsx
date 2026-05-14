@@ -1,6 +1,21 @@
+'use client'
+
 import Image from 'next/image'
+import { useLodgingSlice } from './lodging-config-context'
+
+const DEFAULT_PARAGRAPHS = [
+  'Enclavada en el corazón medieval de Aínsa, la Posada del Sobrarbe nació de la pasión de la familia Castán por preservar el patrimonio vivo del Pirineo. Lo que en el siglo XVIII fue una imponente casa señorial de piedra es hoy un refugio de ocho habitaciones donde cada recoveco guarda su propia historia.',
+  'La rehabilitación, iniciada en 2017 y culminada en 2019, respetó escrupulosamente las bóvedas de sillería, las vigas originales de roble y los arcos de medio punto, añadiendo con mesura el confort que los viajeros contemporáneos merecen: calefacción radiante, ropa de cama de algodón egipcio y un pequeño spa de piedra que mana aguas termales del Pirineo.',
+  'Desde la terraza panorámica, las cumbres del Cotiella y el Turbón marcan el horizonte al amanecer. En el comedor de vigas, el desayuno se convierte en un ceremonial con miel del Sobrarbe, pan de masa madre y quesos artesanos de las queserías vecinas.',
+]
 
 export default function AboutStory() {
+  const slice = useLodgingSlice('story')
+  const eyebrow = slice?.eyebrow || 'Nuestra historia'
+  const title = slice?.title || 'Una casona del siglo XVIII\ndevuelta a la vida'
+  const paragraphs = slice?.paragraphs && slice.paragraphs.length > 0 ? slice.paragraphs : DEFAULT_PARAGRAPHS
+  const pullQuote = slice?.pullQuote || '“Donde el tiempo se detiene y la naturaleza susurra en cada piedra.”'
+
   return (
     <section
       className="py-20 md:py-28 px-6 md:px-14 lg:px-20"
@@ -15,43 +30,32 @@ export default function AboutStory() {
             className="text-xs font-semibold tracking-widest uppercase mb-4"
             style={{ color: 'var(--color-terracotta)' }}
           >
-            Nuestra historia
+            {eyebrow}
           </p>
 
           <h2
             id="story-heading"
-            className="font-serif text-3xl md:text-4xl font-bold leading-snug text-balance mb-6"
+            className="font-serif text-3xl md:text-4xl font-bold leading-snug text-balance mb-6 whitespace-pre-line"
             style={{ color: 'var(--color-midnight)' }}
           >
-            Una casona del siglo XVIII<br />devuelta a la vida
+            {title}
           </h2>
 
           <div className="space-y-4 text-base leading-relaxed" style={{ color: 'oklch(0.38 0.02 250)' }}>
-            <p>
-              Enclavada en el corazón medieval de Aínsa, la Posada del Sobrarbe nació de la pasión de la familia
-              Castán por preservar el patrimonio vivo del Pirineo. Lo que en el siglo XVIII fue una imponente casa
-              señorial de piedra es hoy un refugio de ocho habitaciones donde cada recoveco guarda su propia historia.
-            </p>
-            <p>
-              La rehabilitación, iniciada en 2017 y culminada en 2019, respetó escrupulosamente las bóvedas de
-              sillería, las vigas originales de roble y los arcos de medio punto, añadiendo con mesura el confort
-              que los viajeros contemporáneos merecen: calefacción radiante, ropa de cama de algodón egipcio y un
-              pequeño spa de piedra que mana aguas termales del Pirineo.
-            </p>
-            <p>
-              Desde la terraza panorámica, las cumbres del Cotiella y el Turbón marcan el horizonte al amanecer.
-              En el comedor de vigas, el desayuno se convierte en un ceremonial con miel del Sobrarbe, pan de masa
-              madre y quesos artesanos de las queserías vecinas.
-            </p>
+            {paragraphs.map((p, i) => (
+              <p key={i}>{p}</p>
+            ))}
           </div>
 
           {/* Pull quote */}
-          <blockquote
-            className="mt-8 pl-5 border-l-2 italic font-serif text-lg md:text-xl leading-snug"
-            style={{ borderColor: 'var(--color-terracotta)', color: 'var(--color-midnight)' }}
-          >
-            &ldquo;Donde el tiempo se detiene y la naturaleza susurra en cada piedra.&rdquo;
-          </blockquote>
+          {pullQuote && (
+            <blockquote
+              className="mt-8 pl-5 border-l-2 italic font-serif text-lg md:text-xl leading-snug"
+              style={{ borderColor: 'var(--color-terracotta)', color: 'var(--color-midnight)' }}
+            >
+              {pullQuote}
+            </blockquote>
+          )}
 
           {/* Decorative rule */}
           <div className="mt-10 flex items-center gap-3">

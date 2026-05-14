@@ -1,58 +1,29 @@
-import { 
-  MapPin, 
-  Clock, 
-  Mountain, 
-  Users, 
-  Baby, 
-  Languages, 
-  CalendarX, 
-  Backpack 
-} from 'lucide-react'
+'use client'
 
-const infoItems = [
-  {
-    icon: MapPin,
-    label: 'Punto de encuentro',
-    detail: 'Plaza Mayor de Aínsa, junto a la Oficina de Turismo',
-  },
-  {
-    icon: Clock,
-    label: 'Duración',
-    detail: 'Variable según actividad (2-8 horas)',
-  },
-  {
-    icon: Mountain,
-    label: 'Dificultad',
-    detail: 'Actividades adaptadas a todos los niveles',
-  },
-  {
-    icon: Users,
-    label: 'Tamaño del grupo',
-    detail: 'Mínimo 2, máximo 12 personas',
-  },
-  {
-    icon: Baby,
-    label: 'Edad mínima',
-    detail: 'Según actividad (desde 8 años)',
-  },
-  {
-    icon: Languages,
-    label: 'Idiomas',
-    detail: 'Español, inglés y francés',
-  },
-  {
-    icon: CalendarX,
-    label: 'Cancelación',
-    detail: 'Gratuita hasta 48h antes',
-  },
-  {
-    icon: Backpack,
-    label: 'Qué traer',
-    detail: 'Ropa cómoda, calzado deportivo, agua',
-  },
+import { 
+  MapPin, Clock, Gauge, Users, Baby, Globe, XCircle, ShoppingBag, Mountain
+} from 'lucide-react'
+import { useActivitySlice } from './activity-config-context'
+
+const ICONS = {
+  'map-pin': MapPin, clock: Clock, gauge: Gauge, users: Users, baby: Baby,
+  globe: Globe, 'x-circle': XCircle, 'shopping-bag': ShoppingBag,
+} as const
+
+const DEFAULT_ITEMS = [
+  { id: '1', icon: 'map-pin'      as const, label: 'Punto de encuentro', detail: 'Plaza Mayor de Aínsa, junto a la Oficina de Turismo' },
+  { id: '2', icon: 'clock'        as const, label: 'Duración',           detail: 'Variable según actividad (2-8 horas)' },
+  { id: '3', icon: 'gauge'        as const, label: 'Dificultad',         detail: 'Actividades adaptadas a todos los niveles' },
+  { id: '4', icon: 'users'        as const, label: 'Tamaño del grupo',   detail: 'Mínimo 2, máximo 12 personas' },
+  { id: '5', icon: 'baby'         as const, label: 'Edad mínima',        detail: 'Según actividad (desde 8 años)' },
+  { id: '6', icon: 'globe'        as const, label: 'Idiomas',            detail: 'Español, inglés y francés' },
+  { id: '7', icon: 'x-circle'     as const, label: 'Cancelación',        detail: 'Gratuita hasta 48h antes' },
+  { id: '8', icon: 'shopping-bag' as const, label: 'Qué traer',          detail: 'Ropa cómoda, calzado deportivo, agua' },
 ]
 
 export function PracticalInfo() {
+  const slice = useActivitySlice('practicalInfo')
+  const infoItems = slice?.items && slice.items.length > 0 ? slice.items : DEFAULT_ITEMS
   return (
     <section 
       className="py-16 md:py-24"
@@ -77,16 +48,18 @@ export function PracticalInfo() {
 
         {/* Info Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {infoItems.map((item, i) => (
+          {infoItems.map((item) => {
+            const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Mountain
+            return (
             <div 
-              key={i}
+              key={item.id}
               className="bg-white p-5 rounded-2xl flex items-start gap-4"
             >
               <div 
                 className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: 'var(--color-adventure)', opacity: 0.1 }}
               >
-                <item.icon 
+                <Icon 
                   className="w-5 h-5"
                   style={{ color: 'var(--color-adventure)' }}
                 />
@@ -106,7 +79,8 @@ export function PracticalInfo() {
                 </p>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
