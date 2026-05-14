@@ -220,6 +220,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
   const [comboRegaloFotoUrl, setComboRegaloFotoUrl] = useState('');
   const [comboRegaloCondiciones, setComboRegaloCondiciones] = useState('');
   const [comboPrecios, setComboPrecios] = useState<RecursoPrecio[]>([]);
+  const [comboFotoUrl, setComboFotoUrl] = useState('');
   const [creandoCombo, setCreandoCombo] = useState(false);
 
   // Edición de combo
@@ -241,6 +242,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
   const [editComboRegaloFotoUrl, setEditComboRegaloFotoUrl] = useState('');
   const [editComboRegaloCondiciones, setEditComboRegaloCondiciones] = useState('');
   const [editComboPrecios, setEditComboPrecios] = useState<RecursoPrecio[]>([]);
+  const [editComboFotoUrl, setEditComboFotoUrl] = useState('');
   const [guardandoCombo, setGuardandoCombo] = useState(false);
 
   // Edición
@@ -419,6 +421,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setComboRegaloFotoUrl('');
     setComboRegaloCondiciones('');
     setComboPrecios([]);
+    setComboFotoUrl('');
   }
 
   async function handleCrear() {
@@ -773,6 +776,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         comboHighlight: comboHighlight.trim() || null,
         comboDescripcion: comboDescripcion.trim() || null,
         comboCondiciones: comboCondiciones.trim() || null,
+        fotoUrl: comboFotoUrl.trim() || null,
         soloEnCombo: false,
         precios: comboPrecios.map((p, idx) => ({
           etiqueta: p.etiqueta.trim(),
@@ -824,6 +828,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setEditComboRegaloDescripcion(r.regaloDescripcion ?? '');
     setEditComboRegaloFotoUrl(r.regaloFotoUrl ?? '');
     setEditComboRegaloCondiciones(r.regaloCondiciones ?? '');
+    setEditComboFotoUrl(r.fotoUrl ?? '');
     setEditComboPrecios(
       (r.precios ?? []).map((p) => ({
         id: p.id,
@@ -844,6 +849,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
     setEditComboRegaloDescripcion('');
     setEditComboRegaloFotoUrl('');
     setEditComboRegaloCondiciones('');
+    setEditComboFotoUrl('');
     setEditComboPrecios([]);
   }
 
@@ -890,6 +896,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
         comboHighlight: editComboHighlight.trim() || null,
         comboDescripcion: editComboDescripcion.trim() || null,
         comboCondiciones: editComboCondiciones.trim() || null,
+        fotoUrl: editComboFotoUrl.trim() || null,
         regaloActivo: editComboRegaloActivo,
         regaloTitulo: editComboRegaloActivo ? editComboRegaloTitulo.trim() || null : null,
         regaloDescripcion: editComboRegaloActivo ? editComboRegaloDescripcion.trim() || null : null,
@@ -1302,6 +1309,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
           edadMaxMenor={comboEdadMaxMenor} setEdadMaxMenor={setComboEdadMaxMenor}
           activo={comboActivo} setActivo={setComboActivo}
           componentesIds={comboComponentesIds} setComponentesIds={setComboComponentesIds}
+          fotoUrl={comboFotoUrl} setFotoUrl={setComboFotoUrl}
           regaloActivo={comboRegaloActivo} setRegaloActivo={setComboRegaloActivo}
           regaloTitulo={comboRegaloTitulo} setRegaloTitulo={setComboRegaloTitulo}
           regaloDescripcion={comboRegaloDescripcion} setRegaloDescripcion={setComboRegaloDescripcion}
@@ -1345,6 +1353,7 @@ export default function ClubRecursos({ puebloId, slug, puebloLat, puebloLng, esA
                   edadMaxMenor={editComboEdadMaxMenor} setEdadMaxMenor={setEditComboEdadMaxMenor}
                   activo={editComboActivo} setActivo={setEditComboActivo}
                   componentesIds={editComboComponentesIds} setComponentesIds={setEditComboComponentesIds}
+                  fotoUrl={editComboFotoUrl} setFotoUrl={setEditComboFotoUrl}
                   regaloActivo={editComboRegaloActivo} setRegaloActivo={setEditComboRegaloActivo}
                   regaloTitulo={editComboRegaloTitulo} setRegaloTitulo={setEditComboRegaloTitulo}
                   regaloDescripcion={editComboRegaloDescripcion} setRegaloDescripcion={setEditComboRegaloDescripcion}
@@ -2404,6 +2413,8 @@ type ComboFormProps = {
   activo: boolean; setActivo: (v: boolean) => void;
   componentesIds: number[];
   setComponentesIds: React.Dispatch<React.SetStateAction<number[]>>;
+  // Foto principal del combo
+  fotoUrl: string; setFotoUrl: (v: string) => void;
   // Regalo del Club para el combo
   regaloActivo: boolean; setRegaloActivo: (v: boolean) => void;
   regaloTitulo: string; setRegaloTitulo: (v: string) => void;
@@ -2433,6 +2444,7 @@ function ComboForm({
   edadMaxMenor, setEdadMaxMenor,
   activo, setActivo,
   componentesIds, setComponentesIds,
+  fotoUrl, setFotoUrl,
   regaloActivo, setRegaloActivo,
   regaloTitulo, setRegaloTitulo,
   regaloDescripcion, setRegaloDescripcion,
@@ -2531,6 +2543,10 @@ function ComboForm({
           placeholder="Ej. Con esta entrada única visita los 3 museos del casco histórico y recorre la historia del pueblo. Válido todo el día; puedes empezar por donde prefieras."
           className="w-full px-3 py-2 border border-purple-200 rounded text-sm bg-white disabled:opacity-50"
         />
+      </div>
+
+      <div className="rounded-lg border border-purple-200 bg-white/70 p-3">
+        <RecursoFotoUploader fotoUrl={fotoUrl} setFotoUrl={setFotoUrl} disabled={disabled} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2857,8 +2873,13 @@ function ComboForm({
           Así verá el combo el visitante
         </p>
         <div className="flex items-start gap-3">
-          <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center text-white flex-shrink-0">
-            <Layers className="h-7 w-7" aria-hidden />
+          <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center text-white flex-shrink-0 overflow-hidden">
+            {fotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={fotoUrl} alt="Foto del combo" className="h-full w-full object-cover" />
+            ) : (
+              <Layers className="h-7 w-7" aria-hidden />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h5 className="font-bold text-base text-slate-900 leading-tight">
