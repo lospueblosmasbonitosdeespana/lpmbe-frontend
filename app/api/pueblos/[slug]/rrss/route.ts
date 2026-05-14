@@ -8,15 +8,15 @@ export const maxDuration = 30;
 
 export async function GET(
   _req: Request,
-  context: { params: Promise<{ puebloId: string }> },
+  context: { params: Promise<{ slug: string }> },
 ) {
   const token = await getToken();
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
-  const { puebloId } = await context.params;
+  const { slug } = await context.params;
   const API_BASE = getApiUrl();
   try {
-    const res = await fetchWithTimeout(`${API_BASE}/pueblos/${puebloId}/rrss`, {
+    const res = await fetchWithTimeout(`${API_BASE}/pueblos/${slug}/rrss`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     });
