@@ -13,6 +13,7 @@ import {
 } from "@/lib/seo";
 import NegocioDetail from "@/app/pueblos/[slug]/club/[negocioSlug]/NegocioDetail";
 import JsonLd from "@/app/components/seo/JsonLd";
+import SelectionPremiumDetail from "@/app/_components/selection/SelectionPremiumDetail";
 
 export const revalidate = 60;
 
@@ -26,6 +27,16 @@ type Recurso = {
   descripcion?: string | null;
   localidad?: string | null;
   provincia?: string | null;
+  comunidad?: string | null;
+  telefono?: string | null;
+  email?: string | null;
+  web?: string | null;
+  whatsapp?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  planNegocio?: string | null;
+  landingConfig?: unknown;
+  socialLinks?: Record<string, string> | null;
   pueblo?: { id: number; nombre: string; slug: string } | null;
   imagenes?: Array<{ id: number; url: string; alt: string | null; orden: number }>;
   imprescindible?: boolean;
@@ -113,6 +124,10 @@ export default async function SelectionDetailPage({
     );
   }
 
+  if (recurso.planNegocio === "SELECTION") {
+    return <SelectionPremiumDetail recurso={recurso as any} />;
+  }
+
   const homeLabel = tTabs("home");
   const breadcrumbs = [
     { label: homeLabel, href: "/" },
@@ -176,7 +191,7 @@ export default async function SelectionDetailPage({
 
       <div className="mx-auto max-w-4xl px-4 py-8">
         <NegocioDetail
-          recurso={recurso}
+          recurso={recurso as any}
           puebloSlug={puebloSlug}
           backHref="/selection"
           backLabel="Club LPMBE Selection"
