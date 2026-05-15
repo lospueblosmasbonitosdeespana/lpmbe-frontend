@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, EditorGrid, ListItemRow, AddButton, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 interface Props {
@@ -25,7 +26,7 @@ export function RoomsEditor({ value, onChange }: Props) {
               <TextField label="Tamaño" value={r.size} onChange={v => update(i, { size: v })} placeholder="95 m²" maxLength={20} />
               <TextField label="Precio desde" value={r.priceFrom} onChange={v => update(i, { priceFrom: v })} placeholder="Desde 480€ / noche" maxLength={40} />
             </EditorGrid>
-            <TextField label="URL imagen" value={r.image} onChange={v => update(i, { image: v })} placeholder="/images/suite-real.jpg" />
+            <ImageUploadField label="Imagen de la habitación" value={r.image} onChange={v => update(i, { image: v })} folder="negocios/selection/rooms" />
             <TextField
               label="Servicios (separados por coma)"
               hint="Ej: Terraza privada, Bañera exenta, Vistas al Pirineo"

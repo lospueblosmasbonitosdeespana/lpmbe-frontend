@@ -44,6 +44,7 @@ import {
   OfferIcon
 } from './activity-config'
 import { SectionsLayoutEditor } from '../_editor-shared/SectionsLayoutEditor'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import { ACTIVIDAD_PUBLIC_SECTIONS } from '@/app/_components/actividad/actividad-sections'
 import {
   resolveLayout,
@@ -352,15 +353,13 @@ export default function ActividadLandingEditor({
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="posterImageUrl">URL de imagen de fondo</Label>
-                  <Input
-                    id="posterImageUrl"
-                    value={config.hero.posterImageUrl}
-                    onChange={e => updateConfig('hero', { posterImageUrl: e.target.value })}
-                    placeholder="/images/hero.jpg"
-                  />
-                </div>
+                <ImageUploadField
+                  label="Imagen de fondo del hero"
+                  hint="Imagen panorámica horizontal (1920×1080 recomendado)"
+                  value={config.hero.posterImageUrl}
+                  onChange={url => updateConfig('hero', { posterImageUrl: url })}
+                  folder="negocios/actividad/hero"
+                />
                 
                 {/* Badges */}
                 <div className="space-y-3">
@@ -644,14 +643,15 @@ export default function ActividadLandingEditor({
                   <div className="grid gap-4 sm:grid-cols-2">
                     {config.story.images.map((img, idx) => (
                       <div key={img.id} className="space-y-2 rounded-lg border p-3" style={{ borderColor: 'oklch(0.92 0.02 70)' }}>
-                        <Input
+                        <ImageUploadField
+                          label={`Imagen ${idx + 1}`}
                           value={img.url}
-                          onChange={e => {
+                          onChange={url => {
                             const newImages = [...config.story.images]
-                            newImages[idx] = { ...img, url: e.target.value }
+                            newImages[idx] = { ...img, url }
                             updateConfig('story', { images: newImages })
                           }}
-                          placeholder="URL de la imagen"
+                          folder="negocios/actividad/story"
                         />
                         <Input
                           value={img.alt}
@@ -885,15 +885,15 @@ export default function ActividadLandingEditor({
                       </div>
 
                       <div className="space-y-2">
-                        <Label>URL de imagen</Label>
-                        <Input
+                        <ImageUploadField
+                          label="Imagen de la actividad"
                           value={activity.imageUrl}
-                          onChange={e => {
+                          onChange={url => {
                             const newItems = [...config.activities.items]
-                            newItems[idx] = { ...activity, imageUrl: e.target.value }
+                            newItems[idx] = { ...activity, imageUrl: url }
                             updateConfig('activities', { items: newItems })
                           }}
-                          placeholder="/images/activity-1.jpg"
+                          folder="negocios/actividad/activities"
                         />
                       </div>
                     </div>
@@ -1025,14 +1025,12 @@ export default function ActividadLandingEditor({
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>URL de imagen</Label>
-                      <Input
-                        value={config.featured.imageUrl}
-                        onChange={e => updateConfig('featured', { imageUrl: e.target.value })}
-                        placeholder="/images/featured.jpg"
-                      />
-                    </div>
+                    <ImageUploadField
+                      label="Imagen de la experiencia destacada"
+                      value={config.featured.imageUrl}
+                      onChange={url => updateConfig('featured', { imageUrl: url })}
+                      folder="negocios/actividad/featured"
+                    />
                   </>
                 )}
               </div>
@@ -1181,18 +1179,17 @@ export default function ActividadLandingEditor({
                         <p className="text-xs text-muted-foreground">{member.bio.length}/140</p>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>URL de foto</Label>
-                        <Input
-                          value={member.photoUrl}
-                          onChange={e => {
-                            const newMembers = [...config.guides.members]
-                            newMembers[idx] = { ...member, photoUrl: e.target.value }
-                            updateConfig('guides', { members: newMembers })
-                          }}
-                          placeholder="/images/guide-1.jpg"
-                        />
-                      </div>
+                      <ImageUploadField
+                        label="Foto del guía"
+                        value={member.photoUrl}
+                        onChange={url => {
+                          const newMembers = [...config.guides.members]
+                          newMembers[idx] = { ...member, photoUrl: url }
+                          updateConfig('guides', { members: newMembers })
+                        }}
+                        folder="negocios/actividad/guides"
+                        square
+                      />
 
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
@@ -1329,18 +1326,16 @@ export default function ActividadLandingEditor({
                             placeholder="Primavera explosiva"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label>URL de imagen</Label>
-                          <Input
-                            value={season.imageUrl}
-                            onChange={e => {
-                              const newItems = [...config.seasons.items]
-                              newItems[idx] = { ...season, imageUrl: e.target.value }
-                              updateConfig('seasons', { items: newItems })
-                            }}
-                            placeholder="/images/season-spring.jpg"
-                          />
-                        </div>
+                        <ImageUploadField
+                          label="Imagen de la temporada"
+                          value={season.imageUrl}
+                          onChange={url => {
+                            const newItems = [...config.seasons.items]
+                            newItems[idx] = { ...season, imageUrl: url }
+                            updateConfig('seasons', { items: newItems })
+                          }}
+                          folder="negocios/actividad/seasons"
+                        />
                       </div>
 
                       <div className="space-y-2">

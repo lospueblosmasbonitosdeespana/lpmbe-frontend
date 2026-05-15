@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SelectField, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 const ICON_OPTIONS = [
@@ -32,7 +33,7 @@ export function SpaEditor({ value, onChange }: Props) {
     <div className="space-y-5">
       <TextField label="Título del spa" value={value.title} onChange={v => update('title', v)} maxLength={120} />
       <TextareaField label="Descripción" value={value.description} onChange={v => update('description', v)} rows={5} maxLength={600} />
-      <TextField label="URL imagen del spa" value={value.image} onChange={v => update('image', v)} placeholder="/images/spa.jpg" />
+      <ImageUploadField label="Imagen del spa" value={value.image} onChange={v => update('image', v)} folder="negocios/selection/spa" />
 
       <div>
         <SectionLabel>Tratamientos / áreas</SectionLabel>

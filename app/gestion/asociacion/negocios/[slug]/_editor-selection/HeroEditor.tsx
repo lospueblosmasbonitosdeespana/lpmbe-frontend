@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 type HeroValue = {
@@ -21,22 +22,21 @@ export function HeroEditor({ value, onChange }: Props) {
 
   return (
     <div className="space-y-5">
-      <EditorGrid>
-        <TextField
-          label="Nombre del hotel"
-          hint="Aparece como título principal"
-          value={value.name}
-          onChange={v => update('name', v)}
-          maxLength={80}
-        />
-        <TextField
-          label="URL imagen de portada"
-          hint="Imagen cinematográfica (1920×1080 recomendado)"
-          value={value.heroImage}
-          onChange={v => update('heroImage', v)}
-          placeholder="/images/hero.jpg"
-        />
-      </EditorGrid>
+      <TextField
+        label="Nombre del hotel"
+        hint="Aparece como título principal"
+        value={value.name}
+        onChange={v => update('name', v)}
+        maxLength={80}
+      />
+
+      <ImageUploadField
+        label="Imagen de portada"
+        hint="Imagen cinematográfica horizontal (1920×1080 recomendado)"
+        value={value.heroImage}
+        onChange={v => update('heroImage', v)}
+        folder="negocios/selection/hero"
+      />
 
       <TextareaField
         label="Tagline / eslogan"

@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 interface Props {
@@ -24,7 +25,7 @@ export function SurroundingsEditor({ value, onChange }: Props) {
               <TextField label="Nombre" value={s.name} onChange={v => update(i, { name: v })} placeholder="Parque Nacional de Ordesa" maxLength={80} />
               <TextField label="Distancia" value={s.distance} onChange={v => update(i, { distance: v })} placeholder="25 min en coche" maxLength={40} />
             </EditorGrid>
-            <TextField label="URL imagen" value={s.image} onChange={v => update(i, { image: v })} placeholder="/images/surroundings.jpg" />
+            <ImageUploadField label="Imagen" value={s.image} onChange={v => update(i, { image: v })} folder="negocios/selection/surroundings" />
             <TextareaField label="Descripción" value={s.description} onChange={v => update(i, { description: v })} rows={2} maxLength={250} />
           </div>
         </ListItemRow>

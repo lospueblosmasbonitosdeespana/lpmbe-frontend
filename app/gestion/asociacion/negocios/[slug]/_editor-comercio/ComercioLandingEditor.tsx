@@ -1,7 +1,9 @@
 'use client'
 
+import * as React from 'react'
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { uploadImageToR2 } from '@/src/lib/uploadHelper'
 import {
   DndContext,
   closestCenter,
@@ -88,6 +90,7 @@ import {
   Car,
   Bus,
   Upload,
+  Loader2,
 } from 'lucide-react'
 import type {
   CommerceLandingConfig,
@@ -388,7 +391,7 @@ function ChipMultiSelect({
   )
 }
 
-// Image input with preview
+// Image input with R2 upload + preview
 function ImageInput({
   label,
   value,
@@ -396,6 +399,7 @@ function ImageInput({
   altValue,
   onAltChange,
   className = '',
+  folder = 'negocios/comercio',
 }: {
   label: string
   value: string
@@ -403,44 +407,83 @@ function ImageInput({
   altValue?: string
   onAltChange?: (val: string) => void
   className?: string
+  folder?: string
 }) {
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return
+    setError(null)
+    setUploading(true)
+    try {
+      const { url } = await uploadImageToR2(file, folder)
+      onChange(url)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Error subiendo imagen')
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
   return (
     <div className={`space-y-2 ${className}`}>
       <Label>{label}</Label>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={e => handleFile(e.target.files?.[0])}
+      />
       <div className="flex gap-3">
         {value ? (
           <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-border">
             <img src={value} alt={altValue || ''} className="h-full w-full object-cover" />
+            {uploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <Loader2 className="h-4 w-4 text-white animate-spin" />
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted">
-            <ImageIcon className="h-6 w-6 text-muted-foreground" />
-          </div>
+          <button
+            type="button"
+            onClick={() => !uploading && inputRef.current?.click()}
+            className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted hover:bg-muted/70 transition-colors"
+            disabled={uploading}
+          >
+            {uploading ? (
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            ) : (
+              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+            )}
+          </button>
         )}
         <div className="flex flex-1 flex-col gap-2">
-          <Input
-            placeholder="URL de la imagen"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 self-start"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+          >
+            <Upload className="h-3.5 w-3.5 mr-1.5" />
+            {uploading ? 'Subiendo a R2…' : value ? 'Cambiar imagen' : 'Subir a Cloudflare R2'}
+          </Button>
           {onAltChange !== undefined && (
             <Input
               placeholder="Texto alternativo (alt)"
               value={altValue || ''}
               onChange={e => onAltChange(e.target.value)}
-              className="text-xs"
+              className="text-xs h-8"
             />
           )}
+          {error && <p className="text-[11px] text-red-600">{error}</p>}
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-8 self-start"
-          onClick={() => {/* Placeholder for upload */}}
-        >
-          <Upload className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   )
@@ -1001,36 +1044,22 @@ export default function ComercioLandingEditor({
                         <SortableItem key={img.id} id={img.id}>
                           <Card className="p-3">
                             <div className="flex items-start gap-3">
-                              {img.url ? (
-                                <img
-                                  src={img.url}
-                                  alt={img.alt}
-                                  className="h-16 w-24 rounded-lg object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-16 w-24 items-center justify-center rounded-lg bg-muted">
-                                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                                </div>
-                              )}
-                              <div className="flex-1 space-y-2">
-                                <Input
+                              <div className="flex-1">
+                                <ImageInput
+                                  label={`Imagen ${idx + 1}`}
                                   value={img.url}
-                                  onChange={e => {
+                                  onChange={url => {
                                     const newImages = [...config.hero.images]
-                                    newImages[idx] = { ...img, url: e.target.value }
+                                    newImages[idx] = { ...img, url }
                                     updateConfig('hero', { images: newImages })
                                   }}
-                                  placeholder="URL de la imagen"
-                                />
-                                <Input
-                                  value={img.alt}
-                                  onChange={e => {
+                                  altValue={img.alt}
+                                  onAltChange={alt => {
                                     const newImages = [...config.hero.images]
-                                    newImages[idx] = { ...img, alt: e.target.value }
+                                    newImages[idx] = { ...img, alt }
                                     updateConfig('hero', { images: newImages })
                                   }}
-                                  placeholder="Texto alternativo"
-                                  className="text-xs"
+                                  folder="negocios/comercio/hero"
                                 />
                               </div>
                               <Button
@@ -1497,62 +1526,50 @@ export default function ComercioLandingEditor({
                         <SortableItem key={product.id} id={product.id}>
                           <Card className="p-4">
                             <div className="space-y-3">
-                              <div className="flex gap-3">
-                                {product.imageUrl ? (
-                                  <img
-                                    src={product.imageUrl}
-                                    alt={product.name}
-                                    className="h-20 w-20 flex-shrink-0 rounded-lg object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
-                                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 space-y-2">
-                                  <div className="flex items-start justify-between">
-                                    <Input
-                                      value={product.name}
-                                      onChange={e => {
-                                        const newProducts = [...config.products.products]
-                                        newProducts[idx] = {
-                                          ...product,
-                                          name: e.target.value,
-                                        }
-                                        updateConfig('products', {
-                                          products: newProducts,
-                                        })
-                                      }}
-                                      placeholder="Nombre del producto"
-                                      className="font-medium"
-                                    />
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="ml-2 text-muted-foreground hover:text-destructive"
-                                      onClick={() =>
-                                        setDeleteDialog({
-                                          type: 'product',
-                                          id: product.id,
-                                        })
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
+                              <div className="space-y-3">
+                                <div className="flex items-start justify-between gap-2">
                                   <Input
-                                    value={product.imageUrl}
+                                    value={product.name}
                                     onChange={e => {
                                       const newProducts = [...config.products.products]
                                       newProducts[idx] = {
                                         ...product,
-                                        imageUrl: e.target.value,
+                                        name: e.target.value,
                                       }
-                                      updateConfig('products', { products: newProducts })
+                                      updateConfig('products', {
+                                        products: newProducts,
+                                      })
                                     }}
-                                    placeholder="URL de imagen"
+                                    placeholder="Nombre del producto"
+                                    className="font-medium"
                                   />
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="ml-2 text-muted-foreground hover:text-destructive shrink-0"
+                                    onClick={() =>
+                                      setDeleteDialog({
+                                        type: 'product',
+                                        id: product.id,
+                                      })
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 </div>
+                                <ImageInput
+                                  label="Foto del producto"
+                                  value={product.imageUrl}
+                                  onChange={url => {
+                                    const newProducts = [...config.products.products]
+                                    newProducts[idx] = {
+                                      ...product,
+                                      imageUrl: url,
+                                    }
+                                    updateConfig('products', { products: newProducts })
+                                  }}
+                                  folder="negocios/comercio/products"
+                                />
                               </div>
                               <Textarea
                                 value={product.description}
@@ -1791,23 +1808,17 @@ export default function ComercioLandingEditor({
                             placeholder="Descripción breve"
                             rows={2}
                           />
-                          <Input
+                          <ImageInput
+                            label="Foto del paso"
                             value={step.photoUrl}
-                            onChange={e => {
+                            onChange={url => {
                               const newSteps = [...config.process.steps]
-                              newSteps[idx] = { ...step, photoUrl: e.target.value }
+                              newSteps[idx] = { ...step, photoUrl: url }
                               updateConfig('process', { steps: newSteps })
                             }}
-                            placeholder="URL de la foto"
+                            folder="negocios/comercio/process"
                           />
                         </div>
-                        {step.photoUrl && (
-                          <img
-                            src={step.photoUrl}
-                            alt={step.title}
-                            className="h-24 w-24 flex-shrink-0 rounded-lg object-cover"
-                          />
-                        )}
                       </div>
                     </Card>
                   ))}
@@ -1957,69 +1968,55 @@ export default function ComercioLandingEditor({
                         <SortableItem key={exp.id} id={exp.id}>
                           <Card className="p-4">
                             <div className="space-y-3">
-                              <div className="flex gap-3">
-                                {exp.imageUrl ? (
-                                  <img
-                                    src={exp.imageUrl}
-                                    alt={exp.title}
-                                    className="h-20 w-28 flex-shrink-0 rounded-lg object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-20 w-28 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
-                                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="flex-1 space-y-2">
-                                  <div className="flex items-start justify-between">
-                                    <Input
-                                      value={exp.title}
-                                      onChange={e => {
-                                        const newExps = [
-                                          ...config.experiences.experiences,
-                                        ]
-                                        newExps[idx] = {
-                                          ...exp,
-                                          title: e.target.value,
-                                        }
-                                        updateConfig('experiences', {
-                                          experiences: newExps,
-                                        })
-                                      }}
-                                      placeholder="Título de la experiencia"
-                                      className="font-medium"
-                                    />
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="ml-2 text-muted-foreground hover:text-destructive"
-                                      onClick={() =>
-                                        setDeleteDialog({
-                                          type: 'experience',
-                                          id: exp.id,
-                                        })
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                  <Input
-                                    value={exp.imageUrl}
-                                    onChange={e => {
-                                      const newExps = [
-                                        ...config.experiences.experiences,
-                                      ]
-                                      newExps[idx] = {
-                                        ...exp,
-                                        imageUrl: e.target.value,
-                                      }
-                                      updateConfig('experiences', {
-                                        experiences: newExps,
-                                      })
-                                    }}
-                                    placeholder="URL de imagen"
-                                  />
-                                </div>
+                              <div className="flex items-start justify-between gap-2">
+                                <Input
+                                  value={exp.title}
+                                  onChange={e => {
+                                    const newExps = [
+                                      ...config.experiences.experiences,
+                                    ]
+                                    newExps[idx] = {
+                                      ...exp,
+                                      title: e.target.value,
+                                    }
+                                    updateConfig('experiences', {
+                                      experiences: newExps,
+                                    })
+                                  }}
+                                  placeholder="Título de la experiencia"
+                                  className="font-medium"
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="ml-2 text-muted-foreground hover:text-destructive shrink-0"
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      type: 'experience',
+                                      id: exp.id,
+                                    })
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
+                              <ImageInput
+                                label="Imagen de la experiencia"
+                                value={exp.imageUrl}
+                                onChange={url => {
+                                  const newExps = [
+                                    ...config.experiences.experiences,
+                                  ]
+                                  newExps[idx] = {
+                                    ...exp,
+                                    imageUrl: url,
+                                  }
+                                  updateConfig('experiences', {
+                                    experiences: newExps,
+                                  })
+                                }}
+                                folder="negocios/comercio/experiences"
+                              />
                               <div className="grid gap-2 md:grid-cols-4">
                                 <Input
                                   value={exp.duration}
@@ -2436,21 +2433,22 @@ export default function ComercioLandingEditor({
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
-                                <Input
+                                <ImageInput
+                                  label="Foto del cliente (opcional)"
                                   value={test.photoUrl || ''}
-                                  onChange={e => {
+                                  onChange={url => {
                                     const newTests = [
                                       ...config.testimonials.testimonials,
                                     ]
                                     newTests[idx] = {
                                       ...test,
-                                      photoUrl: e.target.value,
+                                      photoUrl: url,
                                     }
                                     updateConfig('testimonials', {
                                       testimonials: newTests,
                                     })
                                   }}
-                                  placeholder="URL de foto (opcional)"
+                                  folder="negocios/comercio/testimonials"
                                 />
                               </div>
                             </div>

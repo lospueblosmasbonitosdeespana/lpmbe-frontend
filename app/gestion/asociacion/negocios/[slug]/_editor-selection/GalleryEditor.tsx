@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, EditorGrid, ListItemRow, AddButton, SelectField, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 const ASPECT_OPTIONS = [
@@ -30,7 +31,7 @@ export function GalleryEditor({ value, onChange }: Props) {
       {value.map((g, i) => (
         <ListItemRow key={i} onDelete={() => onChange(value.filter((_, idx) => idx !== i))}>
           <div className="space-y-3">
-            <TextField label="URL imagen" value={g.src} onChange={v => update(i, { src: v })} placeholder="/images/gallery-1.jpg" />
+            <ImageUploadField label="Imagen" value={g.src} onChange={v => update(i, { src: v })} folder="negocios/selection/gallery" />
             <EditorGrid>
               <TextField label="Texto alternativo (alt)" value={g.alt} onChange={v => update(i, { alt: v })} maxLength={120} />
               <SelectField label="Tamaño en el grid" value={g.aspectClass} onChange={v => update(i, { aspectClass: v })} options={ASPECT_OPTIONS} />

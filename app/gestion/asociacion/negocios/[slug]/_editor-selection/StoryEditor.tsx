@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 interface Props {
@@ -14,10 +15,15 @@ export function StoryEditor({ value, onChange }: Props) {
 
   return (
     <div className="space-y-5">
-      <EditorGrid>
-        <TextField label="Eyebrow" hint="Título secundario sobre el título" value={value.eyebrow} onChange={v => update('eyebrow', v)} maxLength={40} />
-        <TextField label="URL imagen retrato" value={value.image} onChange={v => update('image', v)} placeholder="/images/story-portrait.jpg" />
-      </EditorGrid>
+      <TextField label="Eyebrow" hint="Título secundario sobre el título" value={value.eyebrow} onChange={v => update('eyebrow', v)} maxLength={40} />
+
+      <ImageUploadField
+        label="Imagen retrato"
+        hint="Foto vertical que acompaña la historia editorial"
+        value={value.image}
+        onChange={v => update('image', v)}
+        folder="negocios/selection/story"
+      />
 
       <TextField
         label="Título de la historia"

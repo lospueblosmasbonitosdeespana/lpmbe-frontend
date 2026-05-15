@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SwitchField, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 interface Props {
@@ -25,7 +26,7 @@ export function ExperiencesEditor({ value, onChange }: Props) {
               <TextField label="Duración" value={e.duration} onChange={v => update(i, { duration: v })} placeholder="4 horas" maxLength={30} />
               <SwitchField label="Exclusiva" hint="Marca como exclusiva del hotel" checked={e.exclusive} onChange={v => update(i, { exclusive: v })} />
             </EditorGrid>
-            <TextField label="URL imagen" value={e.image} onChange={v => update(i, { image: v })} placeholder="/images/exp-horses.jpg" />
+            <ImageUploadField label="Imagen" value={e.image} onChange={v => update(i, { image: v })} folder="negocios/selection/experiences" />
             <TextareaField label="Descripción" value={e.description} onChange={v => update(i, { description: v })} rows={2} maxLength={250} />
           </div>
         </ListItemRow>

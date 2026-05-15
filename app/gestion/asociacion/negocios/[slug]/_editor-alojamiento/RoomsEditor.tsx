@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SectionLabel } from './AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { LodgingLandingConfig } from './lodging-types'
 
 interface Props {
@@ -57,20 +58,18 @@ export function RoomsEditor({ value, onChange }: Props) {
         {value.items.map(room => (
           <ListItemRow key={room.id} onDelete={() => removeItem(room.id)} canDelete={value.items.length > 1}>
             <div className="space-y-3">
-              <EditorGrid cols={2}>
-                <TextField
-                  label="Nombre de la habitación"
-                  value={room.name}
-                  onChange={v => updateItem(room.id, { name: v })}
-                  placeholder="Habitación Superior…"
-                />
-                <TextField
-                  label="URL de imagen"
-                  value={room.imageUrl}
-                  onChange={v => updateItem(room.id, { imageUrl: v })}
-                  placeholder="/images/room-1.jpg"
-                />
-              </EditorGrid>
+              <TextField
+                label="Nombre de la habitación"
+                value={room.name}
+                onChange={v => updateItem(room.id, { name: v })}
+                placeholder="Habitación Superior…"
+              />
+              <ImageUploadField
+                label="Imagen de la habitación"
+                value={room.imageUrl}
+                onChange={v => updateItem(room.id, { imageUrl: v })}
+                folder="negocios/alojamiento/rooms"
+              />
               <TextareaField
                 label="Descripción"
                 value={room.description}

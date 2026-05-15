@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SectionLabel } from './AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { LodgingLandingConfig } from './lodging-types'
 
 interface Props {
@@ -56,20 +57,18 @@ export function ExperiencesEditor({ value, onChange }: Props) {
         {value.items.map(exp => (
           <ListItemRow key={exp.id} onDelete={() => removeItem(exp.id)} canDelete={value.items.length > 1}>
             <div className="space-y-3">
-              <EditorGrid cols={2}>
-                <TextField
-                  label="Título"
-                  value={exp.title}
-                  onChange={v => updateItem(exp.id, { title: v })}
-                  placeholder="Senderismo por el Cañón…"
-                />
-                <TextField
-                  label="URL de imagen"
-                  value={exp.imageUrl}
-                  onChange={v => updateItem(exp.id, { imageUrl: v })}
-                  placeholder="/images/exp-hiking.jpg"
-                />
-              </EditorGrid>
+              <TextField
+                label="Título"
+                value={exp.title}
+                onChange={v => updateItem(exp.id, { title: v })}
+                placeholder="Senderismo por el Cañón…"
+              />
+              <ImageUploadField
+                label="Imagen de la experiencia"
+                value={exp.imageUrl}
+                onChange={v => updateItem(exp.id, { imageUrl: v })}
+                folder="negocios/alojamiento/experiences"
+              />
               <TextareaField
                 label="Descripción"
                 value={exp.description}

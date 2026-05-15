@@ -61,11 +61,12 @@ export function ChefEditor({
         <div className="grid sm:grid-cols-[180px_1fr] gap-5 items-start">
           <div className="space-y-2">
             <PhotoUploadArea
-              value={''}
-              onChange={() => {}}
+              value={value.photoUrl ?? ''}
+              onChange={(url) => onChange({ ...value, photoUrl: url })}
               aspectClass="aspect-square"
               circular
               label="Foto chef"
+              folder="negocios/restaurante/chef"
             />
             <p className="text-[10px] text-muted-foreground text-center">Imagen cuadrada · recorte circular</p>
           </div>

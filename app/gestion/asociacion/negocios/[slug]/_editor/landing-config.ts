@@ -23,6 +23,7 @@ export interface ChefConfig {
   bio1: string
   bio2: string
   stats: ChefStat[]
+  photoUrl?: string
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

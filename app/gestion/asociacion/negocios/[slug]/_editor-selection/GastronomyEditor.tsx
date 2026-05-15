@@ -1,6 +1,7 @@
 'use client'
 
 import { TextField, TextareaField, EditorGrid, ListItemRow, AddButton, SwitchField, SectionLabel } from '../_editor-alojamiento/AdminField'
+import { ImageUploadField } from '../_editor-shared/ImageUploadField'
 import type { HotelConfig } from '@/app/_components/selection/types'
 
 interface Props {
@@ -28,16 +29,27 @@ export function GastronomyEditor({ value, onChange }: Props) {
       />
 
       <SectionLabel>Chef</SectionLabel>
-      <EditorGrid cols={3}>
+      <EditorGrid>
         <TextField label="Nombre del chef" value={value.chefName} onChange={v => update('chefName', v)} maxLength={60} />
         <TextField label="Cargo / título" value={value.chefTitle} onChange={v => update('chefTitle', v)} maxLength={80} />
-        <TextField label="URL foto del chef" value={value.chefImage} onChange={v => update('chefImage', v)} placeholder="/images/chef.jpg" />
       </EditorGrid>
+      <ImageUploadField
+        label="Foto del chef"
+        hint="Retrato cuadrado o vertical recomendado"
+        value={value.chefImage}
+        onChange={v => update('chefImage', v)}
+        folder="negocios/selection/chef"
+        square
+      />
 
-      <EditorGrid>
-        <TextField label="URL imagen del restaurante" value={value.image} onChange={v => update('image', v)} placeholder="/images/restaurant.jpg" />
-        <SwitchField label="¿Estrella Michelin?" hint="Muestra el sello Michelin sobre la imagen" checked={value.michelinStar} onChange={v => update('michelinStar', v)} />
-      </EditorGrid>
+      <ImageUploadField
+        label="Imagen del restaurante"
+        value={value.image}
+        onChange={v => update('image', v)}
+        folder="negocios/selection/restaurant"
+      />
+
+      <SwitchField label="¿Estrella Michelin?" hint="Muestra el sello Michelin sobre la imagen" checked={value.michelinStar} onChange={v => update('michelinStar', v)} />
 
       <div>
         <SectionLabel>Platos destacados</SectionLabel>
