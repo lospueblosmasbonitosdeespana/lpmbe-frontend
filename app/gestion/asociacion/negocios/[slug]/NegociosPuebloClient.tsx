@@ -162,11 +162,12 @@ export default function NegociosPuebloClient({
   embeddedInShell?: boolean;
 }) {
   const isAsociacion = puebloSlug === 'asociacion-general';
+  const isSelection = puebloSlug === 'selection-activos';
 
   const [negocios, setNegocios] = useState<Negocio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [puebloId, setPuebloId] = useState<number | null>(isAsociacion ? 0 : null);
+  const [puebloId, setPuebloId] = useState<number | null>(isAsociacion || isSelection ? 0 : null);
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -174,7 +175,9 @@ export default function NegociosPuebloClient({
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  const [puebloNombre, setPuebloNombre] = useState<string>(isAsociacion ? 'Asociación' : '');
+  const [puebloNombre, setPuebloNombre] = useState<string>(
+    isAsociacion ? 'Asociación' : isSelection ? 'Club LPMBE Selection' : ''
+  );
   const [puebloLat, setPuebloLat] = useState<number | null>(null);
   const [puebloLng, setPuebloLng] = useState<number | null>(null);
   const [puebloProvincia, setPuebloProvincia] = useState<string>('');
@@ -184,7 +187,7 @@ export default function NegociosPuebloClient({
   const [landingEditorNegocio, setLandingEditorNegocio] = useState<Negocio | null>(null);
 
   useEffect(() => {
-    if (isAsociacion) return;
+    if (isAsociacion || isSelection) return;
     fetch('/api/club/negocios/pueblos')
       .then((r) => r.json())
       .then((pueblos: Array<{ id: number; nombre: string; slug: string; lat?: number; lng?: number; provincia?: string; comunidad?: string }>) => {
@@ -201,9 +204,11 @@ export default function NegociosPuebloClient({
       .catch(() => {});
   }, [isAsociacion, puebloSlug]);
 
-  const apiBase = isAsociacion
-    ? '/api/club/negocios/asociacion'
-    : puebloId != null ? `/api/club/negocios/pueblo/${puebloId}` : null;
+  const apiBase = isSelection
+    ? '/api/club/negocios/selection-activos'
+    : isAsociacion
+      ? '/api/club/negocios/asociacion'
+      : puebloId != null ? `/api/club/negocios/pueblo/${puebloId}` : null;
 
   const load = useCallback(async () => {
     if (!apiBase) return;
@@ -447,7 +452,7 @@ export default function NegociosPuebloClient({
               </p>
             </div>
           )}
-          {!showForm && (
+          {!showForm && !isSelection && (
             <button
               type="button"
               onClick={openCreate}
