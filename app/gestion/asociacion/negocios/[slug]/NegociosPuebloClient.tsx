@@ -31,6 +31,11 @@ const ComercioLandingEditor = dynamic(
   { ssr: false },
 );
 
+const SelectionLandingEditor = dynamic(
+  () => import('./_editor-selection/SelectionLandingEditor'),
+  { ssr: false },
+);
+
 const TIPOS_NEGOCIO = [
   'HOTEL',
   'CASA_RURAL',
@@ -1120,6 +1125,7 @@ export default function NegociosPuebloClient({
           </div>
           {(() => {
             const tipo = landingEditorNegocio.tipo
+            const plan = (landingEditorNegocio.planNegocio ?? 'FREE') as string
             const editorProps = {
               negocioId: landingEditorNegocio.id,
               negocioNombre: landingEditorNegocio.nombre,
@@ -1127,6 +1133,11 @@ export default function NegociosPuebloClient({
               puebloSlug: landingEditorNegocio.pueblo?.slug ?? puebloSlug,
               initialLandingConfig: landingEditorNegocio.landingConfig,
               onSaved: () => load(),
+            }
+            // SELECTION usa su propio editor con secciones exclusivas
+            // (Awards, Gallery, Press, Surroundings, Spa, etc.)
+            if (plan === 'SELECTION') {
+              return <SelectionLandingEditor {...editorProps} />
             }
             if ((['HOTEL', 'CASA_RURAL'] as string[]).includes(tipo)) {
               return <AlojamientoLandingEditor {...editorProps} />
