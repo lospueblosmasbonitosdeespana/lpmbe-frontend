@@ -965,12 +965,25 @@ export default function NegociosPuebloClient({
                   >
                     {n.activo ? 'Desactivar' : 'Activar'}
                   </button>
-                  <button
-                    onClick={() => openEdit(n)}
-                    className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/30"
-                  >
-                    Editar
-                  </button>
+                  {(() => {
+                    const pk = (n.planNegocio ?? 'FREE') as PlanNegocio;
+                    const isPremium = getPlanFeatures(pk).customLandingEnabled;
+                    return isPremium ? (
+                      <button
+                        onClick={() => setLandingEditorNegocio(n)}
+                        className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-colors"
+                      >
+                        Editar página
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => openEdit(n)}
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/30"
+                      >
+                        Editar
+                      </button>
+                    );
+                  })()}
                   <button
                     onClick={() => setQrCartelNegocio(n)}
                     className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-50"
@@ -1033,23 +1046,23 @@ export default function NegociosPuebloClient({
                 <NegocioRrssPanel negocioId={n.id} planNegocio={n.planNegocio ?? 'FREE'} />
               </div>
 
-              {/* Landing personalizada */}
+              {/* Landing personalizada — solo para planes free como incentivo de upgrade */}
               {(() => {
                 const pk = (n.planNegocio ?? 'FREE') as PlanNegocio;
-                const pf = getPlanFeatures(pk);
-                if (!pf.customLandingEnabled) return null;
+                const isFree = pk === 'FREE';
+                if (!isFree) return null;
                 return (
                   <div className="mt-3 border-t border-gray-100 pt-3">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      Página premium
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={() => setLandingEditorNegocio(n)}
-                      className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
-                    >
-                      Abrir editor de página premium
-                    </button>
+                    <div className="flex items-center justify-between rounded-lg border border-dashed border-amber-200 bg-amber-50/50 px-3 py-2">
+                      <p className="text-xs text-amber-700">Hazte Premium y personaliza la página de tu negocio con fotos, horarios, servicios y mucho más.</p>
+                      <button
+                        type="button"
+                        onClick={() => setMejorarPlanNegocio(n)}
+                        className="ml-3 shrink-0 rounded bg-amber-500 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-600"
+                      >
+                        Ver planes
+                      </button>
+                    </div>
                   </div>
                 );
               })()}
@@ -1088,9 +1101,17 @@ export default function NegociosPuebloClient({
             >
               ← Volver a negocios
             </button>
-            <span className="text-sm font-medium text-foreground truncate">
+            <span className="text-sm font-medium text-foreground truncate flex-1">
               {landingEditorNegocio.nombre}
             </span>
+            <button
+              type="button"
+              onClick={() => { setLandingEditorNegocio(null); openEdit(landingEditorNegocio); }}
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
+              title="Editar datos básicos: teléfono, email, ubicación..."
+            >
+              Datos básicos
+            </button>
           </div>
           {(() => {
             const tipo = landingEditorNegocio.tipo
