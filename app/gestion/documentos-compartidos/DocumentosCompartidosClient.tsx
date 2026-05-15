@@ -14,6 +14,7 @@ import {
   isPdfUrl,
   isDestacadoActivo,
 } from '../_lib/documentos';
+import DisenosEventosShared from './DisenosEventosShared';
 
 const ALL_TEMAS = Object.keys(TEMA_ORDENANZA_LABELS) as TemaOrdenanza[];
 const TIPOS_SIN_LOGO: TipoDoc[] = ['PAPELERIA', 'ORDENANZA', 'CARTEL', 'MANUAL_WEB', 'OTRO'];
@@ -578,6 +579,9 @@ export default function DocumentosCompartidosClient() {
           </div>
         </section>
       )}
+
+      {/* ── SECCIÓN DISEÑOS PARA EVENTOS (Noche Romántica, Navidad, Semana Santa) ── */}
+      {!loading && <DisenosEventosShared />}
 
       {/* ── SECCIÓN MANUAL Y AYUDA DE LA WEB ── */}
       {!loading && showDocSections && docsManualWeb.length > 0 && (

@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ImageIcon, Users, FileText, BookOpen } from 'lucide-react';
+import { ImageIcon, Users, FileText, BookOpen, Palette } from 'lucide-react';
 import type { CmsDocumento, CmsDocType } from '@/lib/cms/sello';
 import { DOC_TYPE_LABELS } from '@/lib/cms/sello';
 import BibliotecaAsociacionClient from './BibliotecaAsociacionClient';
+import DisenosEventosClient from './DisenosEventosClient';
 
 const TIPOS: CmsDocType[] = ['ESTATUTOS', 'CARTA_CALIDAD', 'REGLAMENTO', 'MEMORIA', 'OTROS'];
-type TabType = 'cms' | 'biblioteca';
+type TabType = 'cms' | 'biblioteca' | 'disenos-eventos';
 
 export default function DocumentosCmsPage() {
   const router = useRouter();
@@ -237,6 +238,11 @@ export default function DocumentosCmsPage() {
           <BookOpen className="h-4 w-4" />
           Biblioteca compartida con alcaldes
         </button>
+        <button type="button" onClick={() => setActiveTab('disenos-eventos')}
+          className={`flex items-center gap-2 border-b-2 px-5 py-3 text-sm font-medium transition-colors ${activeTab === 'disenos-eventos' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+          <Palette className="h-4 w-4" />
+          Diseños para eventos (Noche Romántica, Navidad…)
+        </button>
       </div>
 
       {/* Tab: CMS PDFs */}
@@ -436,6 +442,9 @@ export default function DocumentosCmsPage() {
 
       {/* Tab: Biblioteca compartida */}
       {activeTab === 'biblioteca' && <BibliotecaAsociacionClient />}
+
+      {/* Tab: Diseños para eventos */}
+      {activeTab === 'disenos-eventos' && <DisenosEventosClient />}
     </main>
   );
 }
