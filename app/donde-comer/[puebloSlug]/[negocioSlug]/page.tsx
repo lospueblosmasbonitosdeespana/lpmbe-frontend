@@ -18,6 +18,7 @@ import {
   esRestaurantePremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
 import { buildRestaurantJsonLd } from "@/app/_lib/seo/restaurant-json-ld";
+import SelectionPremiumDetail from "@/app/_components/selection/SelectionPremiumDetail";
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -75,6 +76,12 @@ export default async function DondeComerDetailPage({ params }: { params: Promise
   const tPremium = await getTranslations("premiumNegocio");
 
   const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
+  const isSelection = recurso.planNegocio === "SELECTION";
+
+  if (isSelection) {
+    return <SelectionPremiumDetail recurso={recurso as any} />;
+  }
+
   const isRestaurantePremium = esRestaurantePremium(recurso.tipo, recurso.planNegocio);
 
   if (isRestaurantePremium) {

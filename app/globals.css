@@ -277,6 +277,86 @@ figure img:not([class*="leaflet-"]),
   background: var(--background);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   Premium "selection" template scope.
+   Luxury dark + gold palette for the highest tier — Relais & Châteaux style.
+   Wraps inside <div data-theme="selection">.
+   ───────────────────────────────────────────────────────────────────────── */
+[data-theme="selection"] {
+  --hotel-charcoal: #1a1a1a;
+  --hotel-stone: #222222;
+  --hotel-gold: #c9a96e;
+  --hotel-gold-light: #d9be8a;
+  --hotel-ivory: #f5f0e8;
+  --hotel-ivory-dim: rgba(245,240,232,0.72);
+  --hotel-ivory-muted: rgba(245,240,232,0.45);
+}
+
+[data-theme="selection"] .eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--hotel-gold);
+  display: block;
+}
+
+[data-theme="selection"] .gold-line {
+  width: 36px;
+  height: 1px;
+  background: var(--hotel-gold);
+  margin-top: 10px;
+  opacity: 0.6;
+}
+
+[data-theme="selection"] .reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+[data-theme="selection"] .reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-theme="selection"] .lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes ken-burns-selection {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.06); }
+}
+[data-theme="selection"] .animate-ken-burns {
+  animation: ken-burns-selection 20s ease-out forwards;
+}
+
+@keyframes fade-in-up-selection {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+[data-theme="selection"] .animate-fade-in-up {
+  animation: fade-in-up-selection 1.2s ease-out 0.3s both;
+}
+
+@keyframes chevron-bounce-selection {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
+}
+[data-theme="selection"] .animate-chevron-bounce {
+  animation: chevron-bounce-selection 2s ease-in-out infinite;
+}
+
+[data-theme="selection"] img {
+  pointer-events: auto;
+}
+
 /* Placeholder de imagen sin fondo blanco */
 .img-placeholder {
   background: var(--background);

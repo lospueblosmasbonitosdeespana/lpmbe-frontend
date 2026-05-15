@@ -16,6 +16,7 @@ import RestaurantePremiumDetail from "@/app/_components/restaurante/RestauranteP
 import AlojamientoPremiumDetail from "@/app/_components/alojamiento/AlojamientoPremiumDetail";
 import ActividadPremiumDetail from "@/app/_components/actividad/ActividadPremiumDetail";
 import ComercioPremiumDetail from "@/app/_components/comercio/ComercioPremiumDetail";
+import SelectionPremiumDetail from "@/app/_components/selection/SelectionPremiumDetail";
 import {
   RESTAURANTE_TRANSLATION_KEYS,
   esRestaurantePremium,
@@ -175,6 +176,12 @@ export default async function NegocioDetailPage({
   const tPremium = await getTranslations("premiumNegocio");
   const planNegocio = (recurso as any).planNegocio;
   const isPremium = planNegocio === "PREMIUM" || planNegocio === "SELECTION";
+  const isSelection = planNegocio === "SELECTION";
+
+  if (isSelection) {
+    return <SelectionPremiumDetail recurso={recurso as any} />;
+  }
+
   const isRestaurantePremium = esRestaurantePremium((recurso as any).tipo, planNegocio);
   const isAlojamientoPremium = esAlojamientoPremium((recurso as any).tipo, planNegocio);
   const isActividadPremium = esActividadPremium((recurso as any).tipo, planNegocio);

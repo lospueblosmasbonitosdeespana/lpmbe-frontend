@@ -19,6 +19,7 @@ import {
   esActividadPremium,
 } from "@/app/_components/restaurante/restaurante-translation-keys";
 import { buildBusinessJsonLd } from "@/app/_lib/seo/business-json-ld";
+import SelectionPremiumDetail from "@/app/_components/selection/SelectionPremiumDetail";
 
 const PREMIUM_TRANSLATION_KEYS = [
   'noPhotos', 'prevImage', 'nextImage', 'goToSlide', 'imprescindible', 'cerradoTemporal',
@@ -76,6 +77,12 @@ export default async function DondeComprarDetailPage({ params }: { params: Promi
   const tPremium = await getTranslations("premiumNegocio");
 
   const isPremium = recurso.planNegocio === "PREMIUM" || recurso.planNegocio === "SELECTION";
+  const isSelection = recurso.planNegocio === "SELECTION";
+
+  if (isSelection) {
+    return <SelectionPremiumDetail recurso={recurso as any} />;
+  }
+
   const isComercioPremium = esComercioPremium(recurso.tipo, recurso.planNegocio);
   const isActividadPremium = esActividadPremium(recurso.tipo, recurso.planNegocio);
 
