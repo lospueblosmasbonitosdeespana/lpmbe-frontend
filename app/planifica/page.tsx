@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Breadcrumbs from "@/app/_components/ui/Breadcrumbs";
 import { Section } from "@/app/components/ui/section";
@@ -78,11 +79,21 @@ function BookmarkIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+/**
+ * Logo oficial de La Noche Romántica (luna creciente con corazón colgante).
+ * Sustituye al antiguo icono "corazón" en tarjetas / hubs públicos donde
+ * representamos el evento.
+ */
 function HeartIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 5a5.5 5.5 0 0 1 9.5 7C19 16.5 12 21 12 21z" />
-    </svg>
+    <Image
+      src="/eventos/noche-romantica.png"
+      alt="La Noche Romántica"
+      width={120}
+      height={170}
+      className={`object-contain ${className ?? ""}`}
+      priority={false}
+    />
   );
 }
 function TreeIcon({ className }: { className?: string }) {

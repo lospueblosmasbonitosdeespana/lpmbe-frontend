@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import { CAMPANA_NOCHE_ROMANTICA } from '../../_components/gestion-campana-themes';
 
@@ -253,8 +254,15 @@ export default function GestionNocheRomanticaPage() {
         <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-fuchsia-300/25 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -bottom-14 -left-10 h-40 w-40 rounded-full bg-rose-200/20 blur-3xl" aria-hidden />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-3xl shadow-inner ring-1 ring-white/30">
-            ❤️
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/95 shadow-inner ring-1 ring-white/40">
+            <Image
+              src="/eventos/noche-romantica.png"
+              alt="La Noche Romántica"
+              width={120}
+              height={170}
+              className="h-11 w-auto object-contain"
+              priority={false}
+            />
           </span>
           <div>
             <h1 className="text-2xl font-bold tracking-tight drop-shadow-sm sm:text-3xl">La Noche Romántica</h1>

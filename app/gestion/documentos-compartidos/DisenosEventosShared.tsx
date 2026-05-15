@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { NocheRomanticaIcon } from '@/app/_components/eventos/EventoIcon';
 
 type EventoTipo = 'NOCHE_ROMANTICA' | 'NAVIDAD' | 'SEMANA_SANTA';
 
@@ -190,9 +191,15 @@ export default function DisenosEventosShared() {
                 onClick={() => setOpenSections((prev) => ({ ...prev, [sectionKey]: !isOpen }))}
                 className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-white/60"
               >
-                <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${g.meta.gradient} text-white text-lg shadow-sm`}>
-                  {g.meta.emoji}
-                </div>
+                {g.tipo === 'NOCHE_ROMANTICA' ? (
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-rose-200/60 shadow-sm">
+                    <NocheRomanticaIcon size={36} />
+                  </div>
+                ) : (
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${g.meta.gradient} text-white text-lg shadow-sm`}>
+                    {g.meta.emoji}
+                  </div>
+                )}
                 <div className="flex-1">
                   <h3 className="text-base font-bold text-foreground">{g.meta.label}</h3>
                   <p className="text-xs text-muted-foreground">

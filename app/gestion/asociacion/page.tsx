@@ -115,7 +115,7 @@ const SECCIONES: Seccion[] = [
     subtitle: 'Eventos de la red con calendario propio.',
     tone: 'festive',
     items: [
-      { href: '/gestion/asociacion/noche-romantica', title: 'La Noche Romántica', description: 'Configuración del evento y pueblos participantes', iconKey: 'heart',     tone: 'romance' },
+      { href: '/gestion/asociacion/noche-romantica', title: 'La Noche Romántica', description: 'Configuración del evento y pueblos participantes', iconKey: 'nocheRomantica', tone: 'romance' },
       { href: '/gestion/asociacion/semana-santa',    title: 'Semana Santa',       description: 'Año, días y pueblos participantes',                iconKey: 'cross',     tone: 'stone'   },
       { href: '/gestion/asociacion/navidad',         title: 'Navidad',            description: 'Mercadillos, belenes, cabalgatas y eventos',       iconKey: 'pineTree',  tone: 'holiday' },
     ],

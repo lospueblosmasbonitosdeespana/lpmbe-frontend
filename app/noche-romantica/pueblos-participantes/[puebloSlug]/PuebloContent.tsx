@@ -91,20 +91,20 @@ export default async function PuebloContent({ data, nrConfig, anio, showArchived
   const heroImage = data.cartelUrl || data.pueblo.foto_destacada;
   const hasContent = data.actividades.length > 0 || Object.keys(negociosByType).length > 0;
 
+  const eventoLogoSrc = nrConfig.logoUrl?.trim() || '/eventos/noche-romantica.png';
+
   return (
     <>
-      {nrConfig.logoUrl && (
-        <div className="flex justify-center py-6 bg-white dark:bg-neutral-900">
-          <Link href="/noche-romantica">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={nrConfig.logoUrl}
-              alt={t('title')}
-              className="h-20 md:h-24 w-auto object-contain"
-            />
-          </Link>
-        </div>
-      )}
+      <div className="flex justify-center py-6 bg-white dark:bg-neutral-900">
+        <Link href="/noche-romantica">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={eventoLogoSrc}
+            alt={t('title')}
+            className="h-20 md:h-24 w-auto object-contain"
+          />
+        </Link>
+      </div>
 
       {heroImage ? (
         <section className="relative w-full bg-gray-100">
@@ -188,18 +188,12 @@ export default async function PuebloContent({ data, nrConfig, anio, showArchived
 
         {!hasContent && (
           <div className="mx-auto max-w-lg rounded-2xl border border-rose-200 bg-rose-50/70 px-8 py-10 text-center shadow-sm">
-            {nrConfig?.logoUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={nrConfig.logoUrl}
-                alt={t('title')}
-                className="mx-auto mb-6 h-24 w-auto object-contain"
-              />
-            ) : (
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-3xl">
-                💕
-              </div>
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={eventoLogoSrc}
+              alt={t('title')}
+              className="mx-auto mb-6 h-24 w-auto object-contain"
+            />
             <h3 className="mb-3 font-serif text-2xl font-bold text-rose-800">
               {t('comingSoonExclaim')}
             </h3>

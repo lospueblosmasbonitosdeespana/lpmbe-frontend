@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 
 /**
  * Tarjetas modernas tipo "Club de Amigos" para los hubs principales:
@@ -296,6 +297,16 @@ const ICONS = {
   inbox: <I><path d="M3 13l3-8h12l3 8M3 13v6a2 2 0 002 2h14a2 2 0 002-2v-6" /><path d="M3 13h5l1 2h6l1-2h5" /></I>,
   // ── Campañas estacionales (compartidas asociación + pueblos) ───────
   heart: <I><path d="M12 21s-7-4.5-9.3-9C1 9 3 5 6.5 5c1.9 0 3.4.9 4.5 2.4C12.1 5.9 13.6 5 15.5 5 19 5 21 9 19.3 12 17 16.5 12 21 12 21z" /></I>,
+  /** Logo oficial de La Noche Romántica (luna creciente con corazón colgante) */
+  nocheRomantica: (
+    <Image
+      src="/eventos/noche-romantica.png"
+      alt="La Noche Romántica"
+      width={120}
+      height={170}
+      className="h-9 w-auto object-contain"
+    />
+  ),
   cross: <I><path d="M10 3h4v6h6v4h-6v8h-4v-8H4V9h6z" /></I>,
   pineTree: <I><path d="M12 3l4 5h-2l3 4h-2l3 4H5l3-4H6l3-4H7z" /><path d="M11 16h2v4h-2z" /></I>,
   // ── Pueblo: identidad, comunicación, mapa ──────────────────────────
@@ -350,11 +361,21 @@ export function GestionHubModernCard({
   const cta = ctaLabel ?? (external ? 'Abrir' : 'Acceder');
   const icon = ICONS[iconKey];
 
+  // El logo oficial de Noche Romántica va sobre fondo blanco (no gradient)
+  // para preservar sus colores reales (luna dorada, corazón rojo).
+  const isNocheRomantica = iconKey === 'nocheRomantica';
+  const iconWrapperCls = isNocheRomantica
+    ? `flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white ring-1 ring-rose-200/60 shadow-sm`
+    : `flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${t.iconBg} shadow-md ${t.iconShadow} transition-transform duration-200 group-hover:scale-105`;
+  const iconWrapperDisabledCls = isNocheRomantica
+    ? `flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/70 ring-1 ring-rose-200/40 opacity-60`
+    : `flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${t.iconBg} opacity-50 shadow-md ${t.iconShadow}`;
+
   if (disabled) {
     return (
       <article className="relative flex min-h-[180px] flex-col overflow-hidden rounded-2xl border border-dashed border-border/80 bg-muted/30 p-5 opacity-70">
         <div className="flex items-start gap-3">
-          <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${t.iconBg} opacity-50 shadow-md ${t.iconShadow}`}>
+          <div className={iconWrapperDisabledCls}>
             {icon}
           </div>
           <div className="min-w-0 flex-1">
@@ -375,9 +396,7 @@ export function GestionHubModernCard({
       />
       <div className="relative flex flex-1 flex-col">
         <div className="flex items-start gap-3">
-          <div
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${t.iconBg} shadow-md ${t.iconShadow} transition-transform duration-200 group-hover:scale-105`}
-          >
+          <div className={iconWrapperCls}>
             {icon}
           </div>
           <div className="min-w-0 flex-1">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import R2ImageUploader from '@/app/components/R2ImageUploader';
 import MapLocationPicker from '@/app/components/MapLocationPicker';
 import { CAMPANA_NOCHE_ROMANTICA } from '../../../_components/gestion-campana-themes';
@@ -460,7 +461,13 @@ export default function GestionPuebloNocheRomanticaPage() {
       >
         {!campaignActive ? (
           <div className="rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-6 py-8 text-center shadow-sm">
-            <p className="text-2xl">❤️</p>
+            <Image
+              src="/eventos/noche-romantica.png"
+              alt="La Noche Romántica"
+              width={120}
+              height={170}
+              className="mx-auto h-16 w-auto object-contain"
+            />
             <h2 className="mt-3 text-lg font-semibold text-pink-900">
               La campaña de La Noche Romántica ha finalizado
             </h2>
@@ -571,7 +578,13 @@ export default function GestionPuebloNocheRomanticaPage() {
       {!campaignActive && (
         <div className="mb-6 rounded-xl border border-pink-200/80 bg-gradient-to-br from-pink-50 via-fuchsia-50/80 to-violet-50/60 px-5 py-4 shadow-sm">
           <div className="flex items-start gap-3">
-            <span className="text-xl">❤️</span>
+            <Image
+              src="/eventos/noche-romantica.png"
+              alt="La Noche Romántica"
+              width={120}
+              height={170}
+              className="h-9 w-auto shrink-0 object-contain"
+            />
             <div>
               <h3 className="font-semibold text-pink-900">La campaña de La Noche Romántica ha finalizado</h3>
               <p className="mt-1 text-sm text-pink-800/90">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { EventoIcon, NocheRomanticaIcon } from '@/app/_components/eventos/EventoIcon';
 
 type EventoTipo = 'NOCHE_ROMANTICA' | 'NAVIDAD' | 'SEMANA_SANTA';
 
@@ -330,10 +331,10 @@ export default function DisenosEventosClient() {
               const count = docs.filter((d) => d.eventoTipo === ev.tipo).length;
               if (count === 0) return null;
               return (
-                <div key={ev.tipo} className="rounded-xl bg-white/10 backdrop-blur-sm px-4 py-2 ring-1 ring-white/15">
-                  <span className="mr-1.5">{ev.emoji}</span>
+                <div key={ev.tipo} className="inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm px-4 py-2 ring-1 ring-white/15">
+                  <EventoIcon tipo={ev.tipo} emoji={ev.emoji} size={ev.tipo === 'NOCHE_ROMANTICA' ? 28 : 18} />
                   <span className="text-lg font-bold">{count}</span>
-                  <span className="ml-1.5 text-xs text-white/75">{ev.label}</span>
+                  <span className="text-xs text-white/75">{ev.label}</span>
                 </div>
               );
             })}
@@ -370,7 +371,7 @@ export default function DisenosEventosClient() {
                           : 'border-purple-200 bg-white text-purple-800 hover:border-purple-400'
                       }`}
                     >
-                      <span>{ev.emoji}</span>
+                      <EventoIcon tipo={ev.tipo} emoji={ev.emoji} size={ev.tipo === 'NOCHE_ROMANTICA' ? 22 : 16} />
                       {ev.label}
                     </button>
                   );
@@ -482,9 +483,9 @@ export default function DisenosEventosClient() {
                 key={ev.tipo}
                 type="button"
                 onClick={() => setFilterTipo(ev.tipo)}
-                className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition ${filterTipo === ev.tipo ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${filterTipo === ev.tipo ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
               >
-                <span>{ev.emoji}</span>
+                <EventoIcon tipo={ev.tipo} emoji={ev.emoji} size={ev.tipo === 'NOCHE_ROMANTICA' ? 18 : 14} />
                 {ev.label}
               </button>
             ))}
@@ -542,7 +543,11 @@ export default function DisenosEventosClient() {
             return (
               <section key={`${g.tipo}-${g.anio}`} className="overflow-hidden rounded-2xl ring-1 ring-purple-100 bg-card shadow-sm">
                 <div className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-purple-50 to-fuchsia-50 border-b border-purple-100">
-                  <span className="text-2xl">{meta.emoji}</span>
+                  {g.tipo === 'NOCHE_ROMANTICA' ? (
+                    <NocheRomanticaIcon size={42} />
+                  ) : (
+                    <span className="text-2xl">{meta.emoji}</span>
+                  )}
                   <div className="flex-1">
                     <h3 className="text-base font-bold text-purple-900">{meta.label}</h3>
                     <p className="text-xs text-purple-700/70">Año {g.anio}</p>

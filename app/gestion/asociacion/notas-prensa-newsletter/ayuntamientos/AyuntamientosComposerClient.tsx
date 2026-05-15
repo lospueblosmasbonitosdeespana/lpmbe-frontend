@@ -6,6 +6,7 @@ import type { ContentBlock } from '@/app/_components/content-builder/ContentBloc
 import DraftsAndScheduler, {
   type DraftRow,
 } from '../_components/DraftsAndScheduler';
+import { NocheRomanticaIcon } from '@/app/_components/eventos/EventoIcon';
 
 type EventoTipo = 'NOCHE_ROMANTICA' | 'NAVIDAD' | 'SEMANA_SANTA' | '';
 
@@ -1054,7 +1055,11 @@ export default function AyuntamientosComposerClient() {
                       : 'border-purple-200 bg-white text-purple-800 hover:border-purple-400',
                   ].join(' ')}
                 >
-                  <span>{ev.emoji}</span>
+                  {ev.tipo === 'NOCHE_ROMANTICA' ? (
+                    <NocheRomanticaIcon size={22} />
+                  ) : (
+                    <span>{ev.emoji}</span>
+                  )}
                   {ev.label}
                 </button>
               );

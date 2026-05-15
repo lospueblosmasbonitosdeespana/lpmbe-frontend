@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { GestionPuebloSubpageShell } from '../../../_components/GestionPuebloSubpageShell';
 import { HeroIconHeart } from '../../../_components/gestion-pueblo-hero-icons';
@@ -129,8 +130,14 @@ export default function GestionPuebloNocheRomanticaAnterioresPage() {
                   loading="lazy"
                 />
               ) : (
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-2xl">
-                  ❤️
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-pink-50 p-2">
+                  <Image
+                    src="/eventos/noche-romantica.png"
+                    alt="La Noche Romántica"
+                    width={120}
+                    height={170}
+                    className="h-full w-auto object-contain"
+                  />
                 </div>
               )}
               <div className="min-w-0 flex-1">

@@ -176,7 +176,7 @@ export default async function GestionPuebloPage({
       subtitle: 'Participación en iniciativas de la red.',
       tone: 'festive',
       items: [
-        { href: `${baseUrl}/noche-romantica`, title: 'La Noche Romántica', description: 'Gestiona tu participación en La Noche Romántica',  iconKey: 'heart',    tone: 'romance' },
+        { href: `${baseUrl}/noche-romantica`, title: 'La Noche Romántica', description: 'Gestiona tu participación en La Noche Romántica',  iconKey: 'nocheRomantica', tone: 'romance' },
         { href: `${baseUrl}/semana-santa`,    title: 'Semana Santa',       description: 'Cartel, agenda y días de procesiones del pueblo',  iconKey: 'cross',    tone: 'stone'   },
         { href: `${baseUrl}/navidad`,         title: 'Navidad',            description: 'Mercadillos, belenes, cabalgatas y eventos',       iconKey: 'pineTree', tone: 'holiday' },
       ],

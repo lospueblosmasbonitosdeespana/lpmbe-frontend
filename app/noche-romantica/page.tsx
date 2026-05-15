@@ -160,22 +160,25 @@ export default async function NocheRomanticaPage() {
       : config.videoUrl
     : null;
 
+  // Logo del evento: usa el configurable desde admin si existe, y si no
+  // recurre al logo oficial estático que vive en /public/eventos/.
+  const eventoLogoSrc = config.logoUrl?.trim() || '/eventos/noche-romantica.png';
+
   return (
     <main>
       {/* Logo */}
-      {config.logoUrl && (
-        <div className="flex justify-center py-8 bg-white dark:bg-neutral-900 min-h-[128px] md:min-h-[176px]">
-          <img
-            src={config.logoUrl}
-            alt={config.titulo}
-            width={320}
-            height={128}
-            fetchPriority="high"
-            decoding="sync"
-            className="h-24 md:h-32 w-auto object-contain"
-          />
-        </div>
-      )}
+      <div className="flex justify-center py-8 bg-white dark:bg-neutral-900 min-h-[128px] md:min-h-[176px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={eventoLogoSrc}
+          alt={config.titulo || 'La Noche Romántica'}
+          width={320}
+          height={128}
+          fetchPriority="high"
+          decoding="sync"
+          className="h-24 md:h-32 w-auto object-contain"
+        />
+      </div>
 
       {/* Hero */}
       {config.heroImageUrl && (

@@ -103,13 +103,12 @@ export default async function PueblosParticipantesPage() {
     <main className="min-h-screen">
       {/* Header */}
       <section className="bg-gradient-to-b from-rose-50 to-white py-12 text-center dark:from-rose-950/40 dark:to-neutral-900">
-        {config?.logoUrl && (
-          <img
-            src={config.logoUrl}
-            alt={t('title')}
-            className="mx-auto mb-6 h-40 md:h-48 object-contain"
-          />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={config?.logoUrl?.trim() || '/eventos/noche-romantica.png'}
+          alt={t('title')}
+          className="mx-auto mb-6 h-40 md:h-48 object-contain"
+        />
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
           {t('pueblosParticipantes')}
         </h1>
