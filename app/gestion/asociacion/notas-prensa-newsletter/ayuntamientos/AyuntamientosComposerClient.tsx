@@ -7,6 +7,17 @@ import DraftsAndScheduler, {
   type DraftRow,
 } from '../_components/DraftsAndScheduler';
 
+type EventoTipo = 'NOCHE_ROMANTICA' | 'NAVIDAD' | 'SEMANA_SANTA' | '';
+
+const EVENTOS: Array<{ tipo: EventoTipo; label: string; emoji: string; color: string }> = [
+  { tipo: 'NOCHE_ROMANTICA', label: 'Noche Romántica', emoji: '🌹', color: 'rose' },
+  { tipo: 'NAVIDAD', label: 'Navidad', emoji: '🎄', color: 'green' },
+  { tipo: 'SEMANA_SANTA', label: 'Semana Santa', emoji: '✝️', color: 'amber' },
+];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR + 1].sort((a, b) => b - a);
+
 type Attachment = { name: string; url: string; contentType: string; size: number };
 
 const ContentBlockBuilder = dynamic(
@@ -199,6 +210,12 @@ export default function AyuntamientosComposerClient() {
   const [includeAlcaldesUser, setIncludeAlcaldesUser] = useState(true);
   const [includeInstitutional, setIncludeInstitutional] = useState(true);
 
+  // Filtro por evento
+  const [eventoTipo, setEventoTipo] = useState<EventoTipo>('');
+  const [eventoAnio, setEventoAnio] = useState<number>(CURRENT_YEAR);
+  const [eventoData, setEventoData] = useState<{ pueblos: Array<{ slug: string; nombre: string }>; count: number } | null>(null);
+  const [loadingEvento, setLoadingEvento] = useState(false);
+
   const [testEmail, setTestEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -250,6 +267,28 @@ export default function AyuntamientosComposerClient() {
     }
     return list;
   }, [pdfUrl, attachments]);
+
+  const loadEventoPueblos = useCallback(async (tipo: EventoTipo, anio: number) => {
+    if (!tipo) { setEventoData(null); return; }
+    setLoadingEvento(true);
+    try {
+      const res = await fetch(
+        `/api/admin/newsletter/eventos-pueblos?tipo=${tipo}&anio=${anio}`,
+        { cache: 'no-store' },
+      );
+      const data = await res.json().catch(() => null);
+      if (res.ok) setEventoData(data);
+      else setEventoData(null);
+    } catch {
+      setEventoData(null);
+    } finally {
+      setLoadingEvento(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEventoPueblos(eventoTipo, eventoAnio);
+  }, [eventoTipo, eventoAnio, loadEventoPueblos]);
 
   const loadCampaigns = useCallback(async () => {
     setLoadingCampaigns(true);
@@ -323,8 +362,9 @@ export default function AyuntamientosComposerClient() {
       roles: Array.from(selectedRoles),
       includeAlcaldesUser,
       includeInstitutional,
+      ...(eventoTipo ? { eventoTipo, eventoAnio } : {}),
     }),
-    [selectedRegions, selectedCcaa, selectedProvincias, geoFilterMode, selectedRoles, includeAlcaldesUser, includeInstitutional],
+    [selectedRegions, selectedCcaa, selectedProvincias, geoFilterMode, selectedRoles, includeAlcaldesUser, includeInstitutional, eventoTipo, eventoAnio],
   );
 
   const getSnapshot = useCallback(
@@ -360,6 +400,8 @@ export default function AyuntamientosComposerClient() {
       setIncludeAlcaldesUser(f.includeAlcaldesUser);
     if (typeof f.includeInstitutional === 'boolean')
       setIncludeInstitutional(f.includeInstitutional);
+    setEventoTipo((f.eventoTipo as EventoTipo) || '');
+    setEventoAnio(typeof f.eventoAnio === 'number' ? f.eventoAnio : CURRENT_YEAR);
 
     const incomingAttachments = Array.isArray(draft.attachmentUrls)
       ? draft.attachmentUrls
@@ -644,7 +686,10 @@ export default function AyuntamientosComposerClient() {
     } else if (geoFilterMode === 'provincia' && selectedProvincias.size > 0) {
       geoDesc = `provincias: ${Array.from(selectedProvincias).join(', ')}`;
     }
-    const confirmMsg = `¿Enviar a ${geoDesc}?`;
+    const eventoLabel = eventoTipo
+      ? ` · Filtrado por evento: ${EVENTOS.find((e) => e.tipo === eventoTipo)?.label ?? eventoTipo} ${eventoAnio}${eventoData ? ` (${eventoData.count} pueblos)` : ''}`
+      : '';
+    const confirmMsg = `¿Enviar a ${geoDesc}${eventoLabel}?`;
     if (!window.confirm(confirmMsg)) return;
 
     setSending(true);
@@ -974,6 +1019,93 @@ export default function AyuntamientosComposerClient() {
           Se envía a la unión de <strong>alcaldes usuarios</strong> y{' '}
           <strong>contactos institucionales</strong> con los filtros activos. Sin filtros, entran todos.
         </p>
+
+        {/* Filtro por evento */}
+        <div className="mt-4 rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-fuchsia-50 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🎉</span>
+            <h3 className="text-sm font-semibold text-purple-900">Filtro por evento (opcional)</h3>
+            {eventoTipo && (
+              <button
+                type="button"
+                onClick={() => { setEventoTipo(''); setEventoData(null); }}
+                className="ml-auto text-xs text-purple-600 underline hover:text-purple-800"
+              >
+                Quitar filtro de evento
+              </button>
+            )}
+          </div>
+          <p className="text-[11px] text-purple-800">
+            Si seleccionas un evento, el envío se limitará únicamente a los pueblos apuntados a ese evento en el año indicado.
+            Compatible con los filtros geográficos y de cargos.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {EVENTOS.map((ev) => {
+              const active = eventoTipo === ev.tipo;
+              return (
+                <button
+                  key={ev.tipo}
+                  type="button"
+                  onClick={() => setEventoTipo(active ? '' : ev.tipo)}
+                  className={[
+                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition',
+                    active
+                      ? 'border-purple-500 bg-purple-600 text-white shadow-sm'
+                      : 'border-purple-200 bg-white text-purple-800 hover:border-purple-400',
+                  ].join(' ')}
+                >
+                  <span>{ev.emoji}</span>
+                  {ev.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {eventoTipo && (
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <label className="flex items-center gap-2 text-sm text-purple-900">
+                <span>Año:</span>
+                <select
+                  value={eventoAnio}
+                  onChange={(e) => setEventoAnio(Number(e.target.value))}
+                  className="rounded-md border border-purple-200 bg-white px-2 py-1 text-sm text-purple-900 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                >
+                  {YEAR_OPTIONS.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </label>
+
+              {loadingEvento ? (
+                <span className="text-xs text-purple-600 animate-pulse">Cargando pueblos…</span>
+              ) : eventoData ? (
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-800 ring-1 ring-purple-200">
+                    {eventoData.count} pueblo{eventoData.count !== 1 ? 's' : ''} en {EVENTOS.find((e) => e.tipo === eventoTipo)?.label} {eventoAnio}
+                  </span>
+                  {eventoData.count === 0 && (
+                    <span className="text-xs text-amber-700 font-medium">⚠ Sin pueblos registrados para este año</span>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          )}
+
+          {eventoTipo && eventoData && eventoData.pueblos.length > 0 && (
+            <details className="mt-1">
+              <summary className="cursor-pointer text-xs text-purple-700 underline hover:text-purple-900 w-fit">
+                Ver lista de pueblos ({eventoData.count})
+              </summary>
+              <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-purple-200 bg-white p-2">
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-purple-900 sm:grid-cols-3">
+                  {eventoData.pueblos.map((p) => (
+                    <li key={p.slug} className="truncate">{p.nombre}</li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          )}
+        </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border border-border bg-background p-4">
