@@ -194,6 +194,7 @@ function MapComponent({ coordinates, businessName, address }: { coordinates: [nu
   const [TileLayer, setTileLayer] = useState<any>(null)
   const [Marker, setMarker] = useState<any>(null)
   const [Popup, setPopup] = useState<any>(null)
+  const [negocioIcon, setNegocioIcon] = useState<any>(undefined)
 
   useEffect(() => {
     import('react-leaflet').then(mod => {
@@ -201,6 +202,11 @@ function MapComponent({ coordinates, businessName, address }: { coordinates: [nu
       setTileLayer(() => mod.TileLayer)
       setMarker(() => mod.Marker)
       setPopup(() => mod.Popup)
+    })
+    import('leaflet').then(L => {
+      import('@/lib/leaflet-div-icons').then(({ createNegocioDivIcon }) => {
+        setNegocioIcon(createNegocioDivIcon(L))
+      })
     })
   }, [])
 
@@ -228,7 +234,7 @@ function MapComponent({ coordinates, businessName, address }: { coordinates: [nu
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Marker position={coordinates}>
+      <Marker position={coordinates} icon={negocioIcon}>
         <Popup>
           <strong>{businessName}</strong>
           <br />

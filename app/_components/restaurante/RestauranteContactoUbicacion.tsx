@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { Card } from '@/app/components/ui/card';
@@ -51,6 +51,15 @@ export default function RestauranteContactoUbicacion({
 }: Props) {
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   const mapRef = useRef<any>(null);
+  const [markerIcon, setMarkerIcon] = useState<any>(undefined);
+
+  useEffect(() => {
+    import('leaflet').then((L) => {
+      import('@/lib/leaflet-div-icons').then(({ createNegocioDivIcon }) => {
+        setMarkerIcon(createNegocioDivIcon(L));
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -126,7 +135,7 @@ export default function RestauranteContactoUbicacion({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               />
-              <LeafletMarker position={[lat, lng]} />
+              {markerIcon && <LeafletMarker position={[lat, lng]} icon={markerIcon} />}
             </MapContainer>
           </div>
         </div>
