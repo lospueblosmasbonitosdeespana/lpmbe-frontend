@@ -1,5 +1,8 @@
+'use client';
+
 import { Button } from '@/app/components/ui/button';
 import { Phone, MessageCircle, CalendarCheck } from 'lucide-react';
+import ReservaButton from '@/app/_components/reservas/ReservaButton';
 
 interface Props {
   eyebrow: string;
@@ -11,6 +14,10 @@ interface Props {
   bookingUrl?: string | null;
   telefono?: string | null;
   whatsapp?: string | null;
+  /** Datos del negocio para el modal de reserva integrado. Si están presentes,
+   * se muestra el botón principal "Reservar mesa" que abre el modal LPMBE. */
+  negocioId?: number | null;
+  negocioNombre?: string | null;
 }
 
 function whatsappLink(numero: string) {
@@ -28,8 +35,11 @@ export default function RestauranteReservaBanner({
   bookingUrl,
   telefono,
   whatsapp,
+  negocioId,
+  negocioNombre,
 }: Props) {
-  if (!bookingUrl && !telefono && !whatsapp) return null;
+  const usarModal = !!(negocioId && negocioNombre);
+  if (!usarModal && !bookingUrl && !telefono && !whatsapp) return null;
 
   return (
     <section className="py-16 md:py-24 bg-forest">
@@ -40,16 +50,30 @@ export default function RestauranteReservaBanner({
         <h2 className="font-serif text-3xl md:text-5xl text-white text-balance mb-10">{title}</h2>
 
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {bookingUrl && (
-            <Button
-              asChild
-              className="rounded-lg py-3 px-8 bg-gold text-foreground hover:bg-gold-dark font-semibold text-base gap-2 h-auto"
-            >
-              <a href={bookingUrl} target="_blank" rel="noopener noreferrer">
-                <CalendarCheck className="size-4" />
-                {reservarOnlineLabel}
-              </a>
-            </Button>
+          {/* Botón principal — usa el modal LPMBE si tenemos los datos */}
+          {usarModal ? (
+            <ReservaButton
+              negocioId={negocioId!}
+              negocioNombre={negocioNombre!}
+              tipoNegocio="RESTAURANTE"
+              variant="gold"
+              size="lg"
+              label={reservarOnlineLabel}
+              className="bg-gold text-foreground hover:bg-gold-dark"
+              icon={<CalendarCheck className="size-4" />}
+            />
+          ) : (
+            bookingUrl && (
+              <Button
+                asChild
+                className="rounded-lg py-3 px-8 bg-gold text-foreground hover:bg-gold-dark font-semibold text-base gap-2 h-auto"
+              >
+                <a href={bookingUrl} target="_blank" rel="noopener noreferrer">
+                  <CalendarCheck className="size-4" />
+                  {reservarOnlineLabel}
+                </a>
+              </Button>
+            )
           )}
 
           {telefono && (

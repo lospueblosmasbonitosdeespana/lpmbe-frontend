@@ -13,6 +13,7 @@ import {
   Package,
   Bookmark,
   ShoppingBag,
+  CalendarCheck,
 } from 'lucide-react';
 import { LogoutButton } from './components/LogoutButton';
 import ThemeSelector from '@/app/cuenta/ThemeSelector';
@@ -136,6 +137,12 @@ export default async function MiCuentaPage() {
       icon: MapPin,
     },
     {
+      href: '/mi-cuenta/reservas',
+      title: t('myReservations'),
+      description: t('myReservationsDesc'),
+      icon: CalendarCheck,
+    },
+    {
       href: '/mi-cuenta/notificaciones',
       title: t('notifPrefs'),
       description: t('notifPrefsDesc'),
@@ -171,21 +178,21 @@ export default async function MiCuentaPage() {
     {
       title: t('sectionMyJourney'),
       description: t('sectionMyJourneyDesc'),
-      items: [links[0], links[1], links[2]],
+      items: [links[0], links[1], links[2], links[3]],
       includeNotifCenter: false,
       tone: 'emerald',
     },
     {
       title: t('sectionSettings'),
       description: t('sectionSettingsDesc'),
-      items: [links[3], links[4]],
+      items: [links[4], links[5]],
       includeNotifCenter: true,
       tone: 'violet',
     },
     {
       title: t('sectionShop'),
       description: t('sectionShopDesc'),
-      items: [links[5], links[6]],
+      items: [links[6], links[7]],
       includeNotifCenter: false,
       tone: 'sky',
     },
@@ -258,7 +265,7 @@ export default async function MiCuentaPage() {
                       <div className="flex shrink-0 flex-col items-center gap-2 sm:hidden">
                         <ClubLogoViewer
                           src={clubLogoHeaderSrc}
-                          alt={links[7].title}
+                          alt={links[8].title}
                           transform={clubLogoHeaderTransform}
                         />
                         {clubActivo ? (
@@ -294,7 +301,7 @@ export default async function MiCuentaPage() {
                     <div className="hidden shrink-0 flex-col items-center gap-2 sm:flex">
                       <ClubLogoViewer
                         src={clubLogoHeaderSrc}
-                        alt={links[7].title}
+                        alt={links[8].title}
                         transform={clubLogoHeaderTransform}
                       />
                       {clubActivo ? (
@@ -308,7 +315,7 @@ export default async function MiCuentaPage() {
                 </section>
 
                 <Link
-                  href={links[7].href}
+                  href={links[8].href}
                   className="group relative block overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-card to-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg dark:border-amber-900/60 dark:from-amber-950/40 dark:via-card dark:to-card sm:p-7"
                 >
                   <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-amber-200/20 blur-2xl dark:bg-amber-900/30" />
@@ -329,7 +336,7 @@ export default async function MiCuentaPage() {
                               getClubLogoOverride(miCuentaAssets, 'header') ??
                               '/club-logo-oficial-v4.png'
                             }
-                            alt={links[7].title}
+                            alt={links[8].title}
                             fill
                             sizes="132px"
                             className="object-contain"
@@ -345,10 +352,10 @@ export default async function MiCuentaPage() {
                         {t('sectionMyClub')}
                       </span>
                       <h2 className="mt-2 text-2xl font-bold text-foreground">
-                        {links[7].title}
+                        {links[8].title}
                       </h2>
                       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                        {links[7].description}
+                        {links[8].description}
                       </p>
                     </div>
                     <span className="text-xl font-semibold text-amber-700 transition-transform group-hover:translate-x-1 dark:text-amber-300">

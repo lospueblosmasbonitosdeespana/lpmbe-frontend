@@ -1016,7 +1016,9 @@
     "sectionSettings": "Settings",
     "sectionSettingsDesc": "Profile and preferences",
     "sectionShop": "Shopping",
-    "sectionShopDesc": "Store addresses and ordering"
+    "sectionShopDesc": "Store addresses and ordering",
+    "myReservations": "My reservations",
+    "myReservationsDesc": "Your requests for restaurants, hotels and experiences"
   },
   "myProfile": {
     "title": "My Profile",
@@ -2715,5 +2717,85 @@
     "becomeMemberDescription": "Access exclusive discounts, private experiences and advantages in more than 300 premium establishments in the most beautiful towns in Spain. A membership that turns every getaway into something extraordinary.",
     "joinNow": "Join now",
     "learnMore": "Learn more"
+  },
+  "reservas": {
+    "tipo": {
+      "restaurante": "Restaurant",
+      "alojamiento": "Lodging",
+      "actividad": "Activity",
+      "comercio": "Trade",
+      "otro": "Business"
+    },
+    "modal": {
+      "tituloPrefix": "Book in",
+      "cerrar": "Close",
+      "cancelar": "Cancel",
+      "enviar": "Send request",
+      "enviando": "Sending...",
+      "legal": "This is a reservation request. The business will confirm you by email in the next hours."
+    },
+    "campos": {
+      "nombre": "Name and surname",
+      "email": "E-mail address",
+      "telefono": "Phone",
+      "fecha": "Date",
+      "hora": "Time",
+      "fechaEntrada": "Entrance",
+      "fechaSalida": "Output",
+      "personas": "Persons",
+      "comensales": "Diners",
+      "participantes": "Participants",
+      "adultos": "Adults",
+      "ninos": "Children",
+      "habitaciones": "Rooms",
+      "notas": "Special requests (optional)",
+      "notasPlaceholder": "Allergies, special occasion, table or room preferences..."
+    },
+    "club": {
+      "titulo": "I am a member of the LPMBE Club",
+      "descripcion": "Check this option if you want to apply the Club benefit (discount or gift) on this visit.",
+      "cargando": "Checking your account...",
+      "verificado": "Verified Partner - #{number}",
+      "logueadoNoSocio": "Your account does not have an active Club membership. If you believe this is an error, please contact the club.",
+      "necesitaLogin": "To apply the membership benefit, log in with your Club account.",
+      "iniciarSesion": "Login"
+    },
+    "errores": {
+      "necesitaLogin": "To book as a Club member you must log in first.",
+      "generico": "The request could not be sent. Please try again."
+    },
+    "exito": {
+      "titulo": "Request sent",
+      "descripcion": "The business will receive your request and contact you to confirm it. We have sent you an email with the summary.",
+      "cerrar": "Understood",
+      "socio": {
+        "titulo": "Club Benefit Requested - Member #{number}",
+        "beneficioLabel": "Benefit",
+        "lleva": "Remember to bring your LPMBE Club membership card for the business to apply."
+      },
+      "socioSinVerificar": {
+        "titulo": "You have marked that you are a member",
+        "descripcion": "You are not logged in, so the benefit is not confirmed. You will have to prove it at the venue by showing your Club card."
+      }
+    },
+    "estado": {
+      "PENDIENTE": "Pending",
+      "CONFIRMADA": "Confirmed",
+      "RECHAZADA": "Rejected",
+      "CANCELADA": "Canceled",
+      "NO_SHOW": "Not presented",
+      "COMPLETADA": "Completed"
+    },
+    "mias": {
+      "titulo": "My reservations",
+      "subtitulo": "Your requests in Club business. Cancel at any time.",
+      "vacio": "You have not yet made a reservation request.",
+      "volver": "Back to My Account",
+      "cancelar": "Cancel reservation",
+      "cancelarConfirm": "Are you sure you want to cancel this reservation?",
+      "verNegocio": "See business",
+      "socio": "Partner",
+      "notaNegocio": "Business response"
+    }
   }
 }

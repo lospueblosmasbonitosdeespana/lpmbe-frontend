@@ -1016,7 +1016,9 @@
         "CANCELLED": "Cancel·lat",
         "FAILED": "Error en el pagament"
       }
-    }
+    },
+    "myReservations": "Les meves reserves",
+    "myReservationsDesc": "Les teves reserves en restaurants, hotels i experiències"
   },
   "myProfile": {
     "title": "El meu perfil",
@@ -2715,5 +2717,85 @@
     "becomeMemberDescription": "Gaudeix de descomptes exclusius, experiències privades i ofertes especials en més de 300 establiments de primera qualitat als pobles més pintorescos d'Espanya. Una subscripció que converteix cada escapada en alguna cosa extraordinària.",
     "joinNow": "Uneix-te ara",
     "learnMore": "Més informació"
+  },
+  "reservas": {
+    "tipo": {
+      "restaurante": "Restaurant",
+      "alojamiento": "Allotjament",
+      "actividad": "Activitat",
+      "comercio": "Comerç minorista",
+      "otro": "Negocis"
+    },
+    "modal": {
+      "tituloPrefix": "Reserva a",
+      "cerrar": "Tanca",
+      "cancelar": "Cancel·la",
+      "enviar": "Enviar sol·licitud",
+      "enviando": "Enviant…",
+      "legal": "Aquesta és una sol·licitud de reserva. L'empresa confirmarà la vostra reserva per correu electrònic en les properes hores."
+    },
+    "campos": {
+      "nombre": "Nom i cognom",
+      "email": "Correu electrònic",
+      "telefono": "Telèfon",
+      "fecha": "Data",
+      "hora": "Temps",
+      "fechaEntrada": "Inici",
+      "fechaSalida": "Sortida",
+      "personas": "Persones",
+      "comensales": "Menjadors",
+      "participantes": "Participants",
+      "adultos": "Adults",
+      "ninos": "Nens",
+      "habitaciones": "Habitacions",
+      "notas": "Sol·licituds especials (opcional)",
+      "notasPlaceholder": "Al·lèrgies, ocasions especials, preferències de menjador o d'habitació…"
+    },
+    "club": {
+      "titulo": "Sóc membre del Club LPMBE.",
+      "descripcion": "Marca aquesta casella si vols aplicar el teu benefici del Club (descompte o regal gratuït) a aquesta visita.",
+      "cargando": "Verificant el vostre compte…",
+      "verificado": "Membre verificat · #{number}",
+      "logueadoNoSocio": "El vostre compte no té una subscripció activa al club. Si creieu que és un error, poseu-vos en contacte amb el club.",
+      "necesitaLogin": "Per bescanviar el teu benefici de soci, inicia la sessió al teu compte del Club.",
+      "iniciarSesion": "Inicia la sessió"
+    },
+    "errores": {
+      "necesitaLogin": "Per fer una reserva com a soci del Club, primer has d'iniciar la sessió.",
+      "generico": "La sol·licitud no s'ha pogut enviar. Torni a provar."
+    },
+    "exito": {
+      "titulo": "Sol·licitud enviada",
+      "descripcion": "L'empresa rebrà la vostra sol·licitud i es posarà en contacte amb vosaltres per confirmar-la. Us hem enviat un correu electrònic amb el resum.",
+      "cerrar": "Entès",
+      "socio": {
+        "titulo": "S'ha sol·licitat el benefici del club · Soci núm. {number}",
+        "beneficioLabel": "Benefici",
+        "lleva": "Recorda portar la teva targeta del Club LPMBE perquè la botiga pugui aplicar el descompte."
+      },
+      "socioSinVerificar": {
+        "titulo": "Has indicat que ets membre",
+        "descripcion": "No has iniciat sessió, per tant no es pot verificar l'estat de la teva membresia. Hauràs de demostrar la teva membresia mostrant la teva targeta del Club a la botiga."
+      }
+    },
+    "estado": {
+      "PENDIENTE": "Pendent",
+      "CONFIRMADA": "Confirmat",
+      "RECHAZADA": "Rebutjat",
+      "CANCELADA": "Cancel·lat",
+      "NO_SHOW": "No va aparèixer",
+      "COMPLETADA": "Completat"
+    },
+    "mias": {
+      "titulo": "Les meves reserves",
+      "subtitulo": "Les teves sol·licituds al Club Business. Cancela quan vulguis.",
+      "vacio": "Encara no has fet cap sol·licitud de reserva.",
+      "volver": "Tornar al meu compte",
+      "cancelar": "Cancel·la la reserva",
+      "cancelarConfirm": "Estàs segur que vols cancel·lar aquesta reserva?",
+      "verNegocio": "Veure l'empresa",
+      "socio": "Soci",
+      "notaNegocio": "Resposta empresarial"
+    }
   }
 }

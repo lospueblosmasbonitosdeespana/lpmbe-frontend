@@ -340,6 +340,8 @@ export default function NegocioPremiumDetail({ recurso, puebloSlug, backHref, ba
         contactDescription={contactDescription}
         scheduleNote={scheduleNote}
         t={t}
+        negocioId={recurso.id}
+        negocioNombre={recurso.nombre}
       />
 
       {(recurso.lat && recurso.lng) && (

@@ -1,8 +1,11 @@
+'use client';
+
 import { Card, CardContent, CardFooter, CardHeader } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ReservaButton from '@/app/_components/reservas/ReservaButton';
 
 export interface MenuItem {
   nombre: string;
@@ -22,6 +25,9 @@ interface Props {
   reservarLabel: string;
   bookingUrl?: string | null;
   telefono?: string | null;
+  /** Datos del negocio para el modal de reserva integrado. */
+  negocioId?: number | null;
+  negocioNombre?: string | null;
 }
 
 function formatPrecio(precio: number | string) {
@@ -38,9 +44,12 @@ export default function RestauranteMenusSection({
   reservarLabel,
   bookingUrl,
   telefono,
+  negocioId,
+  negocioNombre,
 }: Props) {
   if (items.length === 0) return null;
-  const reservaHref = bookingUrl || (telefono ? `tel:${telefono}` : undefined);
+  const usarModal = !!(negocioId && negocioNombre);
+  const reservaHrefLegacy = bookingUrl || (telefono ? `tel:${telefono}` : undefined);
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -111,7 +120,22 @@ export default function RestauranteMenusSection({
                 </CardContent>
 
                 <CardFooter>
-                  {reservaHref ? (
+                  {usarModal ? (
+                    <ReservaButton
+                      negocioId={negocioId!}
+                      negocioNombre={negocioNombre!}
+                      tipoNegocio="RESTAURANTE"
+                      label={reservarLabel}
+                      fullWidth
+                      variant={isFeatured ? 'forest' : 'outline'}
+                      className={cn(
+                        'rounded-lg',
+                        isFeatured
+                          ? 'bg-forest text-white hover:bg-forest-dark'
+                          : 'border border-foreground/20 hover:border-gold/40 hover:text-gold',
+                      )}
+                    />
+                  ) : reservaHrefLegacy ? (
                     <Button
                       asChild
                       variant={isFeatured ? 'default' : 'outline'}
@@ -122,7 +146,7 @@ export default function RestauranteMenusSection({
                           : 'border-foreground/20 hover:border-gold/40 hover:text-gold',
                       )}
                     >
-                      <a href={reservaHref} target={bookingUrl ? '_blank' : undefined} rel={bookingUrl ? 'noopener noreferrer' : undefined}>
+                      <a href={reservaHrefLegacy} target={bookingUrl ? '_blank' : undefined} rel={bookingUrl ? 'noopener noreferrer' : undefined}>
                         {reservarLabel}
                       </a>
                     </Button>

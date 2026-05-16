@@ -120,7 +120,7 @@ export default function ComercioPremiumDetail({ recurso }: ComercioPremiumDetail
     testimonials:  () => <TestimonialsSection testimonials={config.testimonials} />,
     practicalInfo: () => <PracticalInfoSection info={config.practicalInfo} />,
     location:      () => <LocationSection config={locationConfig} />,
-    ctaReserva:    () => <CTAReservaSection config={ctaConfig} />,
+    ctaReserva:    () => <CTAReservaSection config={ctaConfig} negocioId={recurso.id} negocioNombre={recurso.nombre} />,
     clubOffers:    () => <ClubOffersSection config={config.clubOffers} />,
     social:        () => <SocialSection links={config.socialLinks} />,
     clubCTA:       () => <ClubCTASection config={config.clubCTA} />,

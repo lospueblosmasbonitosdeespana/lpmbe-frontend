@@ -1002,6 +1002,21 @@ export default function NegociosPuebloClient({
                     QR del local
                   </button>
                   {(() => {
+                    const pk = (n.planNegocio ?? 'FREE') as PlanNegocio;
+                    const reservasOn = getPlanFeatures(pk).customLandingEnabled;
+                    if (!reservasOn) return null;
+                    const href = `/gestion/asociacion/negocios/reservas/${n.id}?nombre=${encodeURIComponent(n.nombre)}&tipo=${encodeURIComponent(n.tipo)}`;
+                    return (
+                      <a
+                        href={href}
+                        className="rounded-lg border border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-800 hover:bg-emerald-50"
+                        title="Bandeja de solicitudes de reserva recibidas en este negocio"
+                      >
+                        Reservas
+                      </a>
+                    );
+                  })()}
+                  {(() => {
                     const negSlug = n.slug?.trim();
                     const pSlug = n.pueblo?.slug ?? puebloSlug;
                     const route = TIPO_TO_ROUTE[n.tipo];

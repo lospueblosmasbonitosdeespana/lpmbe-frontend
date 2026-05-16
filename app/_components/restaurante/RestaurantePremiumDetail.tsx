@@ -221,6 +221,8 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
           reservarLabel={t('reservar')}
           bookingUrl={recurso.bookingUrl}
           telefono={recurso.telefono}
+          negocioId={recurso.id}
+          negocioNombre={recurso.nombre}
         />
       ) : null,
     platos: () =>
@@ -261,6 +263,8 @@ export default function RestaurantePremiumDetail({ recurso, backHref, backLabel,
         bookingUrl={recurso.bookingUrl}
         telefono={recurso.telefono}
         whatsapp={recurso.whatsapp}
+        negocioId={recurso.id}
+        negocioNombre={recurso.nombre}
       />
     ),
     contactoUbicacion: () =>

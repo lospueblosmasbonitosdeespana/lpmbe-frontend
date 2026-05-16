@@ -1016,7 +1016,9 @@
         "CANCELLED": "Storniert",
         "FAILED": "Zahlung fehlgeschlagen"
       }
-    }
+    },
+    "myReservations": "Meine Vorbehalte",
+    "myReservationsDesc": "Ihre Wünsche für Restaurants, Hotels und Erlebnisse"
   },
   "myProfile": {
     "title": "Mein Profil",
@@ -2715,5 +2717,85 @@
     "becomeMemberDescription": "Profitieren Sie von exklusiven Rabatten, privaten Erlebnissen und Vorteilen in mehr als 300 erstklassigen Einrichtungen in den schönsten Orten Spaniens. Eine Mitgliedschaft, die jeden Ausflug in etwas Außergewöhnliches verwandelt.",
     "joinNow": "Jetzt beitreten",
     "learnMore": "Weitere Informationen"
+  },
+  "reservas": {
+    "tipo": {
+      "restaurante": "Restaurant",
+      "alojamiento": "Unterkunft",
+      "actividad": "Tätigkeit",
+      "comercio": "Handel",
+      "otro": "Business"
+    },
+    "modal": {
+      "tituloPrefix": "Buchen unter",
+      "cerrar": "Schließen Sie",
+      "cancelar": "Abbrechen",
+      "enviar": "Anfrage senden",
+      "enviando": "Ich schicke...",
+      "legal": "Dies ist eine Buchungsanfrage. Das Unternehmen wird sie in den nächsten Stunden per E-Mail bestätigen."
+    },
+    "campos": {
+      "nombre": "Vorname und Nachname",
+      "email": "E-Mail Adresse",
+      "telefono": "Telefon",
+      "fecha": "Datum",
+      "hora": "Zeit",
+      "fechaEntrada": "Eingang",
+      "fechaSalida": "Ausfahrt",
+      "personas": "Personen",
+      "comensales": "Diners",
+      "participantes": "Teilnehmer",
+      "adultos": "Erwachsene",
+      "ninos": "Kinder",
+      "habitaciones": "Zimmer",
+      "notas": "Besondere Wünsche (fakultativ)",
+      "notasPlaceholder": "Allergien, besondere Anlässe, Tisch- oder Zimmerwünsche..."
+    },
+    "club": {
+      "titulo": "Ich bin Mitglied des LPMBE-Clubs",
+      "descripcion": "Aktivieren Sie diese Option, wenn Sie den Clubvorteil (Rabatt oder Geschenk) auf diesen Besuch anwenden möchten.",
+      "cargando": "Überprüfen Sie Ihr Konto...",
+      "verificado": "Geprüfter Partner - #{Anzahl}",
+      "logueadoNoSocio": "Ihr Konto hat keine aktive Clubmitgliedschaft. Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie bitte den Club.",
+      "necesitaLogin": "Loggen Sie sich mit Ihrem Club-Konto ein, um den Mitgliedsvorteil zu nutzen.",
+      "iniciarSesion": "Einloggen"
+    },
+    "errores": {
+      "necesitaLogin": "Um als Clubmitglied zu buchen, müssen Sie sich zunächst anmelden.",
+      "generico": "Die Bewerbung konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    },
+    "exito": {
+      "titulo": "Bewerbung abgeschickt",
+      "descripcion": "Das Unternehmen wird Ihre Anfrage erhalten und sich mit Ihnen in Verbindung setzen, um sie zu bestätigen. Wir haben Ihnen eine E-Mail mit der Zusammenfassung geschickt.",
+      "cerrar": "Verstanden",
+      "socio": {
+        "titulo": "Clubvorteil beantragt - Mitglied #{Nummer}",
+        "beneficioLabel": "Nutzen Sie",
+        "lleva": "Vergessen Sie nicht, Ihre LPMBE-Clubkarte mitzubringen, damit sich das Unternehmen bewerben kann."
+      },
+      "socioSinVerificar": {
+        "titulo": "Sie haben markiert, dass Sie ein Mitglied sind",
+        "descripcion": "Sie sind nicht eingeloggt, daher ist der Vorteil nicht bestätigt. Sie müssen dies am Veranstaltungsort durch Vorlage Ihrer Clubkarte nachweisen."
+      }
+    },
+    "estado": {
+      "PENDIENTE": "Anhängig",
+      "CONFIRMADA": "Bestätigt",
+      "RECHAZADA": "Abgelehnt",
+      "CANCELADA": "Abgesagt",
+      "NO_SHOW": "Nichterscheinen",
+      "COMPLETADA": "Abgeschlossen"
+    },
+    "mias": {
+      "titulo": "Meine Vorbehalte",
+      "subtitulo": "Ihre Bewerbungen im Clubgeschäft. Jederzeit kündigen.",
+      "vacio": "Sie haben noch keine Reservierungsanfrage gestellt.",
+      "volver": "Zurück zu Mein Konto",
+      "cancelar": "Buchung stornieren",
+      "cancelarConfirm": "Sind Sie sicher, dass Sie diese Buchung stornieren möchten?",
+      "verNegocio": "Siehe Geschäft",
+      "socio": "Partner",
+      "notaNegocio": "Antwort des Unternehmens"
+    }
   }
 }

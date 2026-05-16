@@ -1016,7 +1016,9 @@
         "CANCELLED": "Cancelado",
         "FAILED": "Falha no pagamento"
       }
-    }
+    },
+    "myReservations": "As minhas reservas",
+    "myReservationsDesc": "Os seus pedidos de restaurantes, hotéis e experiências"
   },
   "myProfile": {
     "title": "O meu perfil",
@@ -2715,5 +2717,85 @@
     "becomeMemberDescription": "Acesso a descontos exclusivos, experiências privadas e vantagens em mais de 300 estabelecimentos premium nas mais belas aldeias de Espanha. Uma adesão que transforma cada escapadela em algo extraordinário.",
     "joinNow": "Aderir agora",
     "learnMore": "Mais informações"
+  },
+  "reservas": {
+    "tipo": {
+      "restaurante": "Restaurante",
+      "alojamiento": "Alojamento",
+      "actividad": "Atividade",
+      "comercio": "Comércio",
+      "otro": "Negócios"
+    },
+    "modal": {
+      "tituloPrefix": "Reservar em",
+      "cerrar": "Fechar",
+      "cancelar": "Cancelar",
+      "enviar": "Enviar pedido",
+      "enviando": "Enviando...",
+      "legal": "Este é um pedido de reserva. A empresa confirmará por correio eletrónico nas próximas horas."
+    },
+    "campos": {
+      "nombre": "Nome e apelido",
+      "email": "Endereço eletrónico",
+      "telefono": "Telefone",
+      "fecha": "Data",
+      "hora": "Tempo",
+      "fechaEntrada": "Entrada",
+      "fechaSalida": "Sair",
+      "personas": "Pessoas",
+      "comensales": "Jantares",
+      "participantes": "Participantes",
+      "adultos": "Adultos",
+      "ninos": "Crianças",
+      "habitaciones": "Quartos",
+      "notas": "Pedidos especiais (facultativo)",
+      "notasPlaceholder": "Alergias, ocasiões especiais, preferências de mesa ou de sala..."
+    },
+    "club": {
+      "titulo": "Sou membro do Clube LPMBE",
+      "descripcion": "Selecione esta opção se pretender aplicar o benefício do Clube (desconto ou oferta) a esta visita.",
+      "cargando": "Verificar a sua conta...",
+      "verificado": "Parceiro verificado - #{número}",
+      "logueadoNoSocio": "A sua conta não tem uma inscrição ativa no Clube. Se pensa que se trata de um erro, contacte o clube.",
+      "necesitaLogin": "Para aplicar o benefício de membro, inicie sessão com a sua conta do Clube.",
+      "iniciarSesion": "Iniciar sessão"
+    },
+    "errores": {
+      "necesitaLogin": "Para reservar como membro do Clube, é necessário iniciar sessão.",
+      "generico": "Não foi possível enviar a candidatura. Por favor, tente novamente."
+    },
+    "exito": {
+      "titulo": "Candidatura enviada",
+      "descripcion": "A empresa receberá o seu pedido e entrará em contacto consigo para o confirmar. Enviámos-lhe um e-mail com o resumo.",
+      "cerrar": "Entendido",
+      "socio": {
+        "titulo": "Benefício de Clube Solicitado - Sócio #{número}",
+        "beneficioLabel": "Benefício",
+        "lleva": "Não se esqueça de trazer o seu cartão do Clube LPMBE para que a empresa se possa candidatar."
+      },
+      "socioSinVerificar": {
+        "titulo": "Marcou que é membro",
+        "descripcion": "Não tem sessão iniciada, pelo que a prestação não está confirmada. Terá de o comprovar no local do evento, apresentando o seu cartão do Clube."
+      }
+    },
+    "estado": {
+      "PENDIENTE": "Pendente",
+      "CONFIRMADA": "Confirmado",
+      "RECHAZADA": "Rejeitado",
+      "CANCELADA": "Cancelado",
+      "NO_SHOW": "Não comparência",
+      "COMPLETADA": "Concluído"
+    },
+    "mias": {
+      "titulo": "As minhas reservas",
+      "subtitulo": "As suas aplicações no Club business. Cancelar em qualquer altura.",
+      "vacio": "Ainda não efectuou um pedido de reserva.",
+      "volver": "Voltar a A minha conta",
+      "cancelar": "Cancelar reserva",
+      "cancelarConfirm": "Tem a certeza de que pretende cancelar esta reserva?",
+      "verNegocio": "Ver empresa",
+      "socio": "Parceiro",
+      "notaNegocio": "Resposta da empresa"
+    }
   }
 }

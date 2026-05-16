@@ -1,4 +1,7 @@
+'use client';
+
 import { Phone, Mail, MessageCircle, Calendar, Globe, ExternalLink } from 'lucide-react';
+import ReservaButton from '@/app/_components/reservas/ReservaButton';
 
 const DIA_NOMBRES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -20,6 +23,9 @@ interface Props {
   contactDescription?: string;
   scheduleNote?: string;
   t: (key: string) => string;
+  /** Datos del negocio para el modal de reserva LPMBE. */
+  negocioId?: number | null;
+  negocioNombre?: string | null;
 }
 
 function groupSchedule(horarios: HorarioDia[]): { range: string; hours: string }[] {
@@ -68,7 +74,9 @@ function groupSchedule(horarios: HorarioDia[]): { range: string; hours: string }
 
 export default function PremiumContactSection({
   telefono, email, web, whatsapp, bookingUrl, horariosSemana, socialLinks, contactDescription, scheduleNote, t,
+  negocioId, negocioNombre,
 }: Props) {
+  const usarModal = !!(negocioId && negocioNombre);
   const methods: { icon: typeof Phone; label: string; value: string; href: string }[] = [];
   if (telefono) methods.push({ icon: Phone, label: t('phone'), value: telefono, href: `tel:${telefono.replace(/\s/g, '')}` });
   if (email) methods.push({ icon: Mail, label: t('email'), value: email, href: `mailto:${email}` });
@@ -82,7 +90,7 @@ export default function PremiumContactSection({
   const grouped = horariosSemana ? groupSchedule(horariosSemana) : [];
   const hasHours = grouped.length > 0;
 
-  if (methods.length === 0 && !hasHours && !bookingUrl) return null;
+  if (methods.length === 0 && !hasHours && !bookingUrl && !usarModal) return null;
 
   return (
     <section className="py-16 md:py-24 px-6 md:px-12 lg:px-16">
@@ -123,7 +131,19 @@ export default function PremiumContactSection({
               </div>
             )}
 
-            {bookingUrl && (
+            {usarModal ? (
+              <div className="mt-8">
+                <ReservaButton
+                  negocioId={negocioId!}
+                  negocioNombre={negocioNombre!}
+                  tipoNegocio="OTRO"
+                  label={t('bookNow')}
+                  size="lg"
+                  variant="primary"
+                  icon={<Calendar className="size-5" />}
+                />
+              </div>
+            ) : bookingUrl ? (
               <div className="mt-8">
                 <a
                   href={bookingUrl.startsWith('http') ? bookingUrl : `https://${bookingUrl}`}
@@ -135,7 +155,7 @@ export default function PremiumContactSection({
                   {t('bookNow')}
                 </a>
               </div>
-            )}
+            ) : null}
 
             {socialLinks.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-3">

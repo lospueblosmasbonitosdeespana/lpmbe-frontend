@@ -126,7 +126,7 @@ export default function SelectionPremiumDetail({ recurso }: Props) {
     offers: () => <OffersSection offers={mergedConfig.offers} />,
     reviews: () => <ReviewsSection reviews={mergedConfig.reviews} />,
     practicalInfo: () => <PracticalInfoSection info={mergedConfig.practicalInfo} />,
-    booking: () => <BookingBanner phone={mergedConfig.location.phone} email={mergedConfig.location.email} />,
+    booking: () => <BookingBanner phone={mergedConfig.location.phone} email={mergedConfig.location.email} negocioId={recurso?.id} negocioNombre={recurso?.nombre} />,
     footer: () => <Footer name={mergedConfig.name} location={mergedConfig.location} social={mergedConfig.social} />,
   }
 

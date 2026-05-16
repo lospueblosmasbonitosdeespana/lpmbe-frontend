@@ -11,6 +11,8 @@ import type { LodgingLandingConfig } from '@/app/gestion/asociacion/negocios/[sl
  */
 
 export interface LodgingPublicMeta {
+  /** ID del negocio en BD (necesario para enviar solicitudes de reserva). */
+  id?: number
   /** Nombre del negocio (sobreescribe el del config si está). */
   nombre?: string
   /** Localidad para mostrar en el hero. */

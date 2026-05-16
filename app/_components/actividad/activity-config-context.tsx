@@ -4,6 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 import type { ActivityLandingConfig } from '@/app/gestion/asociacion/negocios/[slug]/_editor-actividad/activity-config'
 
 export interface ActivityPublicMeta {
+  id?: number
   nombre?: string
   locationText?: string
   heroImages?: { src: string; alt: string }[]

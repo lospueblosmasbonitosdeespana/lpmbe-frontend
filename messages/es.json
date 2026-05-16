@@ -998,6 +998,8 @@
     "rutasGuardadasDesc": "Rutas que has creado para recuperar más tarde",
     "visitedVillages": "Pueblos visitados",
     "visitedVillagesDesc": "Listado y valoraciones",
+    "myReservations": "Mis reservas",
+    "myReservationsDesc": "Tus solicitudes en restaurantes, hoteles y experiencias",
     "notifCenter": "Centro de notificaciones",
     "notifCenterDesc": "Ver mis notificaciones y alertas",
     "notifPrefs": "Preferencias de notificaciones",
@@ -2623,5 +2625,85 @@
     "becomeMemberDescription": "Accede a descuentos exclusivos, experiencias privadas y ventajas en más de 300 establecimientos premium en los pueblos más bonitos de España. Una membresía que convierte cada escapada en algo extraordinario.",
     "joinNow": "Únete ahora",
     "learnMore": "Saber más"
+  },
+  "reservas": {
+    "tipo": {
+      "restaurante": "Restaurante",
+      "alojamiento": "Alojamiento",
+      "actividad": "Actividad",
+      "comercio": "Comercio",
+      "otro": "Negocio"
+    },
+    "modal": {
+      "tituloPrefix": "Reservar en",
+      "cerrar": "Cerrar",
+      "cancelar": "Cancelar",
+      "enviar": "Enviar solicitud",
+      "enviando": "Enviando…",
+      "legal": "Esta es una solicitud de reserva. El negocio te confirmará por email en las próximas horas."
+    },
+    "campos": {
+      "nombre": "Nombre y apellidos",
+      "email": "Correo electrónico",
+      "telefono": "Teléfono",
+      "fecha": "Fecha",
+      "hora": "Hora",
+      "fechaEntrada": "Entrada",
+      "fechaSalida": "Salida",
+      "personas": "Personas",
+      "comensales": "Comensales",
+      "participantes": "Participantes",
+      "adultos": "Adultos",
+      "ninos": "Niños",
+      "habitaciones": "Habitaciones",
+      "notas": "Peticiones especiales (opcional)",
+      "notasPlaceholder": "Alergias, ocasión especial, preferencias de mesa o habitación…"
+    },
+    "club": {
+      "titulo": "Soy socio del Club LPMBE",
+      "descripcion": "Marca esta opción si quieres aplicar el beneficio del Club (descuento o regalo) en esta visita.",
+      "cargando": "Comprobando tu cuenta…",
+      "verificado": "Socio verificado · #{numero}",
+      "logueadoNoSocio": "Tu cuenta no tiene una membresía activa del Club. Si crees que es un error, contacta con el club.",
+      "necesitaLogin": "Para aplicar el beneficio de socio, inicia sesión con tu cuenta del Club.",
+      "iniciarSesion": "Iniciar sesión"
+    },
+    "errores": {
+      "necesitaLogin": "Para reservar como socio del Club debes iniciar sesión primero.",
+      "generico": "No se pudo enviar la solicitud. Inténtalo de nuevo."
+    },
+    "exito": {
+      "titulo": "Solicitud enviada",
+      "descripcion": "El negocio recibirá tu petición y te contactará para confirmarla. Te hemos enviado un email con el resumen.",
+      "cerrar": "Entendido",
+      "socio": {
+        "titulo": "Beneficio del Club solicitado · Socio #{numero}",
+        "beneficioLabel": "Beneficio",
+        "lleva": "Recuerda llevar tu carnet del Club LPMBE para que el negocio pueda aplicarlo."
+      },
+      "socioSinVerificar": {
+        "titulo": "Has marcado que eres socio",
+        "descripcion": "No iniciaste sesión, así que el beneficio no está confirmado. Tendrás que demostrarlo en el local mostrando tu carnet del Club."
+      }
+    },
+    "estado": {
+      "PENDIENTE": "Pendiente",
+      "CONFIRMADA": "Confirmada",
+      "RECHAZADA": "Rechazada",
+      "CANCELADA": "Cancelada",
+      "NO_SHOW": "No se presentó",
+      "COMPLETADA": "Completada"
+    },
+    "mias": {
+      "titulo": "Mis reservas",
+      "subtitulo": "Tus solicitudes en negocios del Club. Cancela cuando quieras.",
+      "vacio": "Aún no has hecho ninguna solicitud de reserva.",
+      "volver": "Volver a Mi cuenta",
+      "cancelar": "Cancelar reserva",
+      "cancelarConfirm": "¿Seguro que quieres cancelar esta reserva?",
+      "verNegocio": "Ver negocio",
+      "socio": "Socio",
+      "notaNegocio": "Respuesta del negocio"
+    }
   }
 }

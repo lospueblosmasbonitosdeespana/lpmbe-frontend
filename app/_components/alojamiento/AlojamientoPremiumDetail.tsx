@@ -29,6 +29,7 @@ const TIPO_LABELS: Record<string, string> = {
 }
 
 interface Recurso {
+  id?: number
   nombre?: string
   tipo?: string
   telefono?: string | null
@@ -79,6 +80,7 @@ export default function AlojamientoPremiumDetail({ recurso }: Props = {}) {
       recurso?.pueblo?.comunidad,
     ].filter(Boolean)
     return {
+      id: recurso?.id,
       nombre: recurso?.nombre,
       heroImages,
       locationText: locationParts.length > 0 ? locationParts.join(' · ') : undefined,

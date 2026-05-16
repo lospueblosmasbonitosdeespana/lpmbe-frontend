@@ -1,6 +1,7 @@
 'use client'
 
 import { useActivitySlice, useActivityMeta } from './activity-config-context'
+import ReservaButton from '@/app/_components/reservas/ReservaButton'
 
 export function BookingBanner() {
   const slice = useActivitySlice('booking')
@@ -11,8 +12,8 @@ export function BookingBanner() {
   const primaryCta = slice?.primaryCta || 'Reservar actividad'
   const secondaryCta = slice?.secondaryCta || 'Consultar disponibilidad'
   const groupNote = slice?.groupNote || '💡 Descuento del 10% para grupos de 6 o más personas'
-  const primaryHref = meta.bookingUrl || (meta.email ? `mailto:${meta.email}` : '#reservar')
   const secondaryHref = meta.telefono ? `tel:${meta.telefono.replace(/\s+/g, '')}` : meta.web || '#contacto'
+  const usarModal = !!(meta.id && meta.nombre)
   return (
     <section 
       className="py-16 md:py-20"
@@ -46,22 +47,44 @@ export function BookingBanner() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-          <a 
-            href={primaryHref}
-            target={meta.bookingUrl ? '_blank' : undefined}
-            rel={meta.bookingUrl ? 'noopener noreferrer' : undefined}
-            className="px-8 py-4 rounded-full font-medium transition-all hover:opacity-90 w-full sm:w-auto inline-flex items-center justify-center"
-            style={{ 
-              backgroundColor: 'white',
-              color: 'var(--color-adventure)',
-            }}
-          >
-            {primaryCta}
-          </a>
-          <a 
+          {usarModal ? (
+            <ReservaButton
+              negocioId={meta.id!}
+              negocioNombre={meta.nombre!}
+              tipoNegocio="ACTIVIDAD"
+              label={primaryCta}
+              renderTrigger={(open) => (
+                <button
+                  type="button"
+                  onClick={open}
+                  className="px-8 py-4 rounded-full font-medium transition-all hover:opacity-90 w-full sm:w-auto inline-flex items-center justify-center"
+                  style={{
+                    backgroundColor: 'white',
+                    color: 'var(--color-adventure)',
+                  }}
+                >
+                  {primaryCta}
+                </button>
+              )}
+            />
+          ) : (
+            <a
+              href={meta.bookingUrl || (meta.email ? `mailto:${meta.email}` : '#reservar')}
+              target={meta.bookingUrl ? '_blank' : undefined}
+              rel={meta.bookingUrl ? 'noopener noreferrer' : undefined}
+              className="px-8 py-4 rounded-full font-medium transition-all hover:opacity-90 w-full sm:w-auto inline-flex items-center justify-center"
+              style={{
+                backgroundColor: 'white',
+                color: 'var(--color-adventure)',
+              }}
+            >
+              {primaryCta}
+            </a>
+          )}
+          <a
             href={secondaryHref}
             className="px-8 py-4 rounded-full font-medium transition-all hover:bg-white/10 w-full sm:w-auto inline-flex items-center justify-center"
-            style={{ 
+            style={{
               border: '2px solid white',
               color: 'white',
               backgroundColor: 'transparent',

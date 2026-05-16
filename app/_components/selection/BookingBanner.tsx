@@ -1,13 +1,17 @@
 'use client'
 
 import { Phone, Mail, ShieldCheck, ArrowRight } from 'lucide-react'
+import ReservaButton from '@/app/_components/reservas/ReservaButton'
 
 interface Props {
   phone: string
   email: string
+  negocioId?: number | null
+  negocioNombre?: string | null
 }
 
-export default function BookingBanner({ phone, email }: Props) {
+export default function BookingBanner({ phone, email, negocioId, negocioNombre }: Props) {
+  const usarModal = !!(negocioId && negocioNombre)
   return (
     <section
       className="w-full py-24 md:py-32 px-8 md:px-16 lg:px-24 relative overflow-hidden"
@@ -82,25 +86,55 @@ export default function BookingBanner({ phone, email }: Props) {
               Llamar
             </a>
 
-            {/* Email CTA */}
-            <a
-              href={`mailto:${email}`}
-              className="flex items-center justify-center gap-3 font-sans transition-all"
-              style={{
-                fontSize: '0.72rem',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                color: 'var(--hotel-charcoal)',
-                background: 'var(--hotel-gold)',
-                padding: '1rem 2.5rem',
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--hotel-gold-light)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--hotel-gold)' }}
-            >
-              <Mail size={14} />
-              Solicitar disponibilidad
-              <ArrowRight size={13} />
-            </a>
+            {/* Reservar CTA (modal LPMBE) o fallback email */}
+            {usarModal ? (
+              <ReservaButton
+                negocioId={negocioId!}
+                negocioNombre={negocioNombre!}
+                tipoNegocio="ALOJAMIENTO"
+                label="Solicitar disponibilidad"
+                renderTrigger={(open) => (
+                  <button
+                    type="button"
+                    onClick={open}
+                    className="flex items-center justify-center gap-3 font-sans transition-all"
+                    style={{
+                      fontSize: '0.72rem',
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: 'var(--hotel-charcoal)',
+                      background: 'var(--hotel-gold)',
+                      padding: '1rem 2.5rem',
+                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--hotel-gold-light)' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--hotel-gold)' }}
+                  >
+                    <Mail size={14} />
+                    Solicitar disponibilidad
+                    <ArrowRight size={13} />
+                  </button>
+                )}
+              />
+            ) : (
+              <a
+                href={`mailto:${email}`}
+                className="flex items-center justify-center gap-3 font-sans transition-all"
+                style={{
+                  fontSize: '0.72rem',
+                  letterSpacing: '0.2em',
+                  textTransform: 'uppercase',
+                  color: 'var(--hotel-charcoal)',
+                  background: 'var(--hotel-gold)',
+                  padding: '1rem 2.5rem',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--hotel-gold-light)' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--hotel-gold)' }}
+              >
+                <Mail size={14} />
+                Solicitar disponibilidad
+                <ArrowRight size={13} />
+              </a>
+            )}
           </div>
 
           <div className="flex items-center justify-center gap-2">

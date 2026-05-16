@@ -23,6 +23,7 @@ import { ActivityConfigProvider, type ActivityPublicMeta } from './activity-conf
 import type { ActivityLandingConfig } from '@/app/gestion/asociacion/negocios/[slug]/_editor-actividad/activity-config'
 
 interface Recurso {
+  id?: number
   nombre?: string
   tipo?: string
   telefono?: string | null
@@ -73,6 +74,7 @@ export default function ActividadPremiumDetail({ recurso }: Props = {}) {
       recurso?.pueblo?.comunidad,
     ].filter(Boolean)
     return {
+      id: recurso?.id,
       nombre: recurso?.nombre,
       heroImages,
       locationText: locationParts.length > 0 ? locationParts.join(', ') : undefined,

@@ -3,6 +3,7 @@
 import { CalendarCheck, Phone, MessageCircle } from 'lucide-react'
 import { Button } from '@/app/components/ui/button'
 import { useLodgingSlice, useLodgingMeta } from './lodging-config-context'
+import ReservaButton from '@/app/_components/reservas/ReservaButton'
 
 export default function BookingBanner() {
   const slice = useLodgingSlice('booking')
@@ -15,7 +16,7 @@ export default function BookingBanner() {
   const phoneHref = meta.telefono ? `tel:${meta.telefono.replace(/\s+/g, '')}` : 'tel:+34974500000'
   const waNumber = (meta.whatsapp ?? meta.telefono ?? '+34974500000').replace(/[^\d]/g, '')
   const waHref = `https://wa.me/${waNumber}`
-  const bookingHref = meta.bookingUrl || '#reservar'
+  const usarModal = !!(meta.id && meta.nombre)
 
   return (
     <section
@@ -44,16 +45,38 @@ export default function BookingBanner() {
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button
-            className="flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-full shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5"
-            style={{ background: 'var(--color-midnight)', color: '#fff' }}
-            asChild
-          >
-            <a href={bookingHref} target={meta.bookingUrl ? '_blank' : undefined} rel={meta.bookingUrl ? 'noopener noreferrer' : undefined}>
-              <CalendarCheck size={18} />
-              Reservar online
-            </a>
-          </Button>
+          {usarModal ? (
+            <ReservaButton
+              negocioId={meta.id!}
+              negocioNombre={meta.nombre!}
+              tipoNegocio="ALOJAMIENTO"
+              label="Reservar online"
+              className="flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-full shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5"
+              icon={<CalendarCheck size={18} />}
+              renderTrigger={(open) => (
+                <button
+                  type="button"
+                  onClick={open}
+                  className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-full shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 text-white"
+                  style={{ background: 'var(--color-midnight)' }}
+                >
+                  <CalendarCheck size={18} />
+                  Reservar online
+                </button>
+              )}
+            />
+          ) : (
+            <Button
+              className="flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-full shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5"
+              style={{ background: 'var(--color-midnight)', color: '#fff' }}
+              asChild
+            >
+              <a href={meta.bookingUrl || '#reservar'} target={meta.bookingUrl ? '_blank' : undefined} rel={meta.bookingUrl ? 'noopener noreferrer' : undefined}>
+                <CalendarCheck size={18} />
+                Reservar online
+              </a>
+            </Button>
+          )}
 
           <Button
             variant="outline"
