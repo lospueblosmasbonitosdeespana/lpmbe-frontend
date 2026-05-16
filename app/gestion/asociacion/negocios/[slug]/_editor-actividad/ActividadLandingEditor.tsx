@@ -558,7 +558,7 @@ export default function ActividadLandingEditor({
               <div className="space-y-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="storyEyebrow">Encabezado</Label>
+                    <Label htmlFor="storyEyebrow">Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       id="storyEyebrow"
                       value={config.story.eyebrow}
@@ -697,7 +697,7 @@ export default function ActividadLandingEditor({
               <div className="space-y-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="activitiesEyebrow">Encabezado</Label>
+                    <Label htmlFor="activitiesEyebrow">Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       id="activitiesEyebrow"
                       value={config.activities.eyebrow}

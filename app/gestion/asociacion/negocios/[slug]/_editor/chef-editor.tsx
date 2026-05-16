@@ -71,7 +71,7 @@ export function ChefEditor({
             <p className="text-[10px] text-muted-foreground text-center">Imagen cuadrada · recorte circular</p>
           </div>
           <div className="space-y-4">
-            <Field label="Eyebrow (texto pequeño sobre el nombre)">
+            <Field label="Antetítulo (texto pequeño sobre el nombre)">
               <Input
                 value={value.eyebrow}
                 onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}

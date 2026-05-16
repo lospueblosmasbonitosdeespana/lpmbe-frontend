@@ -97,7 +97,7 @@ export function MenusEditor({
         </p>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Eyebrow">
+          <Field label="Antetítulo (texto pequeño sobre el título)">
             <Input
               value={value.eyebrow}
               onChange={(e) => onChange({ ...value, eyebrow: e.target.value })}

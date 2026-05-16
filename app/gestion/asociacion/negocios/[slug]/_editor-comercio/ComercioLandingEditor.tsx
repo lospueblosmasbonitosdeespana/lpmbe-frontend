@@ -463,20 +463,34 @@ function ImageInput({
           </button>
         )}
         <div className="flex flex-1 flex-col gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 self-start"
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
-          >
-            <Upload className="h-3.5 w-3.5 mr-1.5" />
-            {uploading ? 'Subiendo a R2…' : value ? 'Cambiar imagen' : 'Subir a Cloudflare R2'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Upload className="h-3.5 w-3.5 mr-1.5" />
+              {uploading ? 'Subiendo…' : value ? 'Cambiar foto' : 'Subir foto'}
+            </Button>
+            {value && !uploading && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={() => onChange('')}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                Quitar
+              </Button>
+            )}
+          </div>
           {onAltChange !== undefined && (
             <Input
-              placeholder="Texto alternativo (alt)"
+              placeholder="Texto descriptivo de la foto (opcional)"
               value={altValue || ''}
               onChange={e => onAltChange(e.target.value)}
               className="text-xs h-8"
@@ -1339,7 +1353,7 @@ export default function ComercioLandingEditor({
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="storyEyebrow">Eyebrow</Label>
+                    <Label htmlFor="storyEyebrow">Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       id="storyEyebrow"
                       value={config.story.eyebrow}
@@ -1486,7 +1500,7 @@ export default function ComercioLandingEditor({
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Eyebrow</Label>
+                    <Label>Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       value={config.products.eyebrow}
                       onChange={e =>
@@ -1754,7 +1768,7 @@ export default function ComercioLandingEditor({
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Eyebrow</Label>
+                    <Label>Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       value={config.process.eyebrow}
                       onChange={e =>
@@ -1923,7 +1937,7 @@ export default function ComercioLandingEditor({
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Eyebrow</Label>
+                    <Label>Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       value={config.experiences.eyebrow}
                       onChange={e =>
@@ -3067,7 +3081,7 @@ export default function ComercioLandingEditor({
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Eyebrow</Label>
+                    <Label>Antetítulo (texto pequeño sobre el título)</Label>
                     <Input
                       value={config.memberOffers.eyebrow}
                       onChange={e =>

@@ -15,7 +15,7 @@ export function StoryEditor({ value, onChange }: Props) {
 
   return (
     <div className="space-y-5">
-      <TextField label="Eyebrow" hint="Título secundario sobre el título" value={value.eyebrow} onChange={v => update('eyebrow', v)} maxLength={40} />
+      <TextField label="Antetítulo" hint="Texto pequeño que aparece encima del título principal" value={value.eyebrow} onChange={v => update('eyebrow', v)} maxLength={40} />
 
       <ImageUploadField
         label="Imagen retrato"
@@ -57,7 +57,7 @@ export function StoryEditor({ value, onChange }: Props) {
       </div>
 
       <TextField
-        label="Cita destacada (pull quote)"
+        label="Cita destacada"
         value={value.pullQuote}
         onChange={v => update('pullQuote', v)}
         maxLength={140}

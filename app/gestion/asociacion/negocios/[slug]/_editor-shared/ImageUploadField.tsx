@@ -51,7 +51,7 @@ export function ImageUploadField({
       const { url } = await uploadImageToR2(file, folder)
       onChange(url)
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Error subiendo imagen'
+      const msg = e instanceof Error ? e.message : 'No se pudo subir la foto'
       setError(msg)
     } finally {
       setUploading(false)
@@ -140,13 +140,13 @@ export function ImageUploadField({
           {uploading ? (
             <>
               <Loader2 className="h-6 w-6 animate-spin" />
-              <span className="text-xs font-medium">Subiendo a R2…</span>
+              <span className="text-xs font-medium">Subiendo…</span>
             </>
           ) : (
             <>
               <ImageIcon className="h-6 w-6 opacity-60" />
-              <span className="text-xs font-medium">Subir imagen</span>
-              <span className="text-[10px] opacity-70">Se sube a Cloudflare R2</span>
+              <span className="text-xs font-medium">Subir foto</span>
+              <span className="text-[10px] opacity-70">JPG, PNG · pulsa o arrastra</span>
             </>
           )}
         </button>

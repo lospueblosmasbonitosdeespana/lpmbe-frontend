@@ -16,7 +16,7 @@ export function GastronomyEditor({ value, onChange }: Props) {
   return (
     <div className="space-y-5">
       <EditorGrid>
-        <TextField label="Eyebrow" value={value.eyebrow} onChange={v => update('eyebrow', v)} maxLength={40} />
+        <TextField label="Antetítulo" hint="Texto pequeño sobre el nombre del restaurante" value={value.eyebrow} onChange={v => update('eyebrow', v)} maxLength={40} />
         <TextField label="Nombre del restaurante" value={value.restaurantName} onChange={v => update('restaurantName', v)} maxLength={80} />
       </EditorGrid>
 

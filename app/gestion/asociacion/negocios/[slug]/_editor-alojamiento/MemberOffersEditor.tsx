@@ -48,7 +48,7 @@ export function MemberOffersEditor({ value, onChange }: Props) {
     <div className="space-y-5">
       <EditorGrid cols={2}>
         <TextField
-          label="Subtítulo (eyebrow)"
+          label="Antetítulo (texto pequeño sobre el título)"
           value={value.eyebrow}
           onChange={v => set({ eyebrow: v })}
           placeholder="Exclusivo Club LPMBE"

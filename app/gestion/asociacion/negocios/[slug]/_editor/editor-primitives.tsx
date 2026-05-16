@@ -173,9 +173,9 @@ export function AddButton({
   )
 }
 
-// ── Photo upload to R2 ───────────────────────────────────────────────────────
+// ── Photo upload to R2 (con previa + cambiar/quitar) ────────────────────────
 import { uploadImageToR2 } from '@/src/lib/uploadHelper'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Trash2 } from 'lucide-react'
 
 export function PhotoUploadArea({
   value,
@@ -204,7 +204,7 @@ export function PhotoUploadArea({
       const { url } = await uploadImageToR2(file, folder)
       onChange(url)
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Error subiendo imagen'
+      const msg = e instanceof Error ? e.message : 'Error subiendo la foto'
       setError(msg)
     } finally {
       setUploading(false)
@@ -212,8 +212,15 @@ export function PhotoUploadArea({
     }
   }
 
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (uploading) return
+    onChange('')
+    setError(null)
+  }
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <div
         className={cn(
           'relative border-2 border-dashed border-border rounded-xl overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group',
@@ -238,24 +245,23 @@ export function PhotoUploadArea({
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-muted-foreground">
             {uploading ? (
               <>
                 <Loader2 className="size-6 animate-spin" />
-                <span className="text-[11px] font-medium">Subiendo a R2…</span>
+                <span className="text-[11px] font-medium">Subiendo…</span>
               </>
             ) : (
               <>
                 <ImageIcon className="size-6 opacity-40" />
                 <span className="text-[11px] font-medium">{label}</span>
-                <span className="text-[10px] opacity-70">Se sube a Cloudflare R2</span>
               </>
             )}
           </div>
         )}
         {value && !uploading && (
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span className="text-white text-xs font-medium">{label}</span>
+            <span className="text-white text-xs font-medium">Cambiar foto</span>
           </div>
         )}
         {value && uploading && (
@@ -263,7 +269,30 @@ export function PhotoUploadArea({
             <Loader2 className="size-6 text-white animate-spin" />
           </div>
         )}
+        {value && !uploading && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            className={cn(
+              'absolute top-2 right-2 z-10 flex items-center justify-center rounded-full bg-white/95 text-red-600 shadow-md hover:bg-white hover:text-red-700 transition-colors',
+              circular ? 'w-7 h-7' : 'w-7 h-7'
+            )}
+            title="Quitar foto"
+            aria-label="Quitar foto"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        )}
       </div>
+      {value && !uploading && (
+        <button
+          type="button"
+          onClick={handleRemove}
+          className="text-[11px] font-medium text-red-600 hover:text-red-700 hover:underline"
+        >
+          Quitar foto
+        </button>
+      )}
       {error && <p className="text-[11px] text-red-600">{error}</p>}
     </div>
   )

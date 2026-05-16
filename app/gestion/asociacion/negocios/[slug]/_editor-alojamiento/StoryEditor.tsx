@@ -29,7 +29,7 @@ export function StoryEditor({ value, onChange }: Props) {
     <div className="space-y-5">
       <EditorGrid cols={2}>
         <TextField
-          label="Subtítulo (eyebrow)"
+          label="Antetítulo (texto pequeño sobre el título)"
           hint="Texto pequeño en mayúsculas sobre el título"
           value={value.eyebrow}
           onChange={v => set({ eyebrow: v })}
@@ -64,7 +64,7 @@ export function StoryEditor({ value, onChange }: Props) {
       </div>
 
       <TextareaField
-        label="Cita destacada (pull quote)"
+        label="Cita destacada"
         hint="Aparece junto a la línea terracota al final del texto"
         value={value.pullQuote}
         onChange={v => set({ pullQuote: v })}
