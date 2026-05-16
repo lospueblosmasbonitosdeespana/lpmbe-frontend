@@ -16,6 +16,7 @@ import {
   Sparkles,
   Map,
   Store,
+  CheckCircle2,
 } from "lucide-react";
 import { resolveTagIcon } from "@/lib/tag-icon-map";
 import { cn } from "@/lib/utils";
@@ -258,6 +259,7 @@ function NotificationCenter({
   notifications: NotificationItem[];
 }) {
   const t = useTranslations("home");
+  const tNotif = useTranslations("notifications");
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "noticias" | "semaforos" | "alertas"
@@ -395,6 +397,16 @@ function NotificationCenter({
                     <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-all flex-shrink-0 mt-0.5" />
                   </Link>
                 ))
+              ) : activeTab === "semaforos" ? (
+                <div className="p-6 text-center">
+                  <CheckCircle2 className="h-7 w-7 mx-auto mb-2 text-emerald-600" />
+                  <p className="text-sm font-bold text-emerald-700">
+                    {tNotif("allVillagesGreenTitle")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                    {tNotif("allVillagesGreenDesc")}
+                  </p>
+                </div>
               ) : (
                 <div className="p-6 text-center text-sm text-muted-foreground">
                   {t("noNotifications")}
