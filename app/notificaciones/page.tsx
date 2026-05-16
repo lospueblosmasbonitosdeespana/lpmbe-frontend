@@ -11,6 +11,7 @@ import {
   Cloud,
   TrafficCone,
   Bell,
+  CheckCircle2,
 } from "lucide-react";
 
 // ─── tipos ───────────────────────────────────────────────────────────────────
@@ -317,10 +318,28 @@ function NotificacionesContent() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-border bg-muted/30 p-10 text-center text-muted-foreground">
-          <Bell className="h-8 w-8 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">{t("noNotificationsNow")}</p>
-        </div>
+        activeTab === "semaforos" ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-emerald-900 text-lg leading-snug">
+                  {t("allVillagesGreenTitle")}
+                </p>
+                <p className="mt-1 text-sm text-emerald-800 leading-relaxed">
+                  {t("allVillagesGreenDesc")}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-muted/30 p-10 text-center text-muted-foreground">
+            <Bell className="h-8 w-8 mx-auto mb-3 opacity-30" />
+            <p className="text-sm">{t("noNotificationsNow")}</p>
+          </div>
+        )
       ) : (
         <div className="space-y-3">
           {filtered.map((item, idx) => (
