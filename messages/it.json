@@ -1150,6 +1150,8 @@
     "inbox": "Vassoio",
     "loadErrorFeed": "Errore nel caricamento delle notifiche.",
     "noNotificationsNow": "Al momento non ci sono notifiche.",
+    "allVillagesGreenTitle": "Tutti i nostri borghi sono in verde",
+    "allVillagesGreenDesc": "Puoi visitarli tutti come di consueto. Se qualcosa cambia in un borgo, te lo segnaleremo qui.",
     "noNotificationsYet": "Non ci sono ancora notifiche.",
     "noMeteoAlertsNow": "Al momento non ci sono allerte meteo.",
     "noItemsNow": "Non c'è nessun {type} in questo momento.",

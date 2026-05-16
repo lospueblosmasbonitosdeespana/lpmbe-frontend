@@ -1150,6 +1150,8 @@
     "inbox": "Plateau",
     "loadErrorFeed": "Erreur de chargement des notifications.",
     "noNotificationsNow": "Il n'y a pas de notifications pour le moment.",
+    "allVillagesGreenTitle": "Tous nos villages sont au vert",
+    "allVillagesGreenDesc": "Vous pouvez tous les visiter normalement. En cas de changement, nous vous le signalerons ici.",
     "noNotificationsYet": "Vous n'avez pas encore de notifications.",
     "noMeteoAlertsNow": "Il n'y a pas d'alerte météo pour le moment.",
     "noItemsNow": "Il n'y a pas de {type} pour le moment.",

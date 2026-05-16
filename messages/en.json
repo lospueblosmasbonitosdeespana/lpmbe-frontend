@@ -1150,6 +1150,8 @@
     "inbox": "Tray",
     "loadErrorFeed": "Error loading notifications.",
     "noNotificationsNow": "There are no notifications at this time.",
+    "allVillagesGreenTitle": "All our villages are in green",
+    "allVillagesGreenDesc": "You can visit them all as usual. If anything changes in a village, we'll let you know here.",
     "noNotificationsYet": "You have no notifications yet.",
     "noMeteoAlertsNow": "There are no weather alerts at this time.",
     "noItemsNow": "There is no {type} right now.",

@@ -1190,6 +1190,8 @@
     "inbox": "Bandeja",
     "loadErrorFeed": "Error cargando notificaciones.",
     "noNotificationsNow": "No hay notificaciones ahora mismo.",
+    "allVillagesGreenTitle": "Todos nuestros pueblos están en verde",
+    "allVillagesGreenDesc": "Puedes visitarlos con normalidad. Si en algún pueblo cambia la situación, te avisaremos aquí.",
     "noNotificationsYet": "No tienes notificaciones todavía.",
     "noMeteoAlertsNow": "No hay alertas meteorológicas ahora mismo.",
     "noItemsNow": "No hay {type} ahora mismo.",

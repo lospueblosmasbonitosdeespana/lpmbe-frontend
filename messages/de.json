@@ -1150,6 +1150,8 @@
     "inbox": "Tablett",
     "loadErrorFeed": "Benachrichtigungen über Fehler beim Laden.",
     "noNotificationsNow": "Zurzeit gibt es keine Benachrichtigungen.",
+    "allVillagesGreenTitle": "Alle unsere Dörfer stehen auf Grün",
+    "allVillagesGreenDesc": "Sie können sie alle wie gewohnt besuchen. Sollte sich in einem Dorf etwas ändern, informieren wir Sie hier.",
     "noNotificationsYet": "Sie haben noch keine Benachrichtigungen.",
     "noMeteoAlertsNow": "Zurzeit gibt es keine Wetterwarnungen.",
     "noItemsNow": "Im Moment gibt es keinen {type}.",

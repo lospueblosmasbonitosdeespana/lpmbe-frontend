@@ -288,9 +288,23 @@ export default function NotificacionesFeed() {
 
       {/* Lista de items - visual plano */}
       {filteredItems.length === 0 ? (
-        <div className="p-4 text-muted-foreground">
-          {t("noNotifications")}
-        </div>
+        filter === "SEMAFORO" ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold text-emerald-900">{t("allVillagesGreenTitle")}</div>
+                <div className="mt-1 text-sm text-emerald-800">{t("allVillagesGreenDesc")}</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 text-muted-foreground">
+            {t("noNotifications")}
+          </div>
+        )
       ) : (
         <ul className="list-none p-0 m-0">
           {filteredItems.map((item, idx) => {

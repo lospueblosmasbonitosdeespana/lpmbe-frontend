@@ -1150,6 +1150,8 @@
     "inbox": "Safata",
     "loadErrorFeed": "Error en carregar les notificacions.",
     "noNotificationsNow": "En aquest moment no hi ha cap notificació.",
+    "allVillagesGreenTitle": "Tots els nostres pobles estan en verd",
+    "allVillagesGreenDesc": "Pots visitar-los amb normalitat. Si canvia la situació en algun poble, t'avisarem aquí.",
     "noNotificationsYet": "Encara no tens cap notificació.",
     "noMeteoAlertsNow": "En aquest moment no hi ha avisos meteorològics.",
     "noItemsNow": "No hi ha cap {type} en aquest moment.",

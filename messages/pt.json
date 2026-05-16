@@ -1150,6 +1150,8 @@
     "inbox": "Tabuleiro",
     "loadErrorFeed": "Erro ao carregar as notificações.",
     "noNotificationsNow": "De momento, não existem notificações.",
+    "allVillagesGreenTitle": "Todas as nossas aldeias estão a verde",
+    "allVillagesGreenDesc": "Podes visitá-las com normalidade. Se algo mudar nalguma aldeia, avisamos-te aqui.",
     "noNotificationsYet": "Ainda não tem notificações.",
     "noMeteoAlertsNow": "De momento, não há alertas meteorológicos.",
     "noItemsNow": "Não existe nenhum {type} neste momento.",
