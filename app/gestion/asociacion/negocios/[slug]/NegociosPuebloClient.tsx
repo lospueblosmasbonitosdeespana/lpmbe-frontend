@@ -169,7 +169,6 @@ type Negocio = {
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   FREE: { label: 'Gratuito', color: 'bg-muted text-muted-foreground' },
-  RECOMENDADO: { label: 'Recomendado', color: 'bg-emerald-100 text-emerald-800' },
   PREMIUM: { label: 'Premium', color: 'bg-amber-100 text-amber-800' },
   SELECTION: { label: 'Selection', color: 'bg-gradient-to-r from-slate-800 to-slate-700 text-white' },
 };

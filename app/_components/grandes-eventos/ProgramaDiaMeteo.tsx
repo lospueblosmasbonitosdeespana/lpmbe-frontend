@@ -43,6 +43,38 @@ function getWmoIcon(code: number | null) {
   return { Icon: Cloud, cls: 'text-stone-500' };
 }
 
+/**
+ * Colores del chip según la temperatura máxima:
+ *   ≤10°C  azul (frío)
+ *   11-20° verde (templado)
+ *   21-29° ámbar (calor)
+ *   ≥30°C  rojo (mucho calor)
+ */
+function getTempStyle(tMaxC: number | null): {
+  bg: string; ring: string; hoverBg: string; hoverRing: string; tempColor: string;
+} {
+  if (tMaxC == null || tMaxC <= 10) return {
+    bg: 'bg-blue-50/80', ring: 'ring-blue-200/70',
+    hoverBg: 'hover:bg-blue-100', hoverRing: 'hover:ring-blue-400',
+    tempColor: 'text-blue-900',
+  };
+  if (tMaxC <= 20) return {
+    bg: 'bg-emerald-50/80', ring: 'ring-emerald-200/70',
+    hoverBg: 'hover:bg-emerald-100', hoverRing: 'hover:ring-emerald-400',
+    tempColor: 'text-emerald-900',
+  };
+  if (tMaxC <= 29) return {
+    bg: 'bg-amber-50/80', ring: 'ring-amber-200/70',
+    hoverBg: 'hover:bg-amber-100', hoverRing: 'hover:ring-amber-400',
+    tempColor: 'text-amber-900',
+  };
+  return {
+    bg: 'bg-red-50/80', ring: 'ring-red-200/70',
+    hoverBg: 'hover:bg-red-100', hoverRing: 'hover:ring-red-400',
+    tempColor: 'text-red-900',
+  };
+}
+
 function MeteoChip({
   day,
   slot,
@@ -53,6 +85,7 @@ function MeteoChip({
   t: ReturnType<typeof useTranslations>;
 }) {
   const { Icon, cls } = getWmoIcon(day.weatherCode);
+  const style = getTempStyle(day.tMaxC);
   const slotLabel =
     slot.label === 'morning' ? t('morning') :
     slot.label === 'afternoon' ? t('afternoon') : null;
@@ -60,18 +93,18 @@ function MeteoChip({
   return (
     <a
       href={`/pueblos/${slot.pueblo.slug}/meteo`}
-      className="group flex items-center gap-2.5 rounded-xl bg-amber-50/80 px-3.5 py-2.5 ring-1 ring-amber-200/70 shadow-sm transition hover:bg-amber-100 hover:ring-amber-400 hover:shadow-md"
+      className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 ring-1 shadow-sm transition hover:shadow-md ${style.bg} ${style.ring} ${style.hoverBg} ${style.hoverRing}`}
       title={`${slot.pueblo.nombre} — ${t('fullForecast')}`}
     >
       <Icon size={24} className={cls} strokeWidth={1.5} />
       <div className="flex flex-col leading-tight">
-        <span className="text-sm font-bold text-stone-900">
+        <span className={`text-sm font-bold ${style.tempColor}`}>
           {day.tMaxC != null ? `${Math.round(day.tMaxC)}°` : '—'}
-          <span className="font-normal text-stone-500">
+          <span className="font-normal opacity-60">
             /{day.tMinC != null ? `${Math.round(day.tMinC)}°` : '—'}
           </span>
         </span>
-        <span className="text-[11px] text-stone-600 group-hover:text-amber-800">
+        <span className="text-[11px] text-stone-600 group-hover:text-stone-800">
           {slotLabel ? `${slotLabel} · ` : ''}{slot.pueblo.nombre}
         </span>
       </div>
