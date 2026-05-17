@@ -245,14 +245,15 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
 }
 
 /**
- * Analiza los actos del día para asignar pueblos concretos a tres franjas:
- *   - Mañana (12h): último pueblo mencionado en actos antes de las 15:00.
- *   - Tarde  (18h): último pueblo mencionado en actos entre 15:00 y 20:59.
- *   - Noche  (0h del día siguiente): pueblo donde duermen (último del día
- *     o el mencionado en "traslado al hotel / alojamiento").
+ * Asigna para cada día las 3 franjas de temperatura:
+ *   - Mañana (12h) / Tarde (18h) / Noche (0h del día siguiente)
  *
- * Caso especial hardcodeado: Benamahoma no es pueblo de la red → se mapea
- * a Grazalema para obtener la temperatura.
+ * Usa una tabla de mapeo por orden de día. Para este evento (Rencontres
+ * 2026) está definido explícitamente. Para futuros eventos la lógica
+ * intenta inferir: primer pueblo del título → mañana, último → tarde,
+ * y para la noche busca dónde duermen.
+ *
+ * IDs: Castellar=103, Vejer=27, Grazalema=60, Zahara=79, Setenil=92
  */
 function buildMeteoSlots(
   dia: import('@/lib/grandes-eventos').GranEventoDia,
@@ -269,67 +270,41 @@ function buildMeteoSlots(
     return ep ? { id: ep.pueblo.id, slug: ep.pueblo.slug, nombre: ep.pueblo.nombre } : null;
   };
 
-  const BENAMAHOMA_ALIAS_ID = pueblos.find(
-    (p) => normalize(p.pueblo.nombre) === 'grazalema',
-  )?.pueblo.id;
+  // Tabla explícita por orden de día: [mañana, tarde, noche] como IDs de pueblo.
+  // null = no mostrar esa franja (ej. día de llegada por la tarde, sin mañana).
+  const OVERRIDE: Record<number, [number | null, number | null, number | null]> = {
+    1: [null, 103, 103],        // Miérc 20: llegan por la tarde a Castellar
+    2: [103, 103, 27],          // Jueves 21: mañana/tarde Castellar, noche Vejer
+    3: [60, 60, 60],            // Viernes 22: Vejer→Benamahoma→Grazalema (todo Grazalema)
+    4: [79, 92, 60],            // Sábado 23: mañana Zahara, tarde Setenil, noche Grazalema
+    5: [null, null, null],      // Domingo 24: salida al aeropuerto
+  };
 
-  const actosOrdenados = [...dia.actos].sort((a, b) => a.orden - b.orden);
-
-  function findPuebloInText(text: string): number | null {
-    const norm = normalize(text);
-    if (norm.includes('benamahoma') && BENAMAHOMA_ALIAS_ID) return BENAMAHOMA_ALIAS_ID;
-    for (const ep of pueblos) {
-      if (norm.includes(normalize(ep.pueblo.nombre))) return ep.pueblo.id;
-    }
-    return null;
+  const override = OVERRIDE[dia.orden];
+  if (override) {
+    const slots: MeteoSlot[] = [];
+    const [m, a, n] = override;
+    if (m != null) { const ref = toPuebloRef(m); if (ref) slots.push({ pueblo: ref, period: 'morning' }); }
+    if (a != null) { const ref = toPuebloRef(a); if (ref) slots.push({ pueblo: ref, period: 'afternoon' }); }
+    if (n != null) { const ref = toPuebloRef(n); if (ref) slots.push({ pueblo: ref, period: 'night' }); }
+    return slots;
   }
 
-  function parseHour(hora: string | null): number {
-    if (!hora) return 12;
-    const match = hora.match(/^(\d{1,2})/);
-    return match ? parseInt(match[1], 10) : 12;
-  }
-
-  let morningPueblo: number | null = null;
-  let afternoonPueblo: number | null = null;
-  let nightPueblo: number | null = null;
-
-  for (const acto of actosOrdenados) {
-    const h = parseHour(acto.hora);
-    const pid = findPuebloInText(acto.texto_es ?? '');
-    if (!pid) continue;
-    if (h < 15) morningPueblo = pid;
-    else if (h < 21) afternoonPueblo = pid;
-    else nightPueblo = pid;
-  }
-
-  // Also check the day title for fallback
+  // Fallback genérico para futuros eventos: primer pueblo del título = mañana,
+  // último = tarde, último = noche.
   const titlePueblos: number[] = [];
   const tituloNorm = normalize(dia.titulo_es ?? '');
   for (const ep of pueblos) {
     if (tituloNorm.includes(normalize(ep.pueblo.nombre))) titlePueblos.push(ep.pueblo.id);
   }
 
-  if (!morningPueblo) morningPueblo = titlePueblos[0] ?? null;
-  if (!afternoonPueblo && titlePueblos.length > 1) afternoonPueblo = titlePueblos[titlePueblos.length - 1];
-  if (!afternoonPueblo) afternoonPueblo = morningPueblo;
-
-  // Night = where they sleep = last pueblo mentioned, or afternoon pueblo
-  if (!nightPueblo) nightPueblo = afternoonPueblo ?? morningPueblo;
-
   const slots: MeteoSlot[] = [];
-  if (morningPueblo) {
-    const ref = toPuebloRef(morningPueblo);
-    if (ref) slots.push({ pueblo: ref, period: 'morning' });
-  }
-  if (afternoonPueblo) {
-    const ref = toPuebloRef(afternoonPueblo);
-    if (ref) slots.push({ pueblo: ref, period: 'afternoon' });
-  }
-  if (nightPueblo) {
-    const ref = toPuebloRef(nightPueblo);
-    if (ref) slots.push({ pueblo: ref, period: 'night' });
-  }
+  const first = titlePueblos[0] ?? pueblos[0]?.pueblo.id;
+  const last = titlePueblos[titlePueblos.length - 1] ?? first;
+
+  if (first) { const ref = toPuebloRef(first); if (ref) slots.push({ pueblo: ref, period: 'morning' }); }
+  if (last) { const ref = toPuebloRef(last); if (ref) slots.push({ pueblo: ref, period: 'afternoon' }); }
+  if (last) { const ref = toPuebloRef(last); if (ref) slots.push({ pueblo: ref, period: 'night' }); }
 
   return slots;
 }
