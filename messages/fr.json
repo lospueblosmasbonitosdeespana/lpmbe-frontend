@@ -2776,6 +2776,10 @@
       "socioSinVerificar": {
         "titulo": "Vous avez indiqué que vous êtes membre",
         "descripcion": "Vous n'êtes pas connecté, le bénéfice n'est donc pas confirmé. Vous devrez le prouver sur place en présentant votre carte du Club."
+      },
+      "confirmacionEmail": {
+        "titulo": "Confirmez votre courriel",
+        "descripcion": "Nous vous avons envoyé un courriel contenant un lien de confirmation. Tant que vous n'aurez pas cliqué sur ce lien, la demande ne parviendra pas à l'entreprise."
       }
     },
     "estado": {
@@ -2796,6 +2800,15 @@
       "verNegocio": "Voir l'entreprise",
       "socio": "Partenaire",
       "notaNegocio": "Réponse des entreprises"
+    },
+    "confirmar": {
+      "tituloOk": "Candidature confirmée !",
+      "tituloError": "Lien invalide",
+      "confirmadoOk": "Votre demande a été confirmée et est maintenant entre les mains de l'entreprise. Nous vous informerons de sa confirmation.",
+      "tokenInvalido": "Ce lien de confirmation n'est pas valide ou a déjà été utilisé.",
+      "sinToken": "Aucun jeton de confirmation n'a été fourni.",
+      "errorConexion": "Impossible de se connecter au serveur. Veuillez réessayer.",
+      "volver": "Haut de page"
     }
   }
 }

@@ -2676,6 +2676,10 @@
       "titulo": "Solicitud enviada",
       "descripcion": "El negocio recibirá tu petición y te contactará para confirmarla. Te hemos enviado un email con el resumen.",
       "cerrar": "Entendido",
+      "confirmacionEmail": {
+        "titulo": "Confirma tu email",
+        "descripcion": "Te hemos enviado un email con un enlace de confirmación. Hasta que lo pulses, la solicitud no llegará al negocio."
+      },
       "socio": {
         "titulo": "Beneficio del Club solicitado · Socio #{numero}",
         "beneficioLabel": "Beneficio",
@@ -2704,6 +2708,15 @@
       "verNegocio": "Ver negocio",
       "socio": "Socio",
       "notaNegocio": "Respuesta del negocio"
+    },
+    "confirmar": {
+      "tituloOk": "¡Solicitud confirmada!",
+      "tituloError": "Enlace no válido",
+      "confirmadoOk": "Tu solicitud ha sido confirmada y ya está en manos del negocio. Te avisaremos cuando la confirmen.",
+      "tokenInvalido": "Este enlace de confirmación no es válido o ya fue usado.",
+      "sinToken": "No se ha facilitado ningún token de confirmación.",
+      "errorConexion": "No se pudo conectar con el servidor. Inténtalo de nuevo.",
+      "volver": "Volver al inicio"
     }
   }
 }

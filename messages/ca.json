@@ -2776,6 +2776,10 @@
       "socioSinVerificar": {
         "titulo": "Has indicat que ets membre",
         "descripcion": "No has iniciat sessió, per tant no es pot verificar l'estat de la teva membresia. Hauràs de demostrar la teva membresia mostrant la teva targeta del Club a la botiga."
+      },
+      "confirmacionEmail": {
+        "titulo": "Confirma la teva adreça de correu electrònic",
+        "descripcion": "T'hem enviat un correu electrònic que conté un enllaç de confirmació. La sol·licitud no s'enviarà a l'empresa fins que no hi facis clic."
       }
     },
     "estado": {
@@ -2796,6 +2800,15 @@
       "verNegocio": "Veure l'empresa",
       "socio": "Soci",
       "notaNegocio": "Resposta empresarial"
+    },
+    "confirmar": {
+      "tituloOk": "Sol·licitud confirmada!",
+      "tituloError": "Enllaç invàlid",
+      "confirmadoOk": "La teva sol·licitud ha estat confirmada i ara està amb l'empresa. Et farem saber quan l'hagin confirmada.",
+      "tokenInvalido": "Aquest enllaç de confirmació és invàlid o ja s'ha utilitzat.",
+      "sinToken": "No s'ha proporcionat cap token de confirmació.",
+      "errorConexion": "No s'ha pogut connectar al servidor. Torni a provar.",
+      "volver": "Tornar a dalt"
     }
   }
 }

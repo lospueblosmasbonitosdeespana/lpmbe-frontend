@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  AlertTriangle,
+  Ban,
   CalendarCheck,
   CheckCircle2,
   XCircle,
@@ -15,6 +17,7 @@ import {
   RefreshCcw,
   Users,
   MessageSquare,
+  MailX,
 } from 'lucide-react';
 
 type Estado = 'PENDIENTE' | 'CONFIRMADA' | 'RECHAZADA' | 'CANCELADA' | 'NO_SHOW' | 'COMPLETADA';
@@ -39,6 +42,7 @@ interface Reserva {
   estado: Estado;
   notaNegocio: string | null;
   tipoNegocio: string;
+  pendienteConfirmacion: boolean;
   socioUser: {
     id: number;
     nombre: string | null;
@@ -85,6 +89,7 @@ export default function ReservasNegocioClient({
   negocioTipo: string | null;
 }) {
   const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [sinEmail, setSinEmail] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<Estado | 'TODAS'>('PENDIENTE');
@@ -97,7 +102,13 @@ export default function ReservasNegocioClient({
       const res = await fetch(`/api/reservas/recurso/${negocioId}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('No se pudieron cargar las reservas');
       const data = await res.json();
-      setReservas(Array.isArray(data) ? data : []);
+      // La API devuelve { reservas, sinEmail } o un array (retrocompatibilidad)
+      if (Array.isArray(data)) {
+        setReservas(data);
+      } else {
+        setReservas(Array.isArray(data.reservas) ? data.reservas : []);
+        setSinEmail(!!data.sinEmail);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error');
     } finally {
@@ -105,9 +116,7 @@ export default function ReservasNegocioClient({
     }
   }, [negocioId]);
 
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
+  useEffect(() => { cargar(); }, [cargar]);
 
   const filtradas = useMemo(() => {
     if (filtro === 'TODAS') return reservas;
@@ -120,10 +129,9 @@ export default function ReservasNegocioClient({
     return c;
   }, [reservas]);
 
-  async function responder(estado: Estado, notaNegocio?: string) {
-    if (!sel) return;
+  async function responder(id: number, estado: Estado, notaNegocio?: string) {
     try {
-      const res = await fetch(`/api/reservas/${sel.id}`, {
+      const res = await fetch(`/api/reservas/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado, notaNegocio }),
@@ -136,6 +144,25 @@ export default function ReservasNegocioClient({
       setSel(null);
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Error');
+    }
+  }
+
+  async function bloquearCliente(reservaId: number, motivo?: string) {
+    if (!confirm('¿Bloquear a este cliente? No podrá enviar más solicitudes a este negocio.')) return;
+    try {
+      const res = await fetch(`/api/reservas/${reservaId}/bloquear-cliente`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo: motivo || '' }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.message || 'No se pudo bloquear');
+      }
+      alert('Cliente bloqueado. No podrá enviar más solicitudes a este negocio.');
+      setSel(null);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error al bloquear');
     }
   }
 
@@ -166,6 +193,21 @@ export default function ReservasNegocioClient({
             </button>
           </div>
         </div>
+
+        {/* Aviso sin email */}
+        {sinEmail && (
+          <div className="mb-5 flex items-start gap-3 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900">
+            <MailX size={18} className="shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <strong>Sin email de reservas configurado.</strong> Las notificaciones de nuevas
+              solicitudes no se están enviando. Ve a{' '}
+              <Link href={`/gestion/asociacion/negocios/datos`} className="underline hover:text-rose-700">
+                la configuración del negocio
+              </Link>{' '}
+              y añade un email de reservas para recibir avisos.
+            </div>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -207,17 +249,20 @@ export default function ReservasNegocioClient({
                     onClick={() => setSel(r)}
                     className="w-full text-left px-4 sm:px-5 py-4 hover:bg-stone-50 transition-colors flex flex-col sm:flex-row sm:items-center gap-3"
                   >
-                    {/* Estado */}
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full border whitespace-nowrap ${ESTADO_META[r.estado].color}`}
                     >
                       {ESTADO_META[r.estado].label.replace(/s$/, '')}
                     </span>
 
-                    {/* Datos */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-stone-900 truncate">{r.nombre}</span>
+                        {r.pendienteConfirmacion && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                            <MailX size={9} /> Pendiente confirmar email
+                          </span>
+                        )}
                         {r.esSocio && (
                           <span
                             className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
@@ -227,9 +272,7 @@ export default function ReservasNegocioClient({
                             }`}
                           >
                             <Star size={9} className="fill-current" />
-                            {r.socioVerificado
-                              ? `Socio #${r.numeroSocio ?? '?'}`
-                              : 'Socio sin verificar'}
+                            {r.socioVerificado ? `Socio #${r.numeroSocio ?? '?'}` : 'Socio sin verificar'}
                           </span>
                         )}
                       </div>
@@ -250,27 +293,19 @@ export default function ReservasNegocioClient({
         </div>
       </div>
 
-      {/* Detalle */}
       {sel && (
         <DetalleReserva
           reserva={sel}
           onClose={() => setSel(null)}
-          onResponder={responder}
+          onResponder={(estado, nota) => responder(sel.id, estado, nota)}
+          onBloquear={(motivo) => bloquearCliente(sel.id, motivo)}
         />
       )}
     </div>
   );
 }
 
-function FiltroBtn({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
+function FiltroBtn({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -293,10 +328,12 @@ function DetalleReserva({
   reserva,
   onClose,
   onResponder,
+  onBloquear,
 }: {
   reserva: Reserva;
   onClose: () => void;
   onResponder: (estado: Estado, nota?: string) => void;
+  onBloquear: (motivo?: string) => void;
 }) {
   const [nota, setNota] = useState('');
   const cerrada = reserva.estado !== 'PENDIENTE' && reserva.estado !== 'CONFIRMADA';
@@ -331,12 +368,17 @@ function DetalleReserva({
         {/* Cuerpo */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* Estado */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <span
               className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${ESTADO_META[reserva.estado].color}`}
             >
               {ESTADO_META[reserva.estado].label.replace(/s$/, '')}
             </span>
+            {reserva.pendienteConfirmacion && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border bg-blue-50 text-blue-800 border-blue-200">
+                <AlertTriangle size={11} /> Pendiente de confirmación de email
+              </span>
+            )}
           </div>
 
           {/* Datos cliente */}
@@ -366,9 +408,7 @@ function DetalleReserva({
           {reserva.esSocio && (
             <div
               className={`rounded-lg p-4 border ${
-                reserva.socioVerificado
-                  ? 'bg-amber-50 border-amber-300'
-                  : 'bg-amber-50/60 border-amber-200'
+                reserva.socioVerificado ? 'bg-amber-50 border-amber-300' : 'bg-amber-50/60 border-amber-200'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -458,7 +498,7 @@ function DetalleReserva({
             </div>
           )}
 
-          {/* Acciones */}
+          {/* Mensaje para el cliente */}
           {showRespond && (
             <div className="pt-2">
               <label className="block text-xs font-semibold text-stone-600 mb-1.5">
@@ -473,6 +513,20 @@ function DetalleReserva({
               />
             </div>
           )}
+
+          {/* Bloquear cliente */}
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => onBloquear()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition-colors"
+            >
+              <Ban size={12} /> Bloquear este cliente
+            </button>
+            <p className="text-[10px] text-stone-400 mt-1">
+              Le impedirás enviar más solicitudes a este negocio.
+            </p>
+          </div>
         </div>
 
         {/* Footer acciones */}
@@ -496,14 +550,12 @@ function DetalleReserva({
                 </>
               )}
               {reserva.estado === 'PENDIENTE' && (
-                <>
-                  <button
-                    onClick={() => onResponder('RECHAZADA', nota.trim() || undefined)}
-                    className="px-3 py-2 rounded-lg border border-rose-300 text-rose-700 hover:bg-rose-50 text-sm font-semibold"
-                  >
-                    Rechazar
-                  </button>
-                </>
+                <button
+                  onClick={() => onResponder('RECHAZADA', nota.trim() || undefined)}
+                  className="px-3 py-2 rounded-lg border border-rose-300 text-rose-700 hover:bg-rose-50 text-sm font-semibold"
+                >
+                  Rechazar
+                </button>
               )}
             </div>
             {reserva.estado === 'PENDIENTE' && (
@@ -522,15 +574,7 @@ function DetalleReserva({
   );
 }
 
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3 text-sm">
       <span className="text-stone-500 flex items-center gap-1.5">

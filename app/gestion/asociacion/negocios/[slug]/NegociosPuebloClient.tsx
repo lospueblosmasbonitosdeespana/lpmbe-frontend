@@ -89,6 +89,7 @@ type Negocio = {
   web?: string | null;
   whatsapp?: string | null;
   bookingUrl?: string | null;
+  emailReservas?: string | null;
   localidad?: string | null;
   socialLinks?: Record<string, string> | null;
   servicios?: string[] | null;
@@ -133,6 +134,7 @@ type FormData = {
   comunidad: string;
   whatsapp: string;
   bookingUrl: string;
+  emailReservas: string;
   localidad: string;
   socialLinks: Record<string, string>;
   servicios: string[];
@@ -153,6 +155,7 @@ const emptyForm: FormData = {
   comunidad: '',
   whatsapp: '',
   bookingUrl: '',
+  emailReservas: '',
   localidad: '',
   socialLinks: {},
   servicios: [],
@@ -314,6 +317,7 @@ export default function NegociosPuebloClient({
       comunidad: n.comunidad ?? puebloComunidad,
       whatsapp: n.whatsapp ?? '',
       bookingUrl: n.bookingUrl ?? '',
+      emailReservas: n.emailReservas ?? '',
       localidad: n.localidad ?? '',
       socialLinks: (n.socialLinks as Record<string, string>) ?? {},
       servicios: (n.servicios as string[]) ?? [],
@@ -359,6 +363,7 @@ export default function NegociosPuebloClient({
       setNullableField('contacto', form.contacto);
       setNullableField('whatsapp', form.whatsapp);
       setNullableField('bookingUrl', form.bookingUrl);
+      setNullableField('emailReservas', form.emailReservas);
       setNullableField('localidad', form.localidad);
       if (form.descuentoPorcentaje.trim()) {
         body.descuentoPorcentaje = Number(form.descuentoPorcentaje);
@@ -579,8 +584,8 @@ export default function NegociosPuebloClient({
             />
           </div>
 
-          {/* WhatsApp, Booking, Localidad */}
-          <div className="grid gap-4 sm:grid-cols-3">
+          {/* WhatsApp, Booking, emailReservas, Localidad */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">WhatsApp</label>
               <input
@@ -591,13 +596,31 @@ export default function NegociosPuebloClient({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1">Enlace de reservas</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Enlace de reservas externo</label>
               <input
                 value={form.bookingUrl}
                 onChange={(e) => setForm((f) => ({ ...f, bookingUrl: e.target.value }))}
                 className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="https://booking.com/..."
               />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Email de reservas
+                <span className="ml-1.5 text-[10px] font-normal text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                  Recomendado
+                </span>
+              </label>
+              <input
+                type="email"
+                value={form.emailReservas}
+                onChange={(e) => setForm((f) => ({ ...f, emailReservas: e.target.value }))}
+                className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="reservas@minegocio.com"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Dirección donde llegan las solicitudes de reserva. Si no se pone, se usa el email general.
+              </p>
             </div>
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1">Localidad</label>

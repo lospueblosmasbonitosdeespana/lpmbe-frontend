@@ -2776,6 +2776,10 @@
       "socioSinVerificar": {
         "titulo": "Marcou que é membro",
         "descripcion": "Não tem sessão iniciada, pelo que a prestação não está confirmada. Terá de o comprovar no local do evento, apresentando o seu cartão do Clube."
+      },
+      "confirmacionEmail": {
+        "titulo": "Confirmar o seu correio eletrónico",
+        "descripcion": "Enviámos-lhe uma mensagem de correio eletrónico com uma ligação de confirmação. Enquanto não clicar nela, o pedido não chegará à empresa."
       }
     },
     "estado": {
@@ -2796,6 +2800,15 @@
       "verNegocio": "Ver empresa",
       "socio": "Parceiro",
       "notaNegocio": "Resposta da empresa"
+    },
+    "confirmar": {
+      "tituloOk": "Candidatura confirmada!",
+      "tituloError": "Ligação inválida",
+      "confirmadoOk": "A sua candidatura foi confirmada e está agora nas mãos da empresa. Informá-lo-emos quando for confirmada.",
+      "tokenInvalido": "Esta ligação de confirmação é inválida ou já foi utilizada.",
+      "sinToken": "Não foi fornecido qualquer código de confirmação.",
+      "errorConexion": "Não foi possível ligar ao servidor. Por favor, tente novamente.",
+      "volver": "Voltar ao início"
     }
   }
 }

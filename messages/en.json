@@ -2776,6 +2776,10 @@
       "socioSinVerificar": {
         "titulo": "You have marked that you are a member",
         "descripcion": "You are not logged in, so the benefit is not confirmed. You will have to prove it at the venue by showing your Club card."
+      },
+      "confirmacionEmail": {
+        "titulo": "Confirm your email",
+        "descripcion": "We have sent you an email with a confirmation link. Until you click it, the request will not reach the business."
       }
     },
     "estado": {
@@ -2796,6 +2800,15 @@
       "verNegocio": "See business",
       "socio": "Partner",
       "notaNegocio": "Business response"
+    },
+    "confirmar": {
+      "tituloOk": "Application confirmed!",
+      "tituloError": "Invalid link",
+      "confirmadoOk": "Your application has been confirmed and is now in the hands of the business. We will notify you when it is confirmed.",
+      "tokenInvalido": "This confirmation link is invalid or has already been used.",
+      "sinToken": "No confirmation token has been provided.",
+      "errorConexion": "Could not connect to the server. Please try again.",
+      "volver": "Back to top"
     }
   }
 }

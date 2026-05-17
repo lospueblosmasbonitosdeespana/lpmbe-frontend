@@ -2776,6 +2776,10 @@
       "socioSinVerificar": {
         "titulo": "Sie haben markiert, dass Sie ein Mitglied sind",
         "descripcion": "Sie sind nicht eingeloggt, daher ist der Vorteil nicht bestätigt. Sie müssen dies am Veranstaltungsort durch Vorlage Ihrer Clubkarte nachweisen."
+      },
+      "confirmacionEmail": {
+        "titulo": "Bestätigen Sie Ihre E-Mail",
+        "descripcion": "Wir haben Ihnen eine E-Mail mit einem Bestätigungslink geschickt. Solange Sie diesen nicht anklicken, wird der Antrag das Unternehmen nicht erreichen."
       }
     },
     "estado": {
@@ -2796,6 +2800,15 @@
       "verNegocio": "Siehe Geschäft",
       "socio": "Partner",
       "notaNegocio": "Antwort des Unternehmens"
+    },
+    "confirmar": {
+      "tituloOk": "Bewerbung bestätigt!",
+      "tituloError": "Ungültiger Link",
+      "confirmadoOk": "Ihre Bewerbung wurde bestätigt und befindet sich nun in den Händen des Unternehmens. Wir werden Sie benachrichtigen, wenn sie bestätigt ist.",
+      "tokenInvalido": "Dieser Bestätigungslink ist ungültig oder wurde bereits verwendet.",
+      "sinToken": "Es wurde kein Bestätigungs-Token bereitgestellt.",
+      "errorConexion": "Es konnte keine Verbindung zum Server hergestellt werden. Bitte versuchen Sie es erneut.",
+      "volver": "Zurück zum Anfang"
     }
   }
 }

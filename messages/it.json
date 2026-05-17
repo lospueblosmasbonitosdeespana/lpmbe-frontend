@@ -2776,6 +2776,10 @@
       "socioSinVerificar": {
         "titulo": "Avete indicato che siete un membro",
         "descripcion": "Non è stato effettuato l'accesso, quindi la prestazione non è confermata. Dovrete dimostrarlo in sede mostrando la vostra tessera del Club."
+      },
+      "confirmacionEmail": {
+        "titulo": "Confermare l'e-mail",
+        "descripcion": "Vi abbiamo inviato un'e-mail con un link di conferma. Finché non lo cliccherete, la domanda non arriverà all'azienda."
       }
     },
     "estado": {
@@ -2796,6 +2800,15 @@
       "verNegocio": "Vedere l'attività commerciale",
       "socio": "Partner",
       "notaNegocio": "Risposta aziendale"
+    },
+    "confirmar": {
+      "tituloOk": "Applicazione confermata!",
+      "tituloError": "Collegamento non valido",
+      "confirmadoOk": "La vostra domanda è stata confermata ed è ora nelle mani dell'azienda. Vi informeremo quando sarà confermata.",
+      "tokenInvalido": "Questo link di conferma non è valido o è già stato utilizzato.",
+      "sinToken": "Non è stato fornito alcun token di conferma.",
+      "errorConexion": "Impossibile connettersi al server. Riprovare.",
+      "volver": "Torna all'inizio"
     }
   }
 }

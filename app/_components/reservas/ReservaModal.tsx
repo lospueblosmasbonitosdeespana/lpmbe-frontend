@@ -79,6 +79,7 @@ export default function ReservaModal({
     socioVerificado: boolean;
     numeroSocio: number | null;
     beneficio: string | null;
+    pendienteConfirmacion?: boolean;
   }>(null);
 
   const [form, setForm] = useState<FormState>(() => ({
@@ -180,6 +181,7 @@ export default function ReservaModal({
         notas: form.notas.trim() || undefined,
         esSocio: form.esSocio,
         locale,
+        _trap: '', // honeypot: siempre vacío; bots lo rellenan
       };
       if (negocio.tipo === 'RESTAURANTE' || negocio.tipo === 'ACTIVIDAD') {
         payload.hora = form.hora;
@@ -207,6 +209,7 @@ export default function ReservaModal({
         socioVerificado: !!data.socioVerificado,
         numeroSocio: data.numeroSocio ?? null,
         beneficio: data.beneficioClub ?? null,
+        pendienteConfirmacion: !!data.pendienteConfirmacion,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('errores.generico'));
@@ -264,6 +267,17 @@ export default function ReservaModal({
               </div>
               <h3 className="text-xl font-serif text-stone-900 mb-2">{t('exito.titulo')}</h3>
               <p className="text-sm text-stone-600 max-w-sm mx-auto">{t('exito.descripcion')}</p>
+
+              {/* Aviso de doble opt-in pendiente */}
+              {success.pendienteConfirmacion && (
+                <div className="mt-5 mx-auto max-w-sm p-3.5 bg-blue-50 border border-blue-200 rounded-lg text-left">
+                  <p className="text-sm font-semibold text-blue-900 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} />
+                    {t('exito.confirmacionEmail.titulo')}
+                  </p>
+                  <p className="text-xs text-blue-800 mt-1">{t('exito.confirmacionEmail.descripcion')}</p>
+                </div>
+              )}
               {success.socioVerificado && success.numeroSocio && (
                 <div className="mt-5 mx-auto max-w-sm p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-left">
                   <p className="text-sm font-semibold text-amber-900 flex items-center gap-1.5">
