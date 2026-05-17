@@ -51,6 +51,7 @@ const TIPOS_NEGOCIO = [
 const TIPO_LABELS: Record<string, string> = {
   HOTEL: 'Hotel',
   CASA_RURAL: 'Casa rural',
+  ALOJAMIENTO: 'Alojamiento',
   RESTAURANTE: 'Restaurante',
   BAR: 'Bar / Cafetería',
   COMERCIO: 'Comercio',
@@ -63,12 +64,65 @@ const TIPO_LABELS: Record<string, string> = {
 const TIPO_TO_ROUTE: Record<string, string> = {
   HOTEL: 'donde-dormir',
   CASA_RURAL: 'donde-dormir',
+  ALOJAMIENTO: 'donde-dormir',
   RESTAURANTE: 'donde-comer',
   BAR: 'donde-comer',
   BODEGA: 'donde-comer',
   COMERCIO: 'donde-comprar',
   TIENDA_ARTESANIA: 'donde-comprar',
 };
+
+const NEGOCIOS_DEMO: {
+  id: number
+  nombre: string
+  slug: string
+  tipo: string
+  planNegocio: string
+  puebloSlug: string
+  previewRoute: string
+  emoji: string
+}[] = [
+  {
+    id: 1487,
+    nombre: 'Casa Oliveira',
+    slug: 'casa-oliveira',
+    tipo: 'RESTAURANTE',
+    planNegocio: 'PREMIUM',
+    puebloSlug: 'ainsa',
+    previewRoute: '/donde-comer/ainsa/casa-oliveira',
+    emoji: '🍽️',
+  },
+  {
+    id: 28,
+    nombre: 'Casa Rural El Rincón del Pirineo',
+    slug: 'casa-rural-el-rincon-del-pirineo',
+    tipo: 'ALOJAMIENTO',
+    planNegocio: 'PREMIUM',
+    puebloSlug: 'ainsa',
+    previewRoute: '/donde-dormir/ainsa/casa-rural-el-rincon-del-pirineo',
+    emoji: '🏡',
+  },
+  {
+    id: 1488,
+    nombre: 'Sobrarbe Aventura',
+    slug: 'sobrarbe-aventura',
+    tipo: 'EXPERIENCIA',
+    planNegocio: 'PREMIUM',
+    puebloSlug: 'ainsa',
+    previewRoute: '/negocio/sobrarbe-aventura',
+    emoji: '🏔️',
+  },
+  {
+    id: 1489,
+    nombre: 'Quesos del Pirineo Pardo',
+    slug: 'quesos-del-pirineo-pardo',
+    tipo: 'TIENDA_ARTESANIA',
+    planNegocio: 'PREMIUM',
+    puebloSlug: 'ainsa',
+    previewRoute: '/donde-comprar/ainsa/quesos-del-pirineo-pardo',
+    emoji: '🧀',
+  },
+];
 
 type Negocio = {
   id: number;
@@ -193,6 +247,8 @@ export default function NegociosPuebloClient({
   const [qrCartelNegocio, setQrCartelNegocio] = useState<Negocio | null>(null);
   const [mejorarPlanNegocio, setMejorarPlanNegocio] = useState<Negocio | null>(null);
   const [landingEditorNegocio, setLandingEditorNegocio] = useState<Negocio | null>(null);
+  const [demoReadOnly, setDemoReadOnly] = useState<{ negocio: Negocio; previewRoute: string } | null>(null);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   useEffect(() => {
     if (isAsociacion || isSelection) return;
@@ -238,6 +294,20 @@ export default function NegociosPuebloClient({
   }, [apiBase, puebloNombre]);
 
   useEffect(() => { load(); }, [load]);
+
+  const openDemo = useCallback(async (demo: typeof NEGOCIOS_DEMO[number]) => {
+    setDemoLoading(true);
+    try {
+      const res = await fetch(`/api/club/negocios/${demo.id}`);
+      if (!res.ok) throw new Error('No se pudo cargar el negocio de ejemplo');
+      const data: Negocio = await res.json();
+      setDemoReadOnly({ negocio: data, previewRoute: demo.previewRoute });
+    } catch {
+      setDemoReadOnly(null);
+    } finally {
+      setDemoLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -867,6 +937,42 @@ export default function NegociosPuebloClient({
         </div>
       )}
 
+      {/* DEMO EXAMPLES BANNER */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 mb-4">
+        <h3 className="text-sm font-semibold text-amber-900 mb-1">¿Necesitas inspiración? Mira estos ejemplos</h3>
+        <p className="text-xs text-amber-700 mb-3">
+          Hemos creado 4 negocios ficticios completamente editados para que veas cómo queda una página premium. Puedes entrar en su editor en modo lectura o ver cómo se ven de cara al público.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {NEGOCIOS_DEMO.map((demo) => (
+            <div key={demo.id} className="rounded-lg border border-amber-200 bg-white p-3 flex flex-col items-center text-center gap-1.5">
+              <span className="text-2xl" aria-hidden>{demo.emoji}</span>
+              <span className="text-xs font-semibold text-foreground leading-tight">{demo.nombre}</span>
+              <span className="text-[10px] text-muted-foreground">{TIPO_LABELS[demo.tipo] ?? demo.tipo}</span>
+              <div className="flex flex-col gap-1 mt-1 w-full">
+                <button
+                  type="button"
+                  onClick={() => openDemo(demo)}
+                  disabled={demoLoading}
+                  className="w-full rounded-md px-2 py-1.5 text-[11px] font-semibold text-white transition-colors"
+                  style={{ background: 'oklch(0.55 0.14 40)' }}
+                >
+                  {demoLoading ? 'Cargando…' : 'Ver editor'}
+                </button>
+                <a
+                  href={demo.previewRoute}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full rounded-md border border-amber-300 px-2 py-1.5 text-[11px] font-medium text-amber-800 hover:bg-amber-50 text-center transition-colors"
+                >
+                  Vista pública ↗
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* LIST */}
       {loading ? (
         <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
@@ -1155,7 +1261,8 @@ export default function NegociosPuebloClient({
             <button
               type="button"
               onClick={() => { setLandingEditorNegocio(null); openEdit(landingEditorNegocio); }}
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted/30 transition-colors"
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors shadow-sm hover:shadow"
+              style={{ background: 'oklch(0.55 0.14 40)', borderColor: 'oklch(0.48 0.14 40)' }}
               title="Editar datos básicos: teléfono, email, ubicación..."
             >
               Datos básicos
@@ -1188,6 +1295,81 @@ export default function NegociosPuebloClient({
             }
             return <RestauranteLandingEditor {...editorProps} />
           })()}
+        </div>
+      )}
+
+      {/* DEMO READONLY OVERLAY */}
+      {demoReadOnly && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-white">
+          <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setDemoReadOnly(null)}
+              className="rounded-lg bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent transition-colors"
+            >
+              ← Volver
+            </button>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-sm font-medium text-foreground truncate">
+                {demoReadOnly.negocio.nombre}
+              </span>
+              <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-[10px] font-semibold">
+                EJEMPLO · Solo lectura
+              </span>
+            </div>
+            <a
+              href={demoReadOnly.previewRoute}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors shadow-sm hover:shadow inline-flex items-center gap-1.5"
+              style={{ background: 'oklch(0.55 0.14 40)' }}
+            >
+              Vista previa pública ↗
+            </a>
+          </div>
+          <div className="demo-readonly-wrapper">
+            <style>{`
+              .demo-readonly-wrapper input,
+              .demo-readonly-wrapper textarea,
+              .demo-readonly-wrapper select,
+              .demo-readonly-wrapper button:not([data-demo-allow]),
+              .demo-readonly-wrapper [role="switch"],
+              .demo-readonly-wrapper [contenteditable] {
+                pointer-events: none !important;
+                opacity: 0.85;
+              }
+              .demo-readonly-wrapper [data-demo-allow] {
+                pointer-events: auto !important;
+              }
+            `}</style>
+            {(() => {
+              const n = demoReadOnly.negocio;
+              const tipo = n.tipo;
+              const plan = (n.planNegocio ?? 'FREE') as string;
+              const editorProps = {
+                negocioId: n.id,
+                negocioNombre: n.nombre,
+                negocioSlug: n.slug ?? '',
+                puebloSlug: n.pueblo?.slug ?? 'ainsa',
+                initialLandingConfig: n.landingConfig,
+                onSaved: () => {},
+                readOnly: true,
+              };
+              if (plan === 'SELECTION') {
+                return <SelectionLandingEditor {...editorProps} />;
+              }
+              if ((['HOTEL', 'CASA_RURAL', 'ALOJAMIENTO'] as string[]).includes(tipo)) {
+                return <AlojamientoLandingEditor {...editorProps} />;
+              }
+              if (tipo === 'EXPERIENCIA') {
+                return <ActividadLandingEditor {...editorProps} />;
+              }
+              if ((['COMERCIO', 'TIENDA_ARTESANIA', 'OTRO'] as string[]).includes(tipo)) {
+                return <ComercioLandingEditor {...editorProps} />;
+              }
+              return <RestauranteLandingEditor {...editorProps} />;
+            })()}
+          </div>
         </div>
       )}
     </div>

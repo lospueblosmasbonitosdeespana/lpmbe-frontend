@@ -99,6 +99,7 @@ interface Props {
   puebloSlug: string
   initialLandingConfig: any
   onSaved?: () => void
+  readOnly?: boolean
 }
 
 /**
@@ -121,6 +122,7 @@ export default function ActividadLandingEditor({
   puebloSlug,
   initialLandingConfig,
   onSaved,
+  readOnly,
 }: Props) {
   const initialConfig = useMemo(() => parseInitial(initialLandingConfig), [initialLandingConfig])
   const initialLayout = useMemo(
@@ -136,7 +138,7 @@ export default function ActividadLandingEditor({
   const [layout, setLayout] = useState<SectionLayoutItem[]>(initialLayout)
   const [isSaving, setIsSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
-  const [openSections, setOpenSections] = useState<string[]>(['_layout'])
+  const [openSections, setOpenSections] = useState<string[]>(['hero', 'highlights'])
 
   const updateConfig = <K extends keyof ActivityLandingConfig>(
     section: K,
@@ -228,19 +230,21 @@ export default function ActividadLandingEditor({
                   Vista previa
                 </Button>
               )}
-              <Button
-                size="sm"
-                className="gap-2"
-                onClick={handleSave}
-                disabled={isSaving}
-                style={{
-                  backgroundColor: savedOk ? 'oklch(0.55 0.14 145)' : 'oklch(0.65 0.14 70)',
-                  color: 'white'
-                }}
-              >
-                <Save className="h-4 w-4" />
-                {isSaving ? 'Guardando...' : savedOk ? 'Guardado' : 'Guardar'}
-              </Button>
+              {!readOnly && (
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  style={{
+                    backgroundColor: savedOk ? 'oklch(0.55 0.14 145)' : 'oklch(0.65 0.14 70)',
+                    color: 'white'
+                  }}
+                >
+                  <Save className="h-4 w-4" />
+                  {isSaving ? 'Guardando...' : savedOk ? 'Guardado' : 'Guardar'}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -2407,28 +2411,30 @@ export default function ActividadLandingEditor({
         </Accordion>
 
         {/* Bottom Save Bar */}
-        <div className="mt-8 flex justify-end gap-3">
-          <Button 
-            variant="outline"
-            style={{ 
-              borderColor: 'oklch(0.75 0.12 70)',
-              color: 'oklch(0.45 0.10 70)'
-            }}
-          >
-            Descartar cambios
-          </Button>
-          <Button 
-            onClick={handleSave}
-            disabled={isSaving}
-            style={{ 
-              backgroundColor: 'oklch(0.65 0.14 70)',
-              color: 'white'
-            }}
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {isSaving ? 'Guardando...' : 'Guardar cambios'}
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="mt-8 flex justify-end gap-3">
+            <Button
+              variant="outline"
+              style={{
+                borderColor: 'oklch(0.75 0.12 70)',
+                color: 'oklch(0.45 0.10 70)'
+              }}
+            >
+              Descartar cambios
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              style={{
+                backgroundColor: 'oklch(0.65 0.14 70)',
+                color: 'white'
+              }}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {isSaving ? 'Guardando...' : 'Guardar cambios'}
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   )

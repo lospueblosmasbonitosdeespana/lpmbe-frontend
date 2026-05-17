@@ -137,6 +137,7 @@ interface ComercioLandingEditorProps {
   puebloSlug: string
   initialLandingConfig: unknown
   onSaved?: () => void
+  readOnly?: boolean
   // Legacy / opcionales
   onSave?: (config: CommerceLandingConfig) => void | Promise<void>
   onBack?: () => void
@@ -623,6 +624,7 @@ export default function ComercioLandingEditor({
   puebloSlug,
   initialLandingConfig,
   onSaved,
+  readOnly,
   onSave,
   onBack,
   onPreview,
@@ -651,7 +653,7 @@ export default function ComercioLandingEditor({
   const [isSaving, setIsSaving] = useState(false)
   const [savedPill, setSavedPill] = useState(false)
   const [deleteDialog, setDeleteDialog] = useState<{ type: string; id: string } | null>(null)
-  const [openSections, setOpenSections] = useState<string[]>(['_layout', 'identity'])
+  const [openSections, setOpenSections] = useState<string[]>(['identity', 'hero'])
 
   const previewUrl = `/donde-comprar/${puebloSlug}/${negocioSlug}`
 
@@ -885,26 +887,28 @@ export default function ComercioLandingEditor({
               <Eye className="h-4 w-4" />
               Vista previa
             </Button>
-            <Button
-              size="sm"
-              onClick={handleSave}
-              disabled={!isDirty || isSaving}
-              className="gap-2 bg-primary hover:bg-primary/90"
-            >
-              {savedPill ? (
-                <>
-                  <Check className="h-4 w-4" />
-                  <span className="rounded-full bg-olive px-2 py-0.5 text-xs text-primary-foreground">
-                    Guardado ✓
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Guardar cambios
-                </>
-              )}
-            </Button>
+            {!readOnly && (
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={!isDirty || isSaving}
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                {savedPill ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    <span className="rounded-full bg-olive px-2 py-0.5 text-xs text-primary-foreground">
+                      Guardado ✓
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Guardar cambios
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -3407,47 +3411,49 @@ export default function ComercioLandingEditor({
       </main>
 
       {/* Sticky Bottom Save Bar */}
-      <footer className="sticky bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <div className="flex items-center gap-3">
-            <Badge
-              variant="outline"
-              className={`${
-                completionPercent === 100
-                  ? 'border-olive bg-olive/10 text-olive'
-                  : 'border-copper bg-copper/10 text-copper'
-              }`}
+      {!readOnly && (
+        <footer className="sticky bottom-0 z-50 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+            <div className="flex items-center gap-3">
+              <Badge
+                variant="outline"
+                className={`${
+                  completionPercent === 100
+                    ? 'border-olive bg-olive/10 text-olive'
+                    : 'border-copper bg-copper/10 text-copper'
+                }`}
+              >
+                Perfil completo {completionPercent}%
+              </Badge>
+              {isDirty && (
+                <span className="text-xs text-amber-600">Cambios sin guardar</span>
+              )}
+              {!isDirty && (
+                <span className="text-xs text-muted-foreground">Sin cambios</span>
+              )}
+            </div>
+            <Button
+              onClick={handleSave}
+              disabled={!isDirty || isSaving}
+              className="gap-2 bg-primary hover:bg-primary/90"
             >
-              Perfil completo {completionPercent}%
-            </Badge>
-            {isDirty && (
-              <span className="text-xs text-amber-600">Cambios sin guardar</span>
-            )}
-            {!isDirty && (
-              <span className="text-xs text-muted-foreground">Sin cambios</span>
-            )}
+              {savedPill ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  <span className="rounded-full bg-olive px-2 py-0.5 text-xs">
+                    Guardado ✓
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Guardar cambios
+                </>
+              )}
+            </Button>
           </div>
-          <Button
-            onClick={handleSave}
-            disabled={!isDirty || isSaving}
-            className="gap-2 bg-primary hover:bg-primary/90"
-          >
-            {savedPill ? (
-              <>
-                <Check className="h-4 w-4" />
-                <span className="rounded-full bg-olive px-2 py-0.5 text-xs">
-                  Guardado ✓
-                </span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Guardar cambios
-              </>
-            )}
-          </Button>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

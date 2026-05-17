@@ -70,6 +70,7 @@ interface RestauranteLandingEditorProps {
   puebloSlug?: string | null
   initialLandingConfig: Record<string, any> | null | undefined
   onSaved?: () => void
+  readOnly?: boolean
 }
 
 export default function RestauranteLandingEditor({
@@ -79,6 +80,7 @@ export default function RestauranteLandingEditor({
   puebloSlug,
   initialLandingConfig,
   onSaved,
+  readOnly,
 }: RestauranteLandingEditorProps) {
   const initial = useMemo(() => parseLandingConfig(initialLandingConfig), [initialLandingConfig])
   const initialLayout = useMemo(
@@ -186,7 +188,7 @@ export default function RestauranteLandingEditor({
 
         <Accordion
           type="multiple"
-          defaultValue={['_layout', 'hero', 'chef']}
+          defaultValue={['hero', 'chef']}
           className="space-y-3"
         >
           <AccordionItem value="_layout" className="rounded-xl border border-amber-200 bg-amber-50/40">
@@ -251,15 +253,17 @@ export default function RestauranteLandingEditor({
         </Accordion>
       </main>
 
-      <SaveBar
-        completion={completion}
-        isDirty={isDirty}
-        isSaving={isSaving}
-        onSave={handleSave}
-        onReset={handleReset}
-        onPreview={puebloSlug && negocioSlug ? handlePreview : undefined}
-        lastSaved={lastSaved}
-      />
+      {!readOnly && (
+        <SaveBar
+          completion={completion}
+          isDirty={isDirty}
+          isSaving={isSaving}
+          onSave={handleSave}
+          onReset={handleReset}
+          onPreview={puebloSlug && negocioSlug ? handlePreview : undefined}
+          lastSaved={lastSaved}
+        />
+      )}
     </div>
   )
 }

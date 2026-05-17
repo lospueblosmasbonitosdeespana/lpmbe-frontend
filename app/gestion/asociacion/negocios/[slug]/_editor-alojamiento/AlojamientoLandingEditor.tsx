@@ -87,6 +87,7 @@ interface Props {
   puebloSlug: string
   initialLandingConfig: any
   onSaved?: () => void
+  readOnly?: boolean
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -112,6 +113,7 @@ export default function AlojamientoLandingEditor({
   puebloSlug,
   initialLandingConfig,
   onSaved,
+  readOnly,
 }: Props) {
   const initialConfig = useMemo(() => parseInitial(initialLandingConfig), [initialLandingConfig])
   const initialLayout = useMemo(
@@ -127,7 +129,7 @@ export default function AlojamientoLandingEditor({
   const [layout, setLayout] = useState<SectionLayoutItem[]>(initialLayout)
   const [showJson, setShowJson]     = useState(false)
   const [saved, setSaved]           = useState(false)
-  const [openSection, setOpenSection] = useState<string>('_layout')
+  const [openSection, setOpenSection] = useState<string>('hero')
 
   const update = useCallback(
     <K extends SectionKey>(key: K, value: LodgingLandingConfig[K]) => {
@@ -227,29 +229,33 @@ export default function AlojamientoLandingEditor({
               <Download size={13} />
               Exportar
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleReset}
-              className="gap-1.5 text-xs"
-              style={{ borderColor: 'oklch(0.78 0.10 60)', color: 'oklch(0.38 0.10 55)' }}
-            >
-              <RotateCcw size={13} />
-              Restablecer
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleSave}
-              className="gap-1.5 text-xs font-semibold"
-              style={{
-                background: saved ? 'oklch(0.55 0.14 145)' : 'oklch(0.52 0.12 60)',
-                color: '#fff',
-                border: 'none',
-              }}
-            >
-              {saved ? <CheckCheck size={13} /> : null}
-              {saved ? 'Guardado' : 'Guardar cambios'}
-            </Button>
+            {!readOnly && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  className="gap-1.5 text-xs"
+                  style={{ borderColor: 'oklch(0.78 0.10 60)', color: 'oklch(0.38 0.10 55)' }}
+                >
+                  <RotateCcw size={13} />
+                  Restablecer
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  className="gap-1.5 text-xs font-semibold"
+                  style={{
+                    background: saved ? 'oklch(0.55 0.14 145)' : 'oklch(0.52 0.12 60)',
+                    color: '#fff',
+                    border: 'none',
+                  }}
+                >
+                  {saved ? <CheckCheck size={13} /> : null}
+                  {saved ? 'Guardado' : 'Guardar cambios'}
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
