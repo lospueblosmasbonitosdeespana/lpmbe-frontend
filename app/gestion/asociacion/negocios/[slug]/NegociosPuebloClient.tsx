@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { UtensilsCrossed, Home, Mountain, ShoppingBag } from 'lucide-react';
 import NegocioGallery from './NegocioGallery';
 import NegocioOfertas from './NegocioOfertas';
 import NegocioStats from './NegocioStats';
@@ -80,7 +81,7 @@ const NEGOCIOS_DEMO: {
   planNegocio: string
   puebloSlug: string
   previewRoute: string
-  emoji: string
+  icon: React.ElementType
 }[] = [
   {
     id: 1487,
@@ -90,7 +91,7 @@ const NEGOCIOS_DEMO: {
     planNegocio: 'PREMIUM',
     puebloSlug: 'ainsa',
     previewRoute: '/donde-comer/ainsa/casa-oliveira',
-    emoji: '🍽️',
+    icon: UtensilsCrossed,
   },
   {
     id: 28,
@@ -100,7 +101,7 @@ const NEGOCIOS_DEMO: {
     planNegocio: 'PREMIUM',
     puebloSlug: 'ainsa',
     previewRoute: '/donde-dormir/ainsa/casa-rural-el-rincon-del-pirineo',
-    emoji: '🏡',
+    icon: Home,
   },
   {
     id: 1488,
@@ -110,7 +111,7 @@ const NEGOCIOS_DEMO: {
     planNegocio: 'PREMIUM',
     puebloSlug: 'ainsa',
     previewRoute: '/negocio/sobrarbe-aventura',
-    emoji: '🏔️',
+    icon: Mountain,
   },
   {
     id: 1489,
@@ -120,7 +121,7 @@ const NEGOCIOS_DEMO: {
     planNegocio: 'PREMIUM',
     puebloSlug: 'ainsa',
     previewRoute: '/donde-comprar/ainsa/quesos-del-pirineo-pardo',
-    emoji: '🧀',
+    icon: ShoppingBag,
   },
 ];
 
@@ -946,7 +947,9 @@ export default function NegociosPuebloClient({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {NEGOCIOS_DEMO.map((demo) => (
             <div key={demo.id} className="rounded-lg border border-amber-200 bg-white p-3 flex flex-col items-center text-center gap-1.5">
-              <span className="text-2xl" aria-hidden>{demo.emoji}</span>
+              <div className="size-9 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
+                <demo.icon className="size-4 text-amber-700" />
+              </div>
               <span className="text-xs font-semibold text-foreground leading-tight">{demo.nombre}</span>
               <span className="text-[10px] text-muted-foreground">{TIPO_LABELS[demo.tipo] ?? demo.tipo}</span>
               <div className="flex flex-col gap-1 mt-1 w-full">
