@@ -10,11 +10,25 @@ import { PLAN_LABELS, type PlanNegocio, getPlanFeatures, SERVICIOS_DISPONIBLES, 
 const TIPO_TO_PUBLIC_ROUTE: Record<string, string> = {
   HOTEL: 'donde-dormir',
   CASA_RURAL: 'donde-dormir',
+  ALOJAMIENTO: 'donde-dormir',
   RESTAURANTE: 'donde-comer',
   BAR: 'donde-comer',
   BODEGA: 'donde-comer',
   COMERCIO: 'donde-comprar',
   TIENDA_ARTESANIA: 'donde-comprar',
+};
+
+const DEMO_PREMIUM_BY_TYPE: Record<string, { nombre: string; url: string }> = {
+  RESTAURANTE:     { nombre: 'Casa Oliveira', url: '/donde-comer/ainsa/casa-oliveira' },
+  BAR:             { nombre: 'Casa Oliveira', url: '/donde-comer/ainsa/casa-oliveira' },
+  BODEGA:          { nombre: 'Casa Oliveira', url: '/donde-comer/ainsa/casa-oliveira' },
+  HOTEL:           { nombre: 'Casa Rural El Rincón del Pirineo', url: '/donde-dormir/ainsa/casa-rural-el-rincon-del-pirineo' },
+  CASA_RURAL:      { nombre: 'Casa Rural El Rincón del Pirineo', url: '/donde-dormir/ainsa/casa-rural-el-rincon-del-pirineo' },
+  ALOJAMIENTO:     { nombre: 'Casa Rural El Rincón del Pirineo', url: '/donde-dormir/ainsa/casa-rural-el-rincon-del-pirineo' },
+  EXPERIENCIA:     { nombre: 'Sobrarbe Aventura', url: '/negocio/sobrarbe-aventura' },
+  COMERCIO:        { nombre: 'Quesos del Pirineo Pardo', url: '/donde-comprar/ainsa/quesos-del-pirineo-pardo' },
+  TIENDA_ARTESANIA:{ nombre: 'Quesos del Pirineo Pardo', url: '/donde-comprar/ainsa/quesos-del-pirineo-pardo' },
+  OTRO:            { nombre: 'Quesos del Pirineo Pardo', url: '/donde-comprar/ainsa/quesos-del-pirineo-pardo' },
 };
 
 const MapLocationPicker = dynamic(
@@ -236,6 +250,8 @@ function PlanBanner({
     ? 'text-amber-900'
     : 'text-amber-900';
 
+  const demo = isFree ? DEMO_PREMIUM_BY_TYPE[recurso.tipo] : null;
+
   return (
     <div className={`mb-5 rounded-xl border ${bg} p-4`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -260,6 +276,25 @@ function PlanBanner({
           </button>
         )}
       </div>
+      {demo && (
+        <div className="mt-3 rounded-lg border border-amber-300/60 bg-white/70 px-4 py-3">
+          <p className="text-xs font-semibold text-amber-900">
+            Así se verá tu negocio si pasas a Premium:
+          </p>
+          <p className="mt-0.5 text-[11px] text-amber-700">
+            Mira cómo se ve <strong>{demo.nombre}</strong>, un negocio de ejemplo con el plan Premium completamente configurado.
+          </p>
+          <a
+            href={demo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:shadow"
+            style={{ background: 'oklch(0.55 0.14 40)' }}
+          >
+            Ver ejemplo Premium ↗
+          </a>
+        </div>
+      )}
     </div>
   );
 }
