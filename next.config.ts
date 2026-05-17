@@ -174,6 +174,10 @@ const nextConfig: NextConfig = {
       { source: '/eventos/-5', destination: '/eventos/concierto-del-175-aniversario-de-la-filarmonica-de-olivenza', permanent: true },
       { source: '/eventos/-6', destination: '/eventos/festival-jazz-vejer-del-25-al-27-de-junio', permanent: true },
       { source: '/eventos/-7', destination: '/eventos/festival-vejer-flamenco-del-8-al-11-de-julio', permanent: true },
+      // 302 temporal: Hotel Apolo renombrado a casa rural demo.
+      // Usar permanent: false (302) para que si el Hotel Apolo real se une en el futuro,
+      // podamos eliminar este redirect y asignarle su slug original sin problemas.
+      { source: '/pueblos/ainsa/negocios/hotel-apolo', destination: '/pueblos/ainsa/negocios/casa-rural-el-rincon-del-pirineo', permanent: false },
     ];
   },
   images: {
