@@ -1002,9 +1002,7 @@ export default function NegociosPuebloClient({
                   ? 'bg-slate-900 border border-slate-600'
                   : planKey === 'PREMIUM'
                     ? 'bg-amber-50 border border-amber-200'
-                    : planKey === 'RECOMENDADO'
-                      ? 'bg-emerald-50 border border-emerald-200'
-                      : 'border border-dashed border-border bg-muted/30';
+                    : 'border border-dashed border-border bg-muted/30';
                 const textColor = isSelectionPlan ? 'text-slate-300' : 'text-muted-foreground';
                 return (
                   <div className={`mb-3 flex items-center justify-between gap-2 rounded-lg px-3 py-2 ${bannerBg}`}>
@@ -1041,7 +1039,6 @@ export default function NegociosPuebloClient({
                         title="Cambiar plan (solo admin)"
                       >
                         <option value="FREE">Gratuito</option>
-                        <option value="RECOMENDADO">Recomendado</option>
                         <option value="PREMIUM">Premium</option>
                       </select>
                     )}
