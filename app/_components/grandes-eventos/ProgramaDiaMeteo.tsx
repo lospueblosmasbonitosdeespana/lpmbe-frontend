@@ -4,36 +4,33 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Sun, CloudSun, Cloud, Cloudy, CloudFog, CloudDrizzle,
-  CloudRain, CloudSnow, CloudLightning, Droplets,
+  CloudRain, CloudSnow, CloudLightning,
+  Sunrise, SunMedium, Moon,
 } from 'lucide-react';
 
-type DailyEntry = {
-  date: string;
-  tMaxC: number | null;
-  tMinC: number | null;
-  precipProbPct: number | null;
-  weatherCode: number | null;
-};
+type HourlyTempEntry = { time: string; tempC: number | null; weatherCode: number | null };
 
 type MeteoResponse = {
-  current: { temperatureC: number | null; weatherCode: number | null };
-  daily: DailyEntry[];
+  puebloId: number;
+  hourlyTemp?: HourlyTempEntry[];
+  daily?: Array<{ date: string; weatherCode: number | null }>;
 };
 
-type PuebloRef = {
-  id: number;
-  slug: string;
-  nombre: string;
-};
+type PuebloRef = { id: number; slug: string; nombre: string };
 
+/**
+ * A single slot: "at this hour, the delegates are in this pueblo."
+ * - period: 'morning' (12h), 'afternoon' (18h), 'night' (0h next day)
+ * - pueblo: where they are
+ */
 export type MeteoSlot = {
   pueblo: PuebloRef;
-  label: 'morning' | 'afternoon' | 'allday';
+  period: 'morning' | 'afternoon' | 'night';
 };
 
 function getWmoIcon(code: number | null) {
   if (code === null || code === 0) return { Icon: Sun, cls: 'text-amber-500' };
-  if (code === 1) return { Icon: CloudSun, cls: 'text-stone-400' };
+  if (code === 1) return { Icon: CloudSun, cls: 'text-amber-400' };
   if ([2, 3].includes(code)) return { Icon: Cloudy, cls: 'text-stone-500' };
   if ([45, 48].includes(code)) return { Icon: CloudFog, cls: 'text-stone-400' };
   if ([51, 53, 55, 56, 57].includes(code)) return { Icon: CloudDrizzle, cls: 'text-slate-400' };
@@ -43,77 +40,71 @@ function getWmoIcon(code: number | null) {
   return { Icon: Cloud, cls: 'text-stone-500' };
 }
 
-/**
- * Colores del chip según la temperatura máxima:
- *   ≤10°C  azul (frío)
- *   11-20° verde (templado)
- *   21-29° ámbar (calor)
- *   ≥30°C  rojo (mucho calor)
- */
-function getTempStyle(tMaxC: number | null): {
-  bg: string; ring: string; hoverBg: string; hoverRing: string; tempColor: string;
-} {
-  if (tMaxC == null || tMaxC <= 10) return {
-    bg: 'bg-blue-50/80', ring: 'ring-blue-200/70',
-    hoverBg: 'hover:bg-blue-100', hoverRing: 'hover:ring-blue-400',
-    tempColor: 'text-blue-900',
-  };
-  if (tMaxC <= 20) return {
-    bg: 'bg-emerald-50/80', ring: 'ring-emerald-200/70',
-    hoverBg: 'hover:bg-emerald-100', hoverRing: 'hover:ring-emerald-400',
-    tempColor: 'text-emerald-900',
-  };
-  if (tMaxC <= 29) return {
-    bg: 'bg-amber-50/80', ring: 'ring-amber-200/70',
-    hoverBg: 'hover:bg-amber-100', hoverRing: 'hover:ring-amber-400',
-    tempColor: 'text-amber-900',
-  };
-  return {
-    bg: 'bg-red-50/80', ring: 'ring-red-200/70',
-    hoverBg: 'hover:bg-red-100', hoverRing: 'hover:ring-red-400',
-    tempColor: 'text-red-900',
-  };
+function getTempColor(tempC: number | null): string {
+  if (tempC == null) return 'text-stone-800';
+  if (tempC <= 5) return 'text-blue-700';
+  if (tempC <= 14) return 'text-sky-700';
+  if (tempC <= 22) return 'text-emerald-700';
+  if (tempC <= 29) return 'text-amber-700';
+  if (tempC <= 35) return 'text-orange-700';
+  return 'text-red-700';
 }
 
+function getTempBg(tempC: number | null): string {
+  if (tempC == null) return 'bg-stone-50';
+  if (tempC <= 5) return 'bg-blue-50';
+  if (tempC <= 14) return 'bg-sky-50';
+  if (tempC <= 22) return 'bg-emerald-50/70';
+  if (tempC <= 29) return 'bg-amber-50/80';
+  if (tempC <= 35) return 'bg-orange-50/80';
+  return 'bg-red-50/80';
+}
+
+const PERIOD_ICON = {
+  morning: Sunrise,
+  afternoon: SunMedium,
+  night: Moon,
+} as const;
+
+const PERIOD_HOUR = { morning: '12', afternoon: '18', night: '00' } as const;
+
 function MeteoChip({
-  day,
-  slot,
-  t,
+  period,
+  tempC,
+  weatherCode,
+  pueblo,
+  periodLabel,
 }: {
-  day: DailyEntry;
-  slot: MeteoSlot;
-  t: ReturnType<typeof useTranslations>;
+  period: 'morning' | 'afternoon' | 'night';
+  tempC: number | null;
+  weatherCode: number | null;
+  pueblo: PuebloRef;
+  periodLabel: string;
 }) {
-  const { Icon, cls } = getWmoIcon(day.weatherCode);
-  const style = getTempStyle(day.tMaxC);
-  const slotLabel =
-    slot.label === 'morning' ? t('morning') :
-    slot.label === 'afternoon' ? t('afternoon') : null;
+  const { Icon: WmoIcon, cls: wmoCls } = getWmoIcon(weatherCode);
+  const PeriodIcon = PERIOD_ICON[period];
+  const color = getTempColor(tempC);
+  const bg = getTempBg(tempC);
 
   return (
     <a
-      href={`/pueblos/${slot.pueblo.slug}/meteo`}
-      className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 ring-1 shadow-sm transition hover:shadow-md ${style.bg} ${style.ring} ${style.hoverBg} ${style.hoverRing}`}
-      title={`${slot.pueblo.nombre} — ${t('fullForecast')}`}
+      href={`/pueblos/${pueblo.slug}/meteo`}
+      className={`group flex items-center gap-2 rounded-xl px-3 py-2 ring-1 ring-stone-200/70 shadow-sm transition hover:shadow-md hover:ring-stone-400 ${bg}`}
+      title={`${pueblo.nombre} — ${periodLabel}`}
     >
-      <Icon size={24} className={cls} strokeWidth={1.5} />
+      <WmoIcon size={20} className={wmoCls} strokeWidth={1.5} />
+      <span className={`text-base font-bold tabular-nums ${color}`}>
+        {tempC != null ? `${Math.round(tempC)}°` : '—'}
+      </span>
       <div className="flex flex-col leading-tight">
-        <span className={`text-sm font-bold ${style.tempColor}`}>
-          {day.tMaxC != null ? `${Math.round(day.tMaxC)}°` : '—'}
-          <span className="font-normal opacity-60">
-            /{day.tMinC != null ? `${Math.round(day.tMinC)}°` : '—'}
-          </span>
+        <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-stone-500">
+          <PeriodIcon className="h-3 w-3" />
+          {periodLabel}
         </span>
-        <span className="text-[11px] text-stone-600 group-hover:text-stone-800">
-          {slotLabel ? `${slotLabel} · ` : ''}{slot.pueblo.nombre}
+        <span className="text-[10px] text-stone-400 group-hover:text-stone-600">
+          {pueblo.nombre}
         </span>
       </div>
-      {day.precipProbPct != null && day.precipProbPct > 15 && (
-        <span className="flex items-center gap-0.5 text-[11px] font-semibold text-blue-600">
-          <Droplets className="h-3 w-3" />
-          {day.precipProbPct}%
-        </span>
-      )}
     </a>
   );
 }
@@ -126,7 +117,7 @@ export default function ProgramaDiaMeteo({
   targetDate: string; // YYYY-MM-DD
 }) {
   const t = useTranslations('granEvento.meteo');
-  const [dailyByPueblo, setDailyByPueblo] = useState<Map<number, DailyEntry | null>>(new Map());
+  const [results, setResults] = useState<Map<number, HourlyTempEntry[]>>(new Map());
   const [loaded, setLoaded] = useState(false);
 
   const uniquePuebloIds = [...new Set(slots.map((s) => s.pueblo.id))];
@@ -134,24 +125,18 @@ export default function ProgramaDiaMeteo({
   useEffect(() => {
     let cancelled = false;
     async function fetchAll() {
-      const results = new Map<number, DailyEntry | null>();
+      const map = new Map<number, HourlyTempEntry[]>();
       await Promise.all(
         uniquePuebloIds.map(async (pid) => {
           try {
             const res = await fetch(`/api/meteo/pueblo-public/${pid}`, { cache: 'no-store' });
-            if (!res.ok) { results.set(pid, null); return; }
+            if (!res.ok) return;
             const data: MeteoResponse = await res.json();
-            const match = data.daily?.find((d) => d.date === targetDate) ?? null;
-            results.set(pid, match);
-          } catch {
-            results.set(pid, null);
-          }
+            if (data.hourlyTemp) map.set(pid, data.hourlyTemp);
+          } catch { /* ignore */ }
         }),
       );
-      if (!cancelled) {
-        setDailyByPueblo(results);
-        setLoaded(true);
-      }
+      if (!cancelled) { setResults(map); setLoaded(true); }
     }
     fetchAll();
     return () => { cancelled = true; };
@@ -160,17 +145,39 @@ export default function ProgramaDiaMeteo({
 
   if (!loaded) return null;
 
-  const validSlots = slots.filter((s) => dailyByPueblo.get(s.pueblo.id) != null);
-  if (validSlots.length === 0) return null;
+  const nextDay = new Date(targetDate + 'T00:00:00');
+  nextDay.setDate(nextDay.getDate() + 1);
+  const nextDateStr = nextDay.toISOString().slice(0, 10);
 
-  return (
-    <div className="flex flex-wrap gap-2">
-      {validSlots.map((slot) => {
-        const day = dailyByPueblo.get(slot.pueblo.id)!;
-        return (
-          <MeteoChip key={`${slot.pueblo.id}-${slot.label}`} day={day} slot={slot} t={t} />
-        );
-      })}
-    </div>
-  );
+  const rendered = slots.map((slot) => {
+    const hourlyArr = results.get(slot.pueblo.id);
+    if (!hourlyArr) return null;
+
+    const targetHour = PERIOD_HOUR[slot.period];
+    const dateForLookup = slot.period === 'night' ? nextDateStr : targetDate;
+    const targetTime = `${dateForLookup}T${targetHour}:00`;
+
+    const match = hourlyArr.find((h) => h.time === targetTime);
+    if (!match) return null;
+
+    const periodLabel =
+      slot.period === 'morning' ? t('morning') :
+      slot.period === 'afternoon' ? t('afternoon') :
+      t('night');
+
+    return (
+      <MeteoChip
+        key={`${slot.pueblo.id}-${slot.period}`}
+        period={slot.period}
+        tempC={match.tempC}
+        weatherCode={match.weatherCode}
+        pueblo={slot.pueblo}
+        periodLabel={periodLabel}
+      />
+    );
+  }).filter(Boolean);
+
+  if (rendered.length === 0) return null;
+
+  return <div className="flex flex-wrap gap-2">{rendered}</div>;
 }

@@ -2624,6 +2624,7 @@
     "meteo": {
       "morning": "Matin",
       "afternoon": "Après-midi",
+      "night": "Nuit",
       "fullForecast": "Voir les prévisions complètes"
     },
     "concierge": {

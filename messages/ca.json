@@ -2624,6 +2624,7 @@
     "meteo": {
       "morning": "Matí",
       "afternoon": "Tarda",
+      "night": "Nit",
       "fullForecast": "Veure la previsió completa"
     },
     "concierge": {

@@ -2361,6 +2361,7 @@
     "meteo": {
       "morning": "Mañana",
       "afternoon": "Tarde",
+      "night": "Noche",
       "fullForecast": "Ver previsión completa"
     },
     "galeria": {

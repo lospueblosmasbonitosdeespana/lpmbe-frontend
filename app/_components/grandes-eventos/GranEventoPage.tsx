@@ -245,9 +245,14 @@ export default async function GranEventoPage({ slug, albumHref }: { slug: string
 }
 
 /**
- * Analiza los actos del día y los pueblos del evento para determinar qué
- * pueblos se visitan por la mañana (antes de 15:00) y por la tarde (15:00+).
- * Devuelve MeteoSlots para el componente ProgramaDiaMeteo.
+ * Analiza los actos del día para asignar pueblos concretos a tres franjas:
+ *   - Mañana (12h): último pueblo mencionado en actos antes de las 15:00.
+ *   - Tarde  (18h): último pueblo mencionado en actos entre 15:00 y 20:59.
+ *   - Noche  (0h del día siguiente): pueblo donde duermen (último del día
+ *     o el mencionado en "traslado al hotel / alojamiento").
+ *
+ * Caso especial hardcodeado: Benamahoma no es pueblo de la red → se mapea
+ * a Grazalema para obtener la temperatura.
  */
 function buildMeteoSlots(
   dia: import('@/lib/grandes-eventos').GranEventoDia,
@@ -259,72 +264,71 @@ function buildMeteoSlots(
   const normalize = (s: string) =>
     s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-  const actosOrdenados = [...dia.actos].sort((a, b) => a.orden - b.orden);
-
-  const morningPueblos = new Set<number>();
-  const afternoonPueblos = new Set<number>();
-
-  for (const acto of actosOrdenados) {
-    const textoNorm = normalize(acto.texto_es ?? '');
-    const hour = parseInt(acto.hora?.split(':')[0] ?? '12', 10);
-    const isMorning = hour < 15;
-
-    for (const ep of pueblos) {
-      const nombreNorm = normalize(ep.pueblo.nombre);
-      if (textoNorm.includes(nombreNorm)) {
-        if (isMorning) morningPueblos.add(ep.pueblo.id);
-        else afternoonPueblos.add(ep.pueblo.id);
-      }
-    }
-  }
-
-  // Also check the day's title for pueblo names
-  const tituloNorm = normalize(dia.titulo_es ?? '');
-  for (const ep of pueblos) {
-    const nombreNorm = normalize(ep.pueblo.nombre);
-    if (tituloNorm.includes(nombreNorm)) {
-      if (!morningPueblos.has(ep.pueblo.id) && !afternoonPueblos.has(ep.pueblo.id)) {
-        morningPueblos.add(ep.pueblo.id);
-      }
-    }
-  }
-
   const toPuebloRef = (pid: number) => {
     const ep = pueblos.find((p) => p.pueblo.id === pid);
     return ep ? { id: ep.pueblo.id, slug: ep.pueblo.slug, nombre: ep.pueblo.nombre } : null;
   };
 
-  // If same pueblos morning and afternoon, just show "allday"
-  const allMorning = [...morningPueblos];
-  const allAfternoon = [...afternoonPueblos].filter((id) => !morningPueblos.has(id));
+  const BENAMAHOMA_ALIAS_ID = pueblos.find(
+    (p) => normalize(p.pueblo.nombre) === 'grazalema',
+  )?.pueblo.id;
 
-  if (allMorning.length === 0 && allAfternoon.length === 0) {
-    // Fallback: try first pueblo in title order
-    const tituloCheck = normalize(dia.titulo_es ?? '');
+  const actosOrdenados = [...dia.actos].sort((a, b) => a.orden - b.orden);
+
+  function findPuebloInText(text: string): number | null {
+    const norm = normalize(text);
+    if (norm.includes('benamahoma') && BENAMAHOMA_ALIAS_ID) return BENAMAHOMA_ALIAS_ID;
     for (const ep of pueblos) {
-      if (tituloCheck.includes(normalize(ep.pueblo.nombre))) {
-        return [{ pueblo: { id: ep.pueblo.id, slug: ep.pueblo.slug, nombre: ep.pueblo.nombre }, label: 'allday' }];
-      }
+      if (norm.includes(normalize(ep.pueblo.nombre))) return ep.pueblo.id;
     }
-    return [];
+    return null;
   }
 
-  const slots: MeteoSlot[] = [];
+  function parseHour(hora: string | null): number {
+    if (!hora) return 12;
+    const match = hora.match(/^(\d{1,2})/);
+    return match ? parseInt(match[1], 10) : 12;
+  }
 
-  if (allAfternoon.length === 0) {
-    for (const pid of allMorning) {
-      const ref = toPuebloRef(pid);
-      if (ref) slots.push({ pueblo: ref, label: 'allday' });
-    }
-  } else {
-    for (const pid of allMorning) {
-      const ref = toPuebloRef(pid);
-      if (ref) slots.push({ pueblo: ref, label: 'morning' });
-    }
-    for (const pid of allAfternoon) {
-      const ref = toPuebloRef(pid);
-      if (ref) slots.push({ pueblo: ref, label: 'afternoon' });
-    }
+  let morningPueblo: number | null = null;
+  let afternoonPueblo: number | null = null;
+  let nightPueblo: number | null = null;
+
+  for (const acto of actosOrdenados) {
+    const h = parseHour(acto.hora);
+    const pid = findPuebloInText(acto.texto_es ?? '');
+    if (!pid) continue;
+    if (h < 15) morningPueblo = pid;
+    else if (h < 21) afternoonPueblo = pid;
+    else nightPueblo = pid;
+  }
+
+  // Also check the day title for fallback
+  const titlePueblos: number[] = [];
+  const tituloNorm = normalize(dia.titulo_es ?? '');
+  for (const ep of pueblos) {
+    if (tituloNorm.includes(normalize(ep.pueblo.nombre))) titlePueblos.push(ep.pueblo.id);
+  }
+
+  if (!morningPueblo) morningPueblo = titlePueblos[0] ?? null;
+  if (!afternoonPueblo && titlePueblos.length > 1) afternoonPueblo = titlePueblos[titlePueblos.length - 1];
+  if (!afternoonPueblo) afternoonPueblo = morningPueblo;
+
+  // Night = where they sleep = last pueblo mentioned, or afternoon pueblo
+  if (!nightPueblo) nightPueblo = afternoonPueblo ?? morningPueblo;
+
+  const slots: MeteoSlot[] = [];
+  if (morningPueblo) {
+    const ref = toPuebloRef(morningPueblo);
+    if (ref) slots.push({ pueblo: ref, period: 'morning' });
+  }
+  if (afternoonPueblo) {
+    const ref = toPuebloRef(afternoonPueblo);
+    if (ref) slots.push({ pueblo: ref, period: 'afternoon' });
+  }
+  if (nightPueblo) {
+    const ref = toPuebloRef(nightPueblo);
+    if (ref) slots.push({ pueblo: ref, period: 'night' });
   }
 
   return slots;
