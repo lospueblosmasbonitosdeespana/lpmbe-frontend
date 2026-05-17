@@ -10,7 +10,7 @@ export const revalidate = 0;
 export default async function ColaboradorPage() {
   const me = await getMeServer();
   if (!me) redirect('/entrar');
-  if (me.rol !== 'COLABORADOR' && me.rol !== 'ADMIN') redirect('/cuenta');
+  if (me.rol !== 'COLABORADOR' && me.rol !== 'ADMIN' && me.rol !== 'ALCALDE') redirect('/cuenta');
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">

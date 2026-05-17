@@ -6,12 +6,30 @@ import { IconMapa, IconAsociacion } from './_components/GestionIcons';
 import DestacadosBadge from './_components/DestacadosBadge';
 import { GestionEntradaCard, GestionEntradaSection } from './_components/GestionEntradaCard';
 import { GestionPortalHero, type GestionPortalRoleTone } from './_components/GestionPortalHero';
+import { getToken } from '@/lib/auth';
+import { getApiUrl } from '@/lib/api';
 
 function rolToHeroTone(rol: string): GestionPortalRoleTone {
   if (rol === 'ALCALDE') return 'alcalde';
   if (rol === 'ADMIN') return 'admin';
   if (rol === 'EDITOR') return 'editor';
   return 'colaborador';
+}
+
+async function tieneNegociosAsignados(): Promise<boolean> {
+  const token = await getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(`${getApiUrl()}/club/mis-recursos`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return false;
+    const data: Array<{ scope?: string }> = await res.json();
+    return data.some((r) => r.scope === 'NEGOCIO');
+  } catch {
+    return false;
+  }
 }
 
 export default async function GestionPage() {
@@ -21,6 +39,8 @@ export default async function GestionPage() {
   if (me.rol !== 'ALCALDE' && me.rol !== 'ADMIN' && me.rol !== 'EDITOR' && me.rol !== 'COLABORADOR') {
     redirect('/cuenta');
   }
+
+  const showMiNegocio = me.rol === 'ALCALDE' ? await tieneNegociosAsignados() : false;
 
   const subtitle =
     me.rol === 'COLABORADOR'
@@ -77,6 +97,22 @@ export default async function GestionPage() {
                 </svg>
                 <DestacadosBadge />
               </div>
+            }
+          />
+        </GestionEntradaSection>
+      )}
+
+      {showMiNegocio && (
+        <GestionEntradaSection eyebrow="Mi negocio" tone="recurso">
+          <GestionEntradaCard
+            href="/gestion/colaborador"
+            title="Mi negocio"
+            description="Gestiona tu negocio: edita datos, fotos, plan y estadísticas"
+            variant="recurso"
+            icon={
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
             }
           />
         </GestionEntradaSection>
