@@ -169,6 +169,7 @@ type Negocio = {
 
 const PLAN_LABELS: Record<string, { label: string; color: string }> = {
   FREE: { label: 'Gratuito', color: 'bg-muted text-muted-foreground' },
+  RECOMENDADO: { label: 'Recomendado', color: 'bg-emerald-100 text-emerald-800' },
   PREMIUM: { label: 'Premium', color: 'bg-amber-100 text-amber-800' },
   SELECTION: { label: 'Selection', color: 'bg-gradient-to-r from-slate-800 to-slate-700 text-white' },
 };
@@ -993,35 +994,58 @@ export default function NegociosPuebloClient({
               key={n.id}
               className="rounded-xl border bg-white p-4 shadow-sm"
             >
-              {/* Plan banner */}
+              {/* Plan banner + admin selector */}
               {(() => {
                 const planKey = n.planNegocio ?? 'FREE';
                 const pl = PLAN_LABELS[planKey] ?? PLAN_LABELS.FREE;
-                const isFree = planKey === 'FREE';
-                const isSelection = planKey === 'SELECTION';
-                const bannerBg = isSelection
+                const isSelectionPlan = planKey === 'SELECTION';
+                const bannerBg = isSelectionPlan
                   ? 'bg-slate-900 border border-slate-600'
                   : planKey === 'PREMIUM'
                     ? 'bg-amber-50 border border-amber-200'
-                    : '';
-                return isFree ? (
-                  <div className="mb-3 flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2">
-                    <span className="text-xs text-muted-foreground">Plan Gratuito — Funcionalidades limitadas en la web pública</span>
-                    <button
-                      type="button"
-                      onClick={() => setMejorarPlanNegocio(n)}
-                      className="rounded bg-primary px-3 py-1 text-[11px] font-semibold text-white hover:bg-primary/90"
-                    >
-                      Mejorar plan
-                    </button>
-                  </div>
-                ) : (
+                    : planKey === 'RECOMENDADO'
+                      ? 'bg-emerald-50 border border-emerald-200'
+                      : 'border border-dashed border-border bg-muted/30';
+                const textColor = isSelectionPlan ? 'text-slate-300' : 'text-muted-foreground';
+                return (
                   <div className={`mb-3 flex items-center justify-between gap-2 rounded-lg px-3 py-2 ${bannerBg}`}>
                     <div className="flex items-center gap-2">
                       <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${pl.color}`}>{pl.label}</span>
-                      <span className={`text-xs ${isSelection ? 'text-slate-300' : 'text-muted-foreground'}`}>Plan activo</span>
+                      <span className={`text-xs ${textColor}`}>
+                        {planKey === 'FREE' ? 'Funcionalidades limitadas' : 'Plan activo'}
+                      </span>
                     </div>
-                    
+                    {!isSelectionPlan && (
+                      <select
+                        value={planKey}
+                        onChange={async (e) => {
+                          const newPlan = e.target.value;
+                          if (newPlan === planKey) return;
+                          if (!confirm(`¿Cambiar plan de "${n.nombre}" a ${PLAN_LABELS[newPlan]?.label ?? newPlan}?`)) return;
+                          try {
+                            const res = await fetch(`/api/club/negocios/${n.id}/plan`, {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ plan: newPlan }),
+                            });
+                            if (res.ok) {
+                              load();
+                            } else {
+                              const data = await res.json().catch(() => ({}));
+                              alert(data.message || 'Error al cambiar plan');
+                            }
+                          } catch {
+                            alert('Error de conexión');
+                          }
+                        }}
+                        className="rounded-md border border-border bg-white px-2 py-1 text-xs font-medium text-foreground cursor-pointer"
+                        title="Cambiar plan (solo admin)"
+                      >
+                        <option value="FREE">Gratuito</option>
+                        <option value="RECOMENDADO">Recomendado</option>
+                        <option value="PREMIUM">Premium</option>
+                      </select>
+                    )}
                   </div>
                 );
               })()}
@@ -1332,7 +1356,7 @@ export default function NegociosPuebloClient({
               .demo-readonly-wrapper input,
               .demo-readonly-wrapper textarea,
               .demo-readonly-wrapper select,
-              .demo-readonly-wrapper button:not([data-demo-allow]),
+              .demo-readonly-wrapper button:not([data-demo-allow]):not([data-radix-collection-item]),
               .demo-readonly-wrapper [role="switch"],
               .demo-readonly-wrapper [contenteditable] {
                 pointer-events: none !important;
